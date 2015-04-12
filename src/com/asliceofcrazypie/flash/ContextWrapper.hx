@@ -79,7 +79,7 @@ class ContextWrapper extends EventDispatcher
 	private var currentProgram:Program3D;
 	
 	
-	public function new( depth:Int, antiAliasLevel:Int = 1 )
+	public function new(depth:Int, antiAliasLevel:Int = 1)
 	{
 		super();
 		
@@ -101,31 +101,30 @@ class ContextWrapper extends EventDispatcher
 		var fragmentRawDataA:Array<Int> = 			[ -96, 1, 0, 0, 0, -95, 1, 40, 0, 0, 0, 1, 0, 15, 2, 0, 0, 0, -28, 4, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 3, 0, 0, 0, 1, 0, 8, 2, 1, 0, 0, -1, 2, 0, 0, 0, 1, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 3, 1, 0, 0, -28, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 		var fragmentRawData:Array<Int> = 			[ -96, 1, 0, 0, 0, -95, 1, 40, 0, 0, 0, 1, 0, 15, 2, 0, 0, 0, -28, 4, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 3, 1, 0, 0, -28, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 		
-		vertexDataRGBA = 	rawDataToBytes( vertexRawDataRGBA );
-		vertexData = 		rawDataToBytes( vertexRawData );
+		vertexDataRGBA = 	rawDataToBytes(vertexRawDataRGBA);
+		vertexData = 		rawDataToBytes(vertexRawData);
 		
-		fragmentDataRGBASmooth = 	rawDataToBytes( fragmentRawDataRGBASmooth );
-		fragmentDataRGBSmooth = 	rawDataToBytes( fragmentRawDataRGBSmooth );
-		fragmentDataASmooth = 		rawDataToBytes( fragmentRawDataASmooth );
-		fragmentDataSmooth = 		rawDataToBytes( fragmentRawDataSmooth );
-		fragmentDataRGBA = 			rawDataToBytes( fragmentRawDataRGBA );
-		fragmentDataRGB = 			rawDataToBytes( fragmentRawDataRGB );
-		fragmentDataA = 			rawDataToBytes( fragmentRawDataA );
-		fragmentData = 				rawDataToBytes( fragmentRawData );
+		fragmentDataRGBASmooth = 	rawDataToBytes(fragmentRawDataRGBASmooth);
+		fragmentDataRGBSmooth = 	rawDataToBytes(fragmentRawDataRGBSmooth);
+		fragmentDataASmooth = 		rawDataToBytes(fragmentRawDataASmooth);
+		fragmentDataSmooth = 		rawDataToBytes(fragmentRawDataSmooth);
+		fragmentDataRGBA = 			rawDataToBytes(fragmentRawDataRGBA);
+		fragmentDataRGB = 			rawDataToBytes(fragmentRawDataRGB);
+		fragmentDataA = 			rawDataToBytes(fragmentRawDataA);
+		fragmentData = 				rawDataToBytes(fragmentRawData);
 		
-		graphicCache = new Map<Graphics,Sprite>();
-		spriteSortItemCache = new Map<Sprite,SpriteSortItem>();
+		graphicCache = new Map<Graphics, Sprite>();
+		spriteSortItemCache = new Map<Sprite, SpriteSortItem>();
 		currentSpriteSortItems = new Vector<SpriteSortItem>();
 	}
 	
-	public inline function setTexture( texture:Texture ):Void
+	public inline function setTexture(texture:Texture):Void
 	{
-		if ( context3D != null )
+		if (context3D != null)
 		{
-			
-			if ( texture != currentTexture )
+			if (texture != currentTexture)
 			{
-				context3D.setTextureAt( 0, texture );
+				context3D.setTextureAt(0, texture);
 				currentTexture = texture;
 			}
 		}
@@ -135,30 +134,29 @@ class ContextWrapper extends EventDispatcher
 	{
 		var depth:Float = currentDepth;
 		currentDepth -= MIN_DEPTH_STEP;
-		
 		return depth;
 	}
 	
-	public inline function init( stage:Stage, initCallback:Void->Void = null, renderMode:Context3DRenderMode ):Void
+	public inline function init(stage:Stage, initCallback:Void->Void = null, renderMode:Context3DRenderMode):Void
 	{
-		if ( context3D == null )
+		if (context3D == null)
 		{
-			if ( renderMode == null )
+			if (renderMode == null)
 			{
 				renderMode = Context3DRenderMode.AUTO;
 			}
 			
 			this.stage = stage;
 			this._initCallback = initCallback;
-			stage.stage3Ds[depth].addEventListener( Event.CONTEXT3D_CREATE, initStage3D );
-			stage.stage3Ds[depth].addEventListener(ErrorEvent.ERROR, initStage3DError );
-			stage.stage3Ds[depth].requestContext3D( Std.string( renderMode ) );
+			stage.stage3Ds[depth].addEventListener(Event.CONTEXT3D_CREATE, initStage3D);
+			stage.stage3Ds[depth].addEventListener(ErrorEvent.ERROR, initStage3DError);
+			stage.stage3Ds[depth].requestContext3D(Std.string(renderMode));
 			
-			stage.addEventListener(Event.EXIT_FRAME, onRender, false, -0xFFFFFE );
+			stage.addEventListener(Event.EXIT_FRAME, onRender, false, -0xFFFFFE);
 		}
 		else
 		{
-			if ( initCallback != null )
+			if (initCallback != null)
 			{
 				initCallback();
 			}
@@ -167,20 +165,20 @@ class ContextWrapper extends EventDispatcher
 	
 	private function onRender(e:Event):Void 
 	{
-		if ( context3D != null && !presented )
+		if (context3D != null && !presented)
 		{
-			if ( currentSpriteSortItems.length > 0 )
+			if (currentSpriteSortItems.length > 0)
 			{
-				SpriteSortItem.sortItems( currentSpriteSortItems );
+				SpriteSortItem.sortItems(currentSpriteSortItems);
 				
 				var rendered:Int = 0;
 				
-				for ( spriteSortItem in currentSpriteSortItems )
+				for (spriteSortItem in currentSpriteSortItems)
 				{
-					rendered += spriteSortItem.renderBuffers( this );
+					rendered += spriteSortItem.renderBuffers(this);
 				}
 				
-				if ( rendered > 0 )
+				if (rendered > 0)
 				{
 					presented = true;
 					context3D.present();
@@ -191,64 +189,64 @@ class ContextWrapper extends EventDispatcher
 	
 	private function initStage3D(e:Event):Void 
 	{
-		if ( context3D != null )
+		if (context3D != null)
 		{
 			if (stage.stage3Ds[depth].context3D != context3D)
 			{
-				context3D = null;//this context has been lost, get new context
+				context3D = null; //this context has been lost, get new context
 			}
 		}
 		
-		if ( context3D == null )
+		if (context3D == null)
 		{
 			context3D = stage.stage3Ds[depth].context3D;			
 			
-			if ( context3D != null )
+			if (context3D != null)
 			{
 				context3D.setBlendFactors(Context3DBlendFactor.ONE, Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA);
 				
 				baseTransformMatrix = new Matrix3D();
 				
-				stage.addEventListener(Event.RESIZE, onStageResize );//listen for future stage resize events
+				stage.addEventListener(Event.RESIZE, onStageResize); //listen for future stage resize events
 				
 				//init programs
 				programRGBASmooth = context3D.createProgram();
-				programRGBASmooth.upload( vertexDataRGBA, fragmentDataRGBASmooth);
+				programRGBASmooth.upload(vertexDataRGBA, fragmentDataRGBASmooth);
 				
 				programRGBSmooth = context3D.createProgram();
-				programRGBSmooth.upload( vertexDataRGBA, fragmentDataRGBSmooth);
+				programRGBSmooth.upload(vertexDataRGBA, fragmentDataRGBSmooth);
 				
 				programASmooth = context3D.createProgram();
-				programASmooth.upload( vertexDataRGBA, fragmentDataASmooth);
+				programASmooth.upload(vertexDataRGBA, fragmentDataASmooth);
 				
 				programSmooth = context3D.createProgram();
-				programSmooth.upload( vertexData, fragmentDataSmooth);
+				programSmooth.upload(vertexData, fragmentDataSmooth);
 				
 				programRGBA = context3D.createProgram();
-				programRGBA.upload( vertexDataRGBA, fragmentDataRGBA);
+				programRGBA.upload(vertexDataRGBA, fragmentDataRGBA);
 				
 				programRGB = context3D.createProgram();
-				programRGB.upload( vertexDataRGBA, fragmentDataRGB);
+				programRGB.upload(vertexDataRGBA, fragmentDataRGB);
 				
 				programA = context3D.createProgram();
 				programA.upload( vertexDataRGBA, fragmentDataA);
 				
 				program = context3D.createProgram();
-				program.upload( vertexData, fragmentData);
+				program.upload(vertexData, fragmentData);
 				
-				onStageResize(null);//init the base transform matrix
+				onStageResize(null); //init the base transform matrix
 				
 				clear();
 				
 				//upload textures
-				dispatchEvent( new Event( RESET_TEXTURE ) );
+				dispatchEvent(new Event(RESET_TEXTURE));
 			}
 		}
 		
-		if ( this._initCallback != null )
+		if (this._initCallback != null)
 		{
 			this._initCallback();
-			this._initCallback = null;//only call once
+			this._initCallback = null; //only call once
 		}
 	}
 	
@@ -259,33 +257,32 @@ class ContextWrapper extends EventDispatcher
 	
 	public function onStageResize(e:Event):Void 
 	{
-		if ( context3D != null )
+		if (context3D != null)
 		{
 			context3D.configureBackBuffer(stage.stageWidth, stage.stageHeight, TilesheetStage3D.antiAliasing, false);
 			
 			baseTransformMatrix.identity();
-			baseTransformMatrix.appendTranslation( -stage.stageWidth * 0.5, -stage.stageHeight * 0.5, 0 );
-			baseTransformMatrix.appendScale( 2 / stage.stageWidth, -2 / stage.stageHeight, 1 );
+			baseTransformMatrix.appendTranslation( -stage.stageWidth * 0.5, -stage.stageHeight * 0.5, 0);
+			baseTransformMatrix.appendScale(2 / stage.stageWidth, -2 / stage.stageHeight, 1);
 			
 			//apply the transform matrix
 			context3D.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 0, baseTransformMatrix, true);
 		}
 	}
 	
-	public inline function clearGraphic( graphic:Graphics ):Void
+	public inline function clearGraphic(graphic:Graphics):Void
 	{
-		var sprite:Sprite = findSpriteByGraphicCached( stage, graphic );
+		var sprite:Sprite = findSpriteByGraphicCached(stage, graphic);
 		
-		if ( sprite != null )
+		if (sprite != null)
 		{
-			var spriteSortItem:SpriteSortItem = getSpriteSortItemBySprite( sprite );
+			var spriteSortItem:SpriteSortItem = getSpriteSortItemBySprite(sprite);
 			
-			if ( spriteSortItem != null )
+			if (spriteSortItem != null)
 			{
-				if ( spriteSortItem.clearJobs() > 0 )
+				if (spriteSortItem.clearJobs() > 0)
 				{
 					presented = false;
-					
 					clear();
 				}
 			}
@@ -296,29 +293,29 @@ class ContextWrapper extends EventDispatcher
 	{
 		currentDepth = INIT_DEPTH;
 		
-		if ( context3D != null )
+		if (context3D != null)
 		{
-			context3D.clear( 0, 0, 0, 1 );
+			context3D.clear(0, 0, 0, 1);
 			presented = false;
 		}
 	}
 	
-	public function uploadTexture(image:BitmapData) : Texture
+	public function uploadTexture(image:BitmapData):Texture
 	{
-		if ( context3D != null )
+		if (context3D != null)
 		{
 			var texture:Texture = context3D.createTexture(image.width, image.height, Context3DTextureFormat.BGRA, false);
 			
 			texture.uploadFromBitmapData(image);
-			 
+			
 			// generate mipmaps
 			var currentWidth:Int = image.width;
 			var currentHeight:Int = image.height;
 			var level:Int = 1;
-			var canvas:BitmapData = new BitmapData(currentWidth>>1, currentHeight>>1, true, 0);
-			var transform:Matrix = new Matrix(.5, 0, 0, .5);
+			var canvas:BitmapData = new BitmapData(currentWidth >> 1, currentHeight >> 1, true, 0);
+			var transform:Matrix = new Matrix(0.5, 0, 0, 0.5);
 			
-			while ( currentWidth >= 2 && currentHeight >= 2 )//should that be an OR?
+			while (currentWidth >= 2 && currentHeight >= 2) //should that be an OR?
 			{
 				currentWidth = currentWidth >> 1;
 				currentHeight = currentHeight >> 1;
@@ -329,81 +326,80 @@ class ContextWrapper extends EventDispatcher
 			}
 			
 			canvas.dispose();
-			
 			return texture;
 		}
 		
 		return null;
 	}
 	
-	private inline function doSetProgram( program:Program3D ):Void
+	private inline function doSetProgram(program:Program3D):Void
 	{
-		if ( context3D != null && program != currentProgram )
+		if (context3D != null && program != currentProgram)
 		{
-			context3D.setProgram( program );
+			context3D.setProgram(program);
 			currentProgram = program;
 		}
 	}
 	
 	public function setProgram(isRGB:Bool, isAlpha:Bool, smooth:Bool):Void
 	{
-		if ( smooth )
+		if (smooth)
 		{
-			if ( isRGB && isAlpha )
+			if (isRGB && isAlpha)
 			{
-				doSetProgram( programRGBASmooth );
+				doSetProgram(programRGBASmooth);
 			}
-			else if ( isRGB )
+			else if (isRGB)
 			{
-				doSetProgram( programRGBSmooth );
+				doSetProgram(programRGBSmooth);
 			}
-			else if ( isAlpha )
+			else if (isAlpha)
 			{
-				doSetProgram( programASmooth );
+				doSetProgram(programASmooth);
 			}
 			else
 			{
-				doSetProgram( programSmooth );
+				doSetProgram(programSmooth);
 			}
 		}
 		else
 		{
-			if ( isRGB && isAlpha )
+			if (isRGB && isAlpha)
 			{
-				doSetProgram( programRGBA );
+				doSetProgram(programRGBA);
 			}
-			else if ( isRGB )
+			else if (isRGB)
 			{
-				doSetProgram( programRGB );
+				doSetProgram(programRGB);
 			}
-			else if ( isAlpha )
+			else if (isAlpha)
 			{
-				doSetProgram( programA );
+				doSetProgram(programA);
 			}
 			else
 			{
-				doSetProgram( program );
+				doSetProgram(program);
 			}
 		}
 	}
 	
 	
-	public inline function getSpriteSortItem( graphic:Graphics ):SpriteSortItem
+	public inline function getSpriteSortItem(graphic:Graphics):SpriteSortItem
 	{
-		return getSpriteSortItemBySprite( findSpriteByGraphicCached( stage, graphic ) );
+		return getSpriteSortItemBySprite(findSpriteByGraphicCached(stage, graphic));
 	}
 	
-	private inline function getSpriteSortItemBySprite( sprite:Sprite ):SpriteSortItem
+	private inline function getSpriteSortItemBySprite(sprite:Sprite):SpriteSortItem
 	{
-		return if ( sprite != null )
+		return if (sprite != null)
 		{
-			var found:SpriteSortItem = spriteSortItemCache.get( sprite );
+			var found:SpriteSortItem = spriteSortItemCache.get(sprite);
 			
-			if ( found == null )
+			if (found == null)
 			{
-				found = new SpriteSortItem( sprite );
-				spriteSortItemCache.set( sprite, found );
-				currentSpriteSortItems.push( found );
+				found = new SpriteSortItem(sprite);
+				spriteSortItemCache.set(sprite, found);
+				currentSpriteSortItems.push(found);
 			}
 			
 			found;
@@ -419,9 +415,9 @@ class ContextWrapper extends EventDispatcher
 		var bytes:ByteArray = new ByteArray();
 		bytes.endian = Endian.LITTLE_ENDIAN;
 		
-		for ( n in rawData )
+		for (n in rawData)
 		{
-			bytes.writeByte( n );
+			bytes.writeByte(n);
 		}
 		
 		return bytes;
@@ -429,21 +425,21 @@ class ContextWrapper extends EventDispatcher
 	
 	//graphic helper methods
 	
-	private inline function findSpriteByGraphicCached( start:DisplayObject, graphic:Graphics ):Sprite
+	private inline function findSpriteByGraphicCached(start:DisplayObject, graphic:Graphics):Sprite
 	{
 		var found:Sprite = null;
 		
-		found = graphicCache.get( graphic );
+		found = graphicCache.get(graphic);
 		
-		if ( found == null )
+		if (found == null)
 		{
-			found = findSpriteByGraphic( start, graphic );
+			found = findSpriteByGraphic(start, graphic);
 		}
 		
-		if ( found != null )
+		if (found != null)
 		{
-			found.addEventListener(Event.REMOVED_FROM_STAGE, removeFromCache );
-			graphicCache.set( graphic, found );
+			found.addEventListener(Event.REMOVED_FROM_STAGE, removeFromCache);
+			graphicCache.set(graphic, found);
 		}
 		
 		return found;
@@ -451,15 +447,13 @@ class ContextWrapper extends EventDispatcher
 	
 	private function removeFromCache(e:Event):Void 
 	{
-		var target:Sprite = cast( e.target, Sprite );
-		
+		var target:Sprite = cast(e.target, Sprite);
 		target.removeEventListener(Event.REMOVED_FROM_STAGE, removeFromCache);
-		
-		graphicCache.remove( target.graphics );
+		graphicCache.remove(target.graphics);
 	}
 	
 	
-	public inline function findSpriteByGraphic( start:DisplayObject, graphic:Graphics ):Sprite
+	public inline function findSpriteByGraphic(start:DisplayObject, graphic:Graphics):Sprite
 	{
 		var searchList:Array<DisplayObject> = [start];
 		var searchNext:Array<DisplayObject> = [];
@@ -468,56 +462,56 @@ class ContextWrapper extends EventDispatcher
 		
 		var sprite:Sprite, container:DisplayObjectContainer, button:SimpleButton;
 		
-		while ( searchList.length > 0 && found == null )
+		while (searchList.length > 0 && found == null)
 		{
-			for ( item in searchList )
+			for (item in searchList)
 			{
-				if ( Std.is( item, Sprite ) )
+				if (Std.is(item, Sprite))
 				{
-					sprite = cast( item, Sprite );
+					sprite = cast(item, Sprite);
 					
-					if ( sprite.graphics == graphic )
+					if (sprite.graphics == graphic)
 					{
 						found = sprite;
 						break;
 					}
 				}
 				
-				if ( Std.is( item, DisplayObjectContainer ) )
+				if (Std.is(item, DisplayObjectContainer))
 				{
-					container = cast( item, DisplayObjectContainer );
+					container = cast(item, DisplayObjectContainer);
 					
-					for ( i in 0...container.numChildren )
+					for (i in 0...container.numChildren)
 					{
-						searchNext.push( container.getChildAt( i ) );
+						searchNext.push(container.getChildAt(i));
 					}
 				}
-				else if ( Std.is( item, SimpleButton ) )
+				else if (Std.is(item, SimpleButton))
 				{
-					button = cast( item, SimpleButton );
+					button = cast(item, SimpleButton);
 					
-					if ( button.downState != null )
+					if (button.downState != null)
 					{
-						searchNext.push( button.downState );
+						searchNext.push(button.downState);
 					}
-					if ( button.upState != null )
+					if (button.upState != null)
 					{
-						searchNext.push( button.upState );
+						searchNext.push(button.upState);
 					}
-					if ( button.overState != null )
+					if (button.overState != null)
 					{
-						searchNext.push( button.overState );
+						searchNext.push(button.overState);
 					}
 				}
 			}
 			
-			if ( found == null )
+			if (found == null)
 			{
 				searchTemp = searchList;
 				searchList = searchNext;
 				searchNext = searchTemp;
 				
-				clearArray( searchNext );
+				clearArray(searchNext);
 			}
 		}
 		
@@ -525,10 +519,10 @@ class ContextWrapper extends EventDispatcher
 	}
 	
 	//misc methods
-	public static inline function clearArray<T>( array:Array<T> ):Void
+	public static inline function clearArray<T>(array:Array<T>):Void
 	{
-		#if (cpp||php)
-           array.splice(0,array.length);          
+		#if cpp
+           array.splice(0, array.length);
         #else
            untyped array.length = 0;
         #end

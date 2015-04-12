@@ -43,28 +43,26 @@ class RenderJob
 	
 	public function new()
 	{
-		this.vertices = new Vector<Float>( TilesheetStage3D.MAX_VERTEX_PER_BUFFER >> 2 );
+		this.vertices = new Vector<Float>(TilesheetStage3D.MAX_VERTEX_PER_BUFFER >> 2);
 	}
 	
-	private inline function set_numVertices( n:Int ):Int
+	private inline function set_numVertices(n:Int):Int
 	{
 		this.numVertices = n;
-		
-		this.numIndices = Std.int( (numVertices / 2) * 3 );
-		
+		this.numIndices = Std.int((numVertices / 2) * 3);
 		return n;
 	}
 	
-	public inline function render( context:ContextWrapper ):Void
+	public inline function render(context:ContextWrapper):Void
 	{
-		if ( context.context3D.driverInfo != 'Disposed' )
+		if (context.context3D.driverInfo != 'Disposed')
 		{
 			//blend mode
 			setBlending(context);
-
-			context.setProgram(isRGB,isAlpha,isSmooth);//assign appropriate shader
-				
-			context.setTexture( texture );
+			
+			context.setProgram(isRGB, isAlpha, isSmooth); //assign appropriate shader
+			
+			context.setTexture(texture);
 			
 			//actually create the buffers
 			var vertexbuffer:VertexBuffer3D = null;
@@ -74,36 +72,36 @@ class RenderJob
 			vertexbuffer = context.context3D.createVertexBuffer(numVertices, dataPerVertice);
 			
 			// Upload VertexBuffer3D to GPU. Offset 0, numVertices vertices
-			vertexbuffer.uploadFromVector( vertices, 0, numVertices );
+			vertexbuffer.uploadFromVector(vertices, 0, numVertices);
 			
 			// Create IndexBuffer3D.
 			indexbuffer = context.context3D.createIndexBuffer(numIndices);
 			// Upload IndexBuffer3D to GPU.
-			indexbuffer.uploadFromByteArray( TilesheetStage3D.indices, 0, 0, numIndices );
+			indexbuffer.uploadFromByteArray(TilesheetStage3D.indices, 0, 0, numIndices);
 			
 			// vertex position to attribute register 0
-			context.context3D.setVertexBufferAt (0, vertexbuffer, 0, Context3DVertexBufferFormat.FLOAT_3);
+			context.context3D.setVertexBufferAt(0, vertexbuffer, 0, Context3DVertexBufferFormat.FLOAT_3);
 			// UV to attribute register 1
 			context.context3D.setVertexBufferAt(1, vertexbuffer, 3, Context3DVertexBufferFormat.FLOAT_2);
 			
-			if ( isRGB && isAlpha )
+			if (isRGB && isAlpha)
 			{
-				context.context3D.setVertexBufferAt(2, vertexbuffer, 5, Context3DVertexBufferFormat.FLOAT_4);//rgba data
+				context.context3D.setVertexBufferAt(2, vertexbuffer, 5, Context3DVertexBufferFormat.FLOAT_4); //rgba data
 			}
-			else if ( isRGB )
+			else if (isRGB)
 			{
-				context.context3D.setVertexBufferAt(2, vertexbuffer, 5, Context3DVertexBufferFormat.FLOAT_3);//rgb data
+				context.context3D.setVertexBufferAt(2, vertexbuffer, 5, Context3DVertexBufferFormat.FLOAT_3); //rgb data
 			}
-			else if ( isAlpha )
+			else if (isAlpha)
 			{
-				context.context3D.setVertexBufferAt(2, vertexbuffer, 5, Context3DVertexBufferFormat.FLOAT_1);//a data
+				context.context3D.setVertexBufferAt(2, vertexbuffer, 5, Context3DVertexBufferFormat.FLOAT_1); //a data
 			}
 			else
 			{
 				context.context3D.setVertexBufferAt(2, null, 5);
 			}
 			
-			context.context3D.drawTriangles( indexbuffer );
+			context.context3D.drawTriangles(indexbuffer);
 		}
 	}
 	
@@ -112,11 +110,11 @@ class RenderJob
 		return renderJobPool.length > 0 ? renderJobPool.pop() : new RenderJob();
 	}
 	
-	public static inline function returnJob( renderJob:RenderJob ):Void
+	public static inline function returnJob(renderJob:RenderJob):Void
 	{
-		if ( renderJobPool.length < NUM_JOBS_TO_POOL )
+		if (renderJobPool.length < NUM_JOBS_TO_POOL)
 		{
-			renderJobPool.push( renderJob );
+			renderJobPool.push(renderJob);
 		}
 	}
 	
@@ -140,9 +138,9 @@ class RenderJob
 	public static function __init__():Void
 	{
 		renderJobPool = [];
-		for ( i in 0...NUM_JOBS_TO_POOL )
+		for (i in 0...NUM_JOBS_TO_POOL)
 		{
-			renderJobPool.push( new RenderJob() );
+			renderJobPool.push(new RenderJob());
 		}
 		
 		RenderJob.initBlendFactors();
