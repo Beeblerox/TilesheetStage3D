@@ -130,13 +130,6 @@ class ContextWrapper extends EventDispatcher
 		}
 	}
 	
-	public inline function getNextDepth():Float
-	{
-		var depth:Float = currentDepth;
-		currentDepth -= MIN_DEPTH_STEP;
-		return depth;
-	}
-	
 	public inline function init(stage:Stage, initCallback:Void->Void = null, renderMode:Context3DRenderMode):Void
 	{
 		if (context3D == null)

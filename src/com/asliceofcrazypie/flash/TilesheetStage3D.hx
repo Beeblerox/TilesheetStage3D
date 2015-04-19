@@ -171,7 +171,7 @@ class TilesheetStage3D extends Tilesheet
 			
 			//determine data structure based on flags
 			var tileDataPerItem:Int = 3;
-			var dataPerVertice:Int = 5;
+			var dataPerVertice:Int = 4;
 			
 			var xOff:Int = 0;
 			var yOff:Int = 1;
@@ -371,7 +371,6 @@ class TilesheetStage3D extends Tilesheet
 						a, 
 						renderJob.vertices, 
 						vertexPos,
-						context.getNextDepth(),
 						rect,
 						origin
 					);
@@ -391,7 +390,7 @@ class TilesheetStage3D extends Tilesheet
 	}
 	
 	
-	private inline function setVertexData(tileId:Int, transform_tx:Float, transform_ty:Float, transform_a:Float, transform_b:Float, transform_c:Float, transform_d:Float, isRGB:Bool, isAlpha:Bool, r:Float, g:Float, b:Float, a:Float, vertices:Vector<Float>, vertexPos:Int, depth:Float, rect:Rectangle = null, origin:Point = null):Void 
+	private inline function setVertexData(tileId:Int, transform_tx:Float, transform_ty:Float, transform_a:Float, transform_b:Float, transform_c:Float, transform_d:Float, isRGB:Bool, isAlpha:Bool, r:Float, g:Float, b:Float, a:Float, vertices:Vector<Float>, vertexPos:Int, rect:Rectangle = null, origin:Point = null):Void 
 	{
 		var c:Point = origin;
 		var tile:Rectangle = rect;
@@ -425,7 +424,6 @@ class TilesheetStage3D extends Tilesheet
 		
 		vertices[vertexPos++] = px * transform_a + py * transform_c + transform_tx; //top left x
 		vertices[vertexPos++] = px * transform_b + py * transform_d + transform_ty; //top left y
-		vertices[vertexPos++] = depth; //top left z
 		
 		vertices[vertexPos++] = uv.x; //top left u
 		vertices[vertexPos++] = uv.y; //top left v
@@ -448,7 +446,6 @@ class TilesheetStage3D extends Tilesheet
 		
 		vertices[vertexPos++] = px * transform_a + py * transform_c + transform_tx; //top right x
 		vertices[vertexPos++] = px * transform_b + py * transform_d + transform_ty; //top right y
-		vertices[vertexPos++] = depth; //top right z
 		
 		vertices[vertexPos++] = uv.width; //top right u
 		vertices[vertexPos++] = uv.y; //top right v
@@ -471,7 +468,6 @@ class TilesheetStage3D extends Tilesheet
 		
 		vertices[vertexPos++] = px * transform_a + py * transform_c + transform_tx; //bottom right x
 		vertices[vertexPos++] = px * transform_b + py * transform_d + transform_ty; //bottom right y
-		vertices[vertexPos++] = depth; //bottom right z
 		
 		vertices[vertexPos++] = uv.width; //bottom right u
 		vertices[vertexPos++] = uv.height; //bottom right v
@@ -494,7 +490,6 @@ class TilesheetStage3D extends Tilesheet
 		
 		vertices[vertexPos++] = px * transform_a + py * transform_c + transform_tx; //bottom left x
 		vertices[vertexPos++] = px * transform_b + py * transform_d + transform_ty; //bottom left y
-		vertices[vertexPos++] = depth; //bottom left z
 		
 		vertices[vertexPos++] = uv.x; //bottom left u
 		vertices[vertexPos++] = uv.height; //bottom left v

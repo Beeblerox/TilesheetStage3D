@@ -80,25 +80,25 @@ class RenderJob
 			indexbuffer.uploadFromByteArray(TilesheetStage3D.indices, 0, 0, numIndices);
 			
 			// vertex position to attribute register 0
-			context.context3D.setVertexBufferAt(0, vertexbuffer, 0, Context3DVertexBufferFormat.FLOAT_3);
+			context.context3D.setVertexBufferAt(0, vertexbuffer, 0, Context3DVertexBufferFormat.FLOAT_2);
 			// UV to attribute register 1
-			context.context3D.setVertexBufferAt(1, vertexbuffer, 3, Context3DVertexBufferFormat.FLOAT_2);
+			context.context3D.setVertexBufferAt(1, vertexbuffer, 2, Context3DVertexBufferFormat.FLOAT_2);
 			
 			if (isRGB && isAlpha)
 			{
-				context.context3D.setVertexBufferAt(2, vertexbuffer, 5, Context3DVertexBufferFormat.FLOAT_4); //rgba data
+				context.context3D.setVertexBufferAt(2, vertexbuffer, 4, Context3DVertexBufferFormat.FLOAT_4); //rgba data
 			}
 			else if (isRGB)
 			{
-				context.context3D.setVertexBufferAt(2, vertexbuffer, 5, Context3DVertexBufferFormat.FLOAT_3); //rgb data
+				context.context3D.setVertexBufferAt(2, vertexbuffer, 4, Context3DVertexBufferFormat.FLOAT_3); //rgb data
 			}
 			else if (isAlpha)
 			{
-				context.context3D.setVertexBufferAt(2, vertexbuffer, 5, Context3DVertexBufferFormat.FLOAT_1); //a data
+				context.context3D.setVertexBufferAt(2, vertexbuffer, 4, Context3DVertexBufferFormat.FLOAT_1); //a data
 			}
 			else
 			{
-				context.context3D.setVertexBufferAt(2, null, 5);
+				context.context3D.setVertexBufferAt(2, null, 4);
 			}
 			
 			context.context3D.drawTriangles(indexbuffer);

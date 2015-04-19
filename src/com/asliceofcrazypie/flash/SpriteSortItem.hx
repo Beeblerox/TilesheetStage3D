@@ -73,7 +73,7 @@ class SpriteSortItem
 	
 	public function toString():String
 	{
-		return '[SpriteSortItem depths="'+depths+'" item="'+sprite+'"]';
+		return '[SpriteSortItem depths="' + depths + '" item="' + sprite+'"]';
 	}
 	
 	/**
