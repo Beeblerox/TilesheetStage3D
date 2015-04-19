@@ -81,6 +81,7 @@ class TilesheetStage3D extends Tilesheet
 	private static var _stage3DLevel:Int;
 	private static var _initCallback:String->Void;
 	public static inline var MAX_VERTEX_PER_BUFFER:Int = 65532;
+	public static inline var MAX_QUADS_PER_BUFFER:Int = 16383;		// (MAX_VERTEX_PER_BUFFER / 4)
 	public static inline var MAX_INDICES_PER_BUFFER:Int = 98298;
 	
 	public static var indices:ByteArray;
@@ -246,7 +247,7 @@ class TilesheetStage3D extends Tilesheet
 			///////////////////
 			// for each item //
 			///////////////////
-			var maxNumItems:Int = 16383;	// TODO: make this constant
+			var maxNumItems:Int = MAX_QUADS_PER_BUFFER;
 			var startItemPos:Int = 0;
 			var numItemsThisLoop:Int = 0;
 			
