@@ -62,22 +62,13 @@ class ContextWrapper extends EventDispatcher
 	private var fragmentDataA:ByteArray;
 	private var fragmentData:ByteArray;
 	
-	private static inline var INIT_DEPTH:Float = 0.9999999;
-	private static inline var MIN_DEPTH_STEP:Float = 0.0000001;
-	
-	private var currentDepth:Float;
-	
 	private var _initCallback:Void->Void;
 	
-	//graphic to sprite lookup table
-	private var graphicCache:Map<Graphics,Sprite>;
-	private var spriteSortItemCache:Map<Sprite,SpriteSortItem>;
-	private var currentSpriteSortItems:Vector<SpriteSortItem>;
+	private var currentRenderJobs:Vector<RenderJob>;
 	
 	//avoid unneeded context changes
 	private var currentTexture:Texture;
 	private var currentProgram:Program3D;
-	
 	
 	public function new(depth:Int, antiAliasLevel:Int = 1)
 	{
@@ -85,7 +76,6 @@ class ContextWrapper extends EventDispatcher
 		
 		this.depth = depth;
 		this.antiAliasLevel = antiAliasLevel;
-		currentDepth = INIT_DEPTH;
 		
 		//vertex shader data
 		var vertexRawDataRGBA:Array<Int> = 	[ -96, 1, 0, 0, 0, -95, 0, 24, 0, 0, 0, 0, 0, 15, 3, 0, 0, 0, -28, 0, 0, 0, 0, 0, 0, 0, -28, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 4, 1, 0, 0, -28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 15, 4, 2, 0, 0, -28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -113,9 +103,7 @@ class ContextWrapper extends EventDispatcher
 		fragmentDataA = 			rawDataToBytes(fragmentRawDataA);
 		fragmentData = 				rawDataToBytes(fragmentRawData);
 		
-		graphicCache = new Map<Graphics, Sprite>();
-		spriteSortItemCache = new Map<Sprite, SpriteSortItem>();
-		currentSpriteSortItems = new Vector<SpriteSortItem>();
+		currentRenderJobs = new Vector<RenderJob>();
 	}
 	
 	public inline function setTexture(texture:Texture):Void
@@ -160,18 +148,14 @@ class ContextWrapper extends EventDispatcher
 	{
 		if (context3D != null && !presented)
 		{
-			if (currentSpriteSortItems.length > 0)
+			if (currentRenderJobs.length > 0)
 			{
-				SpriteSortItem.sortItems(currentSpriteSortItems);
-				
-				var rendered:Int = 0;
-				
-				for (spriteSortItem in currentSpriteSortItems)
+				for (renderJob in currentRenderJobs)
 				{
-					rendered += spriteSortItem.renderBuffers(this);
+					renderJob.render(this);
 				}
 				
-				if (rendered > 0)
+				if (currentRenderJobs.length > 0)
 				{
 					presented = true;
 					context3D.present();
@@ -263,34 +247,29 @@ class ContextWrapper extends EventDispatcher
 		}
 	}
 	
-	public inline function clearGraphic(graphic:Graphics):Void
+	public inline function clear():Void
 	{
-		var sprite:Sprite = findSpriteByGraphicCached(stage, graphic);
-		
-		if (sprite != null)
+		if (clearJobs() > 0)
 		{
-			var spriteSortItem:SpriteSortItem = getSpriteSortItemBySprite(sprite);
-			
-			if (spriteSortItem != null)
+			if (context3D != null)
 			{
-				if (spriteSortItem.clearJobs() > 0)
-				{
-					presented = false;
-					clear();
-				}
+				context3D.clear(0, 0, 0, 1);
 			}
+			
+			presented = false;
 		}
 	}
 	
-	private inline function clear():Void
+	private inline function clearJobs():Int
 	{
-		currentDepth = INIT_DEPTH;
-		
-		if (context3D != null)
+		for (renderJob in currentRenderJobs)
 		{
-			context3D.clear(0, 0, 0, 1);
-			presented = false;
+			RenderJob.returnJob(renderJob);
 		}
+		
+		var numJobs:Int = currentRenderJobs.length;
+		untyped currentRenderJobs.length = 0;
+		return numJobs;
 	}
 	
 	public function uploadTexture(image:BitmapData):Texture
@@ -376,31 +355,9 @@ class ContextWrapper extends EventDispatcher
 		}
 	}
 	
-	
-	public inline function getSpriteSortItem(graphic:Graphics):SpriteSortItem
+	public function addJob(job:RenderJob):Void
 	{
-		return getSpriteSortItemBySprite(findSpriteByGraphicCached(stage, graphic));
-	}
-	
-	private inline function getSpriteSortItemBySprite(sprite:Sprite):SpriteSortItem
-	{
-		return if (sprite != null)
-		{
-			var found:SpriteSortItem = spriteSortItemCache.get(sprite);
-			
-			if (found == null)
-			{
-				found = new SpriteSortItem(sprite);
-				spriteSortItemCache.set(sprite, found);
-				currentSpriteSortItems.push(found);
-			}
-			
-			found;
-		}
-		else
-		{
-			null;
-		}
+		currentRenderJobs.push(job);
 	}
 	
 	private static inline function rawDataToBytes(rawData:Array<Int>):ByteArray 
@@ -414,101 +371,6 @@ class ContextWrapper extends EventDispatcher
 		}
 		
 		return bytes;
-	}
-	
-	//graphic helper methods
-	
-	private inline function findSpriteByGraphicCached(start:DisplayObject, graphic:Graphics):Sprite
-	{
-		var found:Sprite = null;
-		
-		found = graphicCache.get(graphic);
-		
-		if (found == null)
-		{
-			found = findSpriteByGraphic(start, graphic);
-		}
-		
-		if (found != null)
-		{
-			found.addEventListener(Event.REMOVED_FROM_STAGE, removeFromCache);
-			graphicCache.set(graphic, found);
-		}
-		
-		return found;
-	}
-	
-	private function removeFromCache(e:Event):Void 
-	{
-		var target:Sprite = cast(e.target, Sprite);
-		target.removeEventListener(Event.REMOVED_FROM_STAGE, removeFromCache);
-		graphicCache.remove(target.graphics);
-	}
-	
-	
-	public inline function findSpriteByGraphic(start:DisplayObject, graphic:Graphics):Sprite
-	{
-		var searchList:Array<DisplayObject> = [start];
-		var searchNext:Array<DisplayObject> = [];
-		var searchTemp:Array<DisplayObject> = null;
-		var found:Sprite = null;
-		
-		var sprite:Sprite, container:DisplayObjectContainer, button:SimpleButton;
-		
-		while (searchList.length > 0 && found == null)
-		{
-			for (item in searchList)
-			{
-				if (Std.is(item, Sprite))
-				{
-					sprite = cast(item, Sprite);
-					
-					if (sprite.graphics == graphic)
-					{
-						found = sprite;
-						break;
-					}
-				}
-				
-				if (Std.is(item, DisplayObjectContainer))
-				{
-					container = cast(item, DisplayObjectContainer);
-					
-					for (i in 0...container.numChildren)
-					{
-						searchNext.push(container.getChildAt(i));
-					}
-				}
-				else if (Std.is(item, SimpleButton))
-				{
-					button = cast(item, SimpleButton);
-					
-					if (button.downState != null)
-					{
-						searchNext.push(button.downState);
-					}
-					if (button.upState != null)
-					{
-						searchNext.push(button.upState);
-					}
-					if (button.overState != null)
-					{
-						searchNext.push(button.overState);
-					}
-				}
-			}
-			
-			if (found == null)
-			{
-				searchTemp = searchList;
-				searchList = searchNext;
-				searchNext = searchTemp;
-				
-				clearArray(searchNext);
-			}
-		}
-		
-		return found;
 	}
 	
 	//misc methods

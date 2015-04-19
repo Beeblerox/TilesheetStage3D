@@ -133,11 +133,11 @@ class TilesheetStage3D extends Tilesheet
 		}
 	}
 	
-	public static inline function clearGraphic(graphic:Graphics):Void
+	public static inline function clear():Void
 	{
 		if (context != null)
 		{
-			context.clearGraphic(graphic);
+			context.clear();
 		}
 	}
 	
@@ -246,11 +246,9 @@ class TilesheetStage3D extends Tilesheet
 			///////////////////
 			// for each item //
 			///////////////////
-			var maxNumItems:Int = 16383;
+			var maxNumItems:Int = 16383;	// TODO: make this constant
 			var startItemPos:Int = 0;
 			var numItemsThisLoop:Int = 0;
-			
-			var spriteSortItem:SpriteSortItem = context.getSpriteSortItem(graphics);
 			
 			while (tileDataPos < totalCount)
 			{
@@ -380,7 +378,7 @@ class TilesheetStage3D extends Tilesheet
 				}
 				
 				//push vertices into jobs list
-				spriteSortItem.addJob(renderJob);
+				context.addJob(renderJob);		
 			}//end while
 		}
 		else if(!Type.enumEq(fallbackMode, FallbackMode.NO_FALLBACK))
@@ -388,7 +386,6 @@ class TilesheetStage3D extends Tilesheet
 			super.drawTiles(graphics, tileData, smooth, flags, count);
 		}
 	}
-	
 	
 	private inline function setVertexData(tileId:Int, transform_tx:Float, transform_ty:Float, transform_a:Float, transform_b:Float, transform_c:Float, transform_d:Float, isRGB:Bool, isAlpha:Bool, r:Float, g:Float, b:Float, a:Float, vertices:Vector<Float>, vertexPos:Int, rect:Rectangle = null, origin:Point = null):Void 
 	{
@@ -537,13 +534,13 @@ class TilesheetStage3D extends Tilesheet
 	{
 		this.fallbackMode = null;
 		
-		if ( this.texture != null )
+		if (this.texture != null)
 		{
 			this.texture.dispose();
 			this.texture = null;
 		}
 		
-		if ( this.__bitmap != null )
+		if (this.__bitmap != null)
 		{
 			this.__bitmap.dispose();
 			this.__bitmap = null;
@@ -577,7 +574,6 @@ class TilesheetStage3D extends Tilesheet
 		else
 		{
 			var newTexture:BitmapData = new BitmapData(roundUpToPow2(texture.width), roundUpToPow2(texture.height), true, 0);
-			
 			newTexture.copyPixels(texture, texture.rect, new Point(), null, null, true);
 			
 			if (autoDispose)

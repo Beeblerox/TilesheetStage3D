@@ -112,10 +112,7 @@ class RenderJob
 	
 	public static inline function returnJob(renderJob:RenderJob):Void
 	{
-		if (renderJobPool.length < NUM_JOBS_TO_POOL)
-		{
-			renderJobPool.push(renderJob);
-		}
+		renderJobPool.push(renderJob);
 	}
 	
 	private inline function setBlending(context:ContextWrapper):Void
