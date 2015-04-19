@@ -52,7 +52,7 @@ class RenderJob
 		indices = new ByteArray();
 		indices.endian = Endian.LITTLE_ENDIAN;
 		
-		for (i in 0...Std.int(TilesheetStage3D.MAX_VERTEX_PER_BUFFER / 4))
+		for (i in 0...Std.int(TilesheetStage3D.vertexPerBuffer / 4))
 		{
 			indices.writeShort((i * 4) + 2);
 			indices.writeShort((i * 4) + 1);

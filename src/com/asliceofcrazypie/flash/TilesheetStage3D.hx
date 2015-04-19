@@ -104,9 +104,9 @@ class TilesheetStage3D extends Tilesheet
 	{
 		if (!_isInited)
 		{
-			TilesheetStage3D.batchSize = (MAX_QUADS_PER_BUFFER < batchSize || batchSize <= 0) ? MAX_QUADS_PER_BUFFER : batchSize;
-			TilesheetStage3D.vertexPerBuffer = TilesheetStage3D.batchSize * 4;
-			TilesheetStage3D.indicesPerBuffer = TilesheetStage3D.batchSize * 6;
+			TilesheetStage3D.quadsPerBuffer = (MAX_QUADS_PER_BUFFER < batchSize || batchSize <= 0) ? MAX_QUADS_PER_BUFFER : batchSize;
+			TilesheetStage3D.vertexPerBuffer = TilesheetStage3D.quadsPerBuffer * 4;
+			TilesheetStage3D.indicesPerBuffer = TilesheetStage3D.quadsPerBuffer * 6;
 			TilesheetStage3D.trianglesPerBuffer = Std.int(TilesheetStage3D.vertexPerBuffer / 3);
 			
 			if (stage3DLevel < 0 || stage3DLevel >= Std.int(stage.stage3Ds.length))
