@@ -19,23 +19,23 @@ class SpriteSortItem
 	
 	private var renderJobs:Array<RenderJob>;
 	
-	public function new( sprite:Sprite )
+	public function new(sprite:Sprite)
 	{
 		this.sprite = sprite;
 		this.depths = new Vector<Int>();
 		renderJobs = [];
 	}
 	
-	public inline function addJob( renderJob:RenderJob ):Void
+	public inline function addJob(renderJob:RenderJob):Void
 	{
-		renderJobs.push( renderJob );
+		renderJobs.push(renderJob);
 	}
 	
 	public inline function clearJobs():Int
 	{
-		for ( renderJob in renderJobs )
+		for (renderJob in renderJobs)
 		{
-			RenderJob.returnJob( renderJob );
+			RenderJob.returnJob(renderJob);
 		}
 		var jobs:Int = renderJobs.length;
 		untyped renderJobs.length = 0;
@@ -50,9 +50,9 @@ class SpriteSortItem
 		var parent:DisplayObjectContainer = this.sprite.parent;
 		var current:DisplayObjectContainer = sprite;
 		
-		while ( parent != null )
+		while (parent != null)
 		{
-			depths.push( parent.getChildIndex( current ) );
+			depths.push(parent.getChildIndex(current));
 			
 			//work up the tree
 			parent = parent.parent;
@@ -60,12 +60,12 @@ class SpriteSortItem
 		}
 	}
 	
-	public inline function renderBuffers( context:ContextWrapper ):Int
+	public inline function renderBuffers(context:ContextWrapper):Int
 	{
 		//work though buffers list rendering each in order
-		for ( renderJob in renderJobs )
+		for (renderJob in renderJobs)
 		{
-			renderJob.render( context );
+			renderJob.render(context);
 		}
 		
 		return renderJobs.length;
@@ -81,19 +81,19 @@ class SpriteSortItem
 	 * 
 	 * @param	items
 	 */
-	public static inline function sortItems( items:Vector<SpriteSortItem> ):Void
+	public static inline function sortItems(items:Vector<SpriteSortItem>):Void
 	{
-		for ( item in items )
+		for (item in items)
 		{
 			item.update();
 		}
 		
-		items.sort( sortFunction );
+		items.sort(sortFunction);
 	}
 	
-	static private function sortFunction( a:SpriteSortItem, b:SpriteSortItem ):Int
+	static private function sortFunction(a:SpriteSortItem, b:SpriteSortItem):Int
 	{
-		if ( a.sprite == b.sprite )
+		if (a.sprite == b.sprite)
 		{
 			return 0;
 		}
@@ -104,16 +104,16 @@ class SpriteSortItem
 		var currentDepthIndB:Int = b.depths.length - 1;
 		
 		
-		while ( currentDepthIndA >= 0 && currentDepthIndB >= 0 )
+		while (currentDepthIndA >= 0 && currentDepthIndB >= 0)
 		{
 			currentDepthA = a.depths[currentDepthIndA--];
 			currentDepthB = b.depths[currentDepthIndB--];
 			
-			if ( currentDepthA > currentDepthB )
+			if (currentDepthA > currentDepthB)
 			{
 				return 1;
 			}
-			else if ( currentDepthA < currentDepthB )
+			else if (currentDepthA < currentDepthB)
 			{
 				return -1;
 			}
