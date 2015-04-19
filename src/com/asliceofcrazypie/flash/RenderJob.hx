@@ -8,6 +8,8 @@ import flash.display3D.Context3DBlendFactor;
 import flash.display3D.VertexBuffer3D;
 import flash.Vector;
 import flash.errors.Error;
+import flash.utils.ByteArray;
+import flash.utils.Endian;
 import haxe.ds.StringMap;
 
 /**
@@ -21,6 +23,8 @@ class RenderJob
 	public var isRGB:Bool;
 	public var isAlpha:Bool;
 	public var isSmooth:Bool;
+	
+	public var indices(default, null):ByteArray;
 	
 	public var blendMode:String;
 	public var premultipliedAlpha:Bool;
@@ -44,6 +48,19 @@ class RenderJob
 	public function new()
 	{
 		this.vertices = new Vector<Float>(TilesheetStage3D.MAX_VERTEX_PER_BUFFER >> 2);
+		
+		indices = new ByteArray();
+		indices.endian = Endian.LITTLE_ENDIAN;
+		
+		for (i in 0...Std.int(TilesheetStage3D.MAX_VERTEX_PER_BUFFER / 4))
+		{
+			indices.writeShort((i * 4) + 2);
+			indices.writeShort((i * 4) + 1);
+			indices.writeShort((i * 4) + 0);
+			indices.writeShort((i * 4) + 3);
+			indices.writeShort((i * 4) + 2);
+			indices.writeShort((i * 4) + 0);
+		}
 	}
 	
 	private inline function set_numVertices(n:Int):Int
@@ -77,7 +94,7 @@ class RenderJob
 			// Create IndexBuffer3D.
 			indexbuffer = context.context3D.createIndexBuffer(numIndices);
 			// Upload IndexBuffer3D to GPU.
-			indexbuffer.uploadFromByteArray(TilesheetStage3D.indices, 0, 0, numIndices);
+			indexbuffer.uploadFromByteArray(indices, 0, 0, numIndices);
 			
 			// vertex position to attribute register 0
 			context.context3D.setVertexBufferAt(0, vertexbuffer, 0, Context3DVertexBufferFormat.FLOAT_2);

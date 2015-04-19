@@ -8,7 +8,6 @@ import openfl.events.Event;
 import flash.Vector;
 import haxe.Timer;
 import flash.errors.Error;
-import flash.utils.Endian;
 import flash.display3D.Context3D;
 import flash.display3D.Context3DRenderMode;
 import flash.display3D.IndexBuffer3D;
@@ -19,7 +18,6 @@ import flash.display.Graphics;
 import flash.display.BlendMode;
 import flash.display.TriangleCulling;
 import flash.errors.ArgumentError;
-import flash.utils.ByteArray;
 import flash.events.ErrorEvent;
 import flash.geom.Point;
 import flash.geom.Rectangle;
@@ -77,14 +75,11 @@ class TilesheetStage3D extends Tilesheet
 	private static var _stage:Stage;
 	private static var _stage3DLevel:Int;
 	private static var _initCallback:String->Void;
-	public static inline var MAX_VERTEX_PER_BUFFER:Int = 65532;
+	public static inline var MAX_VERTEX_PER_BUFFER:Int = 65532;		// (MAX_INDICES_PER_BUFFER * 4 / 6)
 	public static inline var MAX_QUADS_PER_BUFFER:Int = 16383;		// (MAX_VERTEX_PER_BUFFER / 4)
 	public static inline var MAX_INDICES_PER_BUFFER:Int = 98298;
 	
 	// TODO: make batch size settable (this means adding static vars like VERTEX_PER_BUFFER, QUADS_PER_BUFFER and INDICES_PER_BUFFER)
-	
-	// TODO: move this array into renderjob
-	public static var indices:ByteArray;
 	
 	public static function init(stage:Stage, stage3DLevel:Int = 0, antiAliasLevel:Int = 5, initCallback:String->Void = null, renderMode:Context3DRenderMode = null):Void
 	{
@@ -99,19 +94,6 @@ class TilesheetStage3D extends Tilesheet
 			_isInited = true;
 			
 			context = new ContextWrapper(stage3DLevel);
-			
-			indices = new ByteArray();
-			indices.endian = Endian.LITTLE_ENDIAN;
-			
-			for (i in 0...Std.int(MAX_VERTEX_PER_BUFFER / 4))
-			{
-				indices.writeShort((i * 4) + 2);
-				indices.writeShort((i * 4) + 1);
-				indices.writeShort((i * 4) + 0);
-				indices.writeShort((i * 4) + 3);
-				indices.writeShort((i * 4) + 2);
-				indices.writeShort((i * 4) + 0);
-			}
 			
 			_stage = stage;
 			_stage3DLevel = stage3DLevel;
