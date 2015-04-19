@@ -11,16 +11,13 @@ import flash.errors.Error;
 import flash.utils.Endian;
 import flash.display3D.Context3D;
 import flash.display3D.Context3DRenderMode;
-import flash.display3D.Context3DBlendFactor;
-import flash.display3D.Context3DProgramType;
-import flash.display3D.Context3DTextureFormat;
-import flash.display3D.Context3DVertexBufferFormat;
 import flash.display3D.IndexBuffer3D;
 import flash.display3D.Program3D;
 import flash.display3D.textures.Texture;
-import flash.display3D.VertexBuffer3D;
 import flash.display.Stage;
 import flash.display.Graphics;
+import flash.display.BlendMode;
+import flash.display.TriangleCulling;
 import flash.errors.ArgumentError;
 import flash.utils.ByteArray;
 import flash.events.ErrorEvent;
@@ -84,6 +81,9 @@ class TilesheetStage3D extends Tilesheet
 	public static inline var MAX_QUADS_PER_BUFFER:Int = 16383;		// (MAX_VERTEX_PER_BUFFER / 4)
 	public static inline var MAX_INDICES_PER_BUFFER:Int = 98298;
 	
+	// TODO: make batch size settable (this means adding static vars like VERTEX_PER_BUFFER, QUADS_PER_BUFFER and INDICES_PER_BUFFER)
+	
+	// TODO: move this array into renderjob
 	public static var indices:ByteArray;
 	
 	public static function init(stage:Stage, stage3DLevel:Int = 0, antiAliasLevel:Int = 5, initCallback:String->Void = null, renderMode:Context3DRenderMode = null):Void
@@ -142,6 +142,22 @@ class TilesheetStage3D extends Tilesheet
 		}
 	}
 	
+	// TODO: implement it and document it...
+	/**
+	 * 
+	 * 
+	 * @param	vertices
+	 * @param	indices
+	 * @param	uvtData
+	 * @param	culling
+	 * @param	colors
+	 * @param	blending
+	 */
+	public function drawTriangles(vertices:Vector<Float>, indices:Vector<Int> = null, uvtData:Vector<Float> = null, culling:TriangleCulling = null, colors:Vector<Int> = null, blending:BlendMode):Void
+	{
+		
+	}
+	
 	override public function drawTiles(graphics:Graphics, tileData:Array<Float>, smooth:Bool = false, flags:Int = 0, count:Int = -1):Void
 	{
 		if (context != null && context.context3D != null && !Type.enumEq(fallbackMode, FallbackMode.FORCE_FALLBACK))
@@ -157,7 +173,7 @@ class TilesheetStage3D extends Tilesheet
 			var isBlendScreen:Bool = (flags & Tilesheet.TILE_BLEND_SCREEN) > 0;
 			var isRect:Bool = (flags & Tilesheet.TILE_RECT) > 0;
 			var isOrigin:Bool = (flags & Tilesheet.TILE_ORIGIN) > 0;
-
+			
 			var scale:Float = 1;
 			var rotation:Float = 0;
 			var cosRotation:Float = 1;
