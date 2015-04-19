@@ -75,16 +75,40 @@ class TilesheetStage3D extends Tilesheet
 	private static var _stage:Stage;
 	private static var _stage3DLevel:Int;
 	private static var _initCallback:String->Void;
+	
+	public static inline var MAX_INDICES_PER_BUFFER:Int = 98298;
 	public static inline var MAX_VERTEX_PER_BUFFER:Int = 65532;		// (MAX_INDICES_PER_BUFFER * 4 / 6)
 	public static inline var MAX_QUADS_PER_BUFFER:Int = 16383;		// (MAX_VERTEX_PER_BUFFER / 4)
-	public static inline var MAX_INDICES_PER_BUFFER:Int = 98298;
+	public static inline var MAX_TRIANGLES_PER_BUFFER:Int = 21844;	// (MAX_VERTEX_PER_BUFFER / 3)
 	
 	// TODO: make batch size settable (this means adding static vars like VERTEX_PER_BUFFER, QUADS_PER_BUFFER and INDICES_PER_BUFFER)
 	
-	public static function init(stage:Stage, stage3DLevel:Int = 0, antiAliasLevel:Int = 5, initCallback:String->Void = null, renderMode:Context3DRenderMode = null):Void
+	// TODO: use these static vars (and document them)...
+	public static var vertexPerBuffer(default, null):Int;
+	public static var quadsPerBuffer(default, null):Int;
+	public static var trianglesPerBuffer(default, null):Int;
+	public static var indicesPerBuffer(default, null):Int;
+	
+	// TODO: document it and don't forget to use new batchSize argument...
+	/**
+	 * 
+	 * 
+	 * @param	stage
+	 * @param	stage3DLevel
+	 * @param	antiAliasLevel
+	 * @param	initCallback
+	 * @param	renderMode
+	 * @param	batchSize
+	 */
+	public static function init(stage:Stage, stage3DLevel:Int = 0, antiAliasLevel:Int = 5, initCallback:String->Void = null, renderMode:Context3DRenderMode = null, batchSize:Int = 0):Void
 	{
 		if (!_isInited)
 		{
+			TilesheetStage3D.batchSize = (MAX_QUADS_PER_BUFFER < batchSize || batchSize <= 0) ? MAX_QUADS_PER_BUFFER : batchSize;
+			TilesheetStage3D.vertexPerBuffer = TilesheetStage3D.batchSize * 4;
+			TilesheetStage3D.indicesPerBuffer = TilesheetStage3D.batchSize * 6;
+			TilesheetStage3D.trianglesPerBuffer = Std.int(TilesheetStage3D.vertexPerBuffer / 3);
+			
 			if (stage3DLevel < 0 || stage3DLevel >= Std.int(stage.stage3Ds.length))
 			{
 				throw new ArgumentError('stage3D depth of ' + stage3DLevel + ' out of bounds 0-' + (stage.stage3Ds.length - 1));
