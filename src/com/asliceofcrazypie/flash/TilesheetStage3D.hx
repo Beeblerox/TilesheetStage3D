@@ -151,6 +151,12 @@ class TilesheetStage3D extends Tilesheet
 		}
 	}
 	
+	
+	public function renderJobs(jobs:Vector<RenderJob>):Void
+	{
+		
+	}
+	
 	// TODO: implement it and document it...
 	/**
 	 * 
@@ -167,11 +173,13 @@ class TilesheetStage3D extends Tilesheet
 		
 	}
 	
+	// TODO: move this into batcher class, implement it and document it...
 	public function batchTriangles(vertices:Vector<Float>, indices:Vector<Int> = null, uvtData:Vector<Float> = null, culling:TriangleCulling = null, colors:Vector<Int> = null, blending:BlendMode):Void
 	{
 		
 	}
 	
+	// TODO: move this into batcher class, implement it and document it...
 	public function batchQuads(tileData:Array<Float>, smooth:Bool = false, flags:Int = 0):Void
 	{
 		
