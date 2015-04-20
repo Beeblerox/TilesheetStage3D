@@ -151,12 +151,6 @@ class TilesheetStage3D extends Tilesheet
 		}
 	}
 	
-	
-	public function renderJobs(jobs:Vector<RenderJob>):Void
-	{
-		
-	}
-	
 	// TODO: implement it and document it...
 	/**
 	 * 

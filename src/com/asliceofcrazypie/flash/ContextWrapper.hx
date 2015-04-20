@@ -146,6 +146,11 @@ class ContextWrapper extends EventDispatcher
 	
 	private function onRender(e:Event):Void 
 	{
+		render();
+	}
+	
+	public inline function render():Void
+	{
 		if (context3D != null && !presented)
 		{
 			if (currentRenderJobs.length > 0)
