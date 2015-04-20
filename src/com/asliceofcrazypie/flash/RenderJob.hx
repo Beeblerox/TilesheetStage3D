@@ -47,11 +47,10 @@ class RenderJob
 	
 	public function new()
 	{
-		this.vertices = new Vector<Float>(TilesheetStage3D.MAX_VERTEX_PER_BUFFER >> 2);
+		this.vertices = new Vector<Float>(TilesheetStage3D.vertexPerBuffer >> 2);
 		
 		indices = new ByteArray();
 		indices.endian = Endian.LITTLE_ENDIAN;
-		
 		for (i in 0...Std.int(TilesheetStage3D.vertexPerBuffer / 4))
 		{
 			indices.writeShort((i * 4) + 2);
