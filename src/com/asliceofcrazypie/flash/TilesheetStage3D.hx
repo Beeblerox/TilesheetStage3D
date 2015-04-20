@@ -1,6 +1,5 @@
 package com.asliceofcrazypie.flash;
 
-import lime.utils.ByteArray;
 import openfl.display.BitmapData;
 import openfl.display.Tilesheet;
 import openfl.events.Event;
@@ -22,6 +21,9 @@ import flash.errors.ArgumentError;
 import flash.events.ErrorEvent;
 import flash.geom.Point;
 import flash.geom.Rectangle;
+
+import flash.utils.ByteArray;
+import flash.utils.Endian;
 #end
 
 /**
@@ -165,6 +167,16 @@ class TilesheetStage3D extends Tilesheet
 		
 	}
 	
+	public function batchTriangles(vertices:Vector<Float>, indices:Vector<Int> = null, uvtData:Vector<Float> = null, culling:TriangleCulling = null, colors:Vector<Int> = null, blending:BlendMode):Void
+	{
+		
+	}
+	
+	public function batchQuads(tileData:Array<Float>, smooth:Bool = false, flags:Int = 0):Void
+	{
+		
+	}
+	
 	override public function drawTiles(graphics:Graphics, tileData:Array<Float>, smooth:Bool = false, flags:Int = 0, count:Int = -1):Void
 	{
 		if (context != null && context.context3D != null && !Type.enumEq(fallbackMode, FallbackMode.FORCE_FALLBACK))
@@ -264,7 +276,6 @@ class TilesheetStage3D extends Tilesheet
 			
 			var tileDataPos:Int = 0;
 			var vertexPos:Int = 0;
-			var indexPos:Int = 0;
 			
 			var transform_tx:Float, transform_ty:Float, transform_a:Float, transform_b:Float, transform_c:Float, transform_d:Float;
 			
@@ -350,7 +361,7 @@ class TilesheetStage3D extends Tilesheet
 					{
 						if (isScale)
 						{
-							scale = tileData[tileDataPos+scaleOff];
+							scale = tileData[tileDataPos + scaleOff];
 						}
 						
 						if (isRotation)
@@ -378,7 +389,7 @@ class TilesheetStage3D extends Tilesheet
 						a = tileData[tileDataPos + aOff];
 					}
 					
-					setVertexData( 
+					setQuadData( 
 						Std.int(tileData[tileDataPos + tileIdOff]), 
 						transform_tx, 
 						transform_ty, 
@@ -394,15 +405,12 @@ class TilesheetStage3D extends Tilesheet
 						a, 
 						renderJob.vertices, 
 						vertexPos,
-						renderJob.indices, 
-						indexPos,
 						rect,
 						origin
 					);
 					
 					tileDataPos += tileDataPerItem;
 					vertexPos += vertexPerItem * dataPerVertice;
-					indexPos += 6;
 				}
 				
 				//push vertices into jobs list
@@ -415,7 +423,7 @@ class TilesheetStage3D extends Tilesheet
 		}
 	}
 	
-	private inline function setVertexData(tileId:Int, transform_tx:Float, transform_ty:Float, transform_a:Float, transform_b:Float, transform_c:Float, transform_d:Float, isRGB:Bool, isAlpha:Bool, r:Float, g:Float, b:Float, a:Float, vertices:Vector<Float>, vertexPos:Int, indices:ByteArray, indexPos:Int, rect:Rectangle = null, origin:Point = null):Void 
+	private inline function setQuadData(tileId:Int, transform_tx:Float, transform_ty:Float, transform_a:Float, transform_b:Float, transform_c:Float, transform_d:Float, isRGB:Bool, isAlpha:Bool, r:Float, g:Float, b:Float, a:Float, vertices:Vector<Float>, vertexPos:Int, rect:Rectangle = null, origin:Point = null):Void 
 	{
 		var c:Point = origin;
 		var tile:Rectangle = rect;
@@ -531,14 +539,14 @@ class TilesheetStage3D extends Tilesheet
 			vertices[vertexPos++] = a;
 		}
 		/*
-		indices.position = 2 * indexPos;
-		var indexPosByFour:Int = indexPos * 4;
-		indices.writeShort(indexPosByFour + 2);
-		indices.writeShort(indexPosByFour + 1);
-		indices.writeShort(indexPosByFour + 0);
-		indices.writeShort(indexPosByFour + 3);
-		indices.writeShort(indexPosByFour + 2);
-		indices.writeShort(indexPosByFour + 0);
+		indices.position = 12 * quadPos; // 12 = 6 * 2 (6 indices per quad and 2 bytes per index)
+		var startIndex:Int = quadPos * 4;
+		indices.writeShort(startIndex + 2);
+		indices.writeShort(startIndex + 1);
+		indices.writeShort(startIndex + 0);
+		indices.writeShort(startIndex + 3);
+		indices.writeShort(startIndex + 2);
+		indices.writeShort(startIndex + 0);
 		*/
 	}
 	
