@@ -36,8 +36,6 @@ class QuadRenderJob extends RenderJob
 		px = -centerX;
 		py = -centerY;
 		
-		var off:Int = 0;
-		
 		vertices[vertexPos++] = px * matrix.a + py * matrix.c + matrix.tx; //top left x
 		vertices[vertexPos++] = px * matrix.b + py * matrix.d + matrix.ty; //top left y
 		

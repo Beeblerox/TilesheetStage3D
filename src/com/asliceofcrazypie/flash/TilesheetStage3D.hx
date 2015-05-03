@@ -198,7 +198,6 @@ class TilesheetStage3D extends Tilesheet
 			renderJob.isAlpha = isColored;
 			renderJob.isSmooth = smooth;
 			renderJob.dataPerVertice = dataPerVertice;
-			renderJob.numVertices = numVertices;
 			renderJob.premultipliedAlpha = this.premultipliedAlpha;
 			
 			if (blending == BlendMode.ADD)
