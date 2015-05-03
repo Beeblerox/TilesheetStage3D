@@ -1,4 +1,4 @@
-package com.asliceofcrazypie.flash;
+package com.asliceofcrazypie.flash.jobs;
 
 #if flash11
 import flash.display3D.IndexBuffer3D;
@@ -6,6 +6,8 @@ import flash.display3D.textures.Texture;
 import flash.display3D.Context3DVertexBufferFormat;
 import flash.display3D.Context3DBlendFactor;
 import flash.display3D.VertexBuffer3D;
+import flash.display3D.Context3DTriangleFace;
+import flash.display.TriangleCulling;
 import flash.Vector;
 import flash.errors.Error;
 import flash.utils.ByteArray;
@@ -18,23 +20,6 @@ import haxe.ds.StringMap;
  */
 class RenderJob 
 {
-	public var texture:Texture;
-	public var vertices(default, null):Vector<Float>;
-	public var isRGB:Bool;
-	public var isAlpha:Bool;
-	public var isSmooth:Bool;
-	
-	public var indices(default, null):ByteArray;
-	
-	public var blendMode:String;
-	public var premultipliedAlpha:Bool;
-
-	public var dataPerVertice:Int;
-	public var numVertices(default, set):Int;
-	public var numIndices(default, null):Int;
-	
-	private static var renderJobPool:Array<RenderJob>;
-	
 	public static inline var NUM_JOBS_TO_POOL:Int = 25;
 	
 	public static inline var BLEND_NORMAL:String = "normal";
@@ -45,32 +30,64 @@ class RenderJob
 	private static var premultipliedBlendFactors:StringMap<Array<Context3DBlendFactor>>;
 	private static var noPremultipliedBlendFactors:StringMap<Array<Context3DBlendFactor>>;
 	
-	public function new()
+	public var texture:Texture;
+	public var vertices(default, null):Vector<Float>;
+	public var isRGB:Bool;
+	public var isAlpha:Bool;
+	public var isSmooth:Bool;
+	
+	public var blendMode:String;
+	public var premultipliedAlpha:Bool;
+	
+	public var type(default, null):RenderJobType;
+	
+	public var dataPerVertice:Int;
+	public var numVertices(default, set):Int;
+	public var numIndices(default, set):Int;
+	
+	public var indicesBytes(default, null):ByteArray;
+	public var indicesVector(default, null):Vector<UInt>;
+	
+	public var vertexPos:Int = 0;
+	public var indexPos:Int = 0;
+	
+	public function new(useBytes:Bool = false)
 	{
 		this.vertices = new Vector<Float>(TilesheetStage3D.vertexPerBuffer >> 2);
 		
-		indices = new ByteArray();
-		indices.endian = Endian.LITTLE_ENDIAN;
-		
-		for (i in 0...Std.int(TilesheetStage3D.vertexPerBuffer / 4))
+		if (useBytes)
 		{
-			indices.writeShort((i * 4) + 2);
-			indices.writeShort((i * 4) + 1);
-			indices.writeShort((i * 4) + 0);
-			indices.writeShort((i * 4) + 3);
-			indices.writeShort((i * 4) + 2);
-			indices.writeShort((i * 4) + 0);
+			indicesBytes = new ByteArray();
+			indicesBytes.endian = Endian.LITTLE_ENDIAN;
+			
+			for (i in 0...Std.int(TilesheetStage3D.vertexPerBuffer / 4))
+			{
+				indicesBytes.writeShort((i * 4) + 2);
+				indicesBytes.writeShort((i * 4) + 1);
+				indicesBytes.writeShort((i * 4) + 0);
+				indicesBytes.writeShort((i * 4) + 3);
+				indicesBytes.writeShort((i * 4) + 2);
+				indicesBytes.writeShort((i * 4) + 0);
+			}
+		}
+		else
+		{
+			indicesVector = new Vector<UInt>();
 		}
 	}
 	
-	private inline function set_numVertices(n:Int):Int
+	private function set_numVertices(n:Int):Int
 	{
 		this.numVertices = n;
-		this.numIndices = Std.int((numVertices / 2) * 3);
 		return n;
 	}
 	
-	public inline function render(context:ContextWrapper):Void
+	private function set_numIndices(n:Int):Int
+	{
+		return this.numIndices = n;
+	}
+	
+	public function render(context:ContextWrapper):Void
 	{
 		if (context.context3D.driverInfo != 'Disposed')
 		{
@@ -78,6 +95,8 @@ class RenderJob
 			setBlending(context);
 			
 			context.setProgram(isRGB, isAlpha, isSmooth); //assign appropriate shader
+			
+			// context.context3D.setCulling();
 			
 			context.setTexture(texture);
 			
@@ -93,8 +112,16 @@ class RenderJob
 			
 			// Create IndexBuffer3D.
 			indexbuffer = context.context3D.createIndexBuffer(numIndices);
+			
 			// Upload IndexBuffer3D to GPU.
-			indexbuffer.uploadFromByteArray(indices, 0, 0, numIndices);
+			if (indicesBytes != null)
+			{
+				indexbuffer.uploadFromByteArray(indicesBytes, 0, 0, numIndices);
+			}
+			else
+			{
+				indexbuffer.uploadFromVector(indicesVector, 0, numIndices);
+			}
 			
 			// vertex position to attribute register 0
 			context.context3D.setVertexBufferAt(0, vertexbuffer, 0, Context3DVertexBufferFormat.FLOAT_2);
@@ -122,16 +149,6 @@ class RenderJob
 		}
 	}
 	
-	public static inline function getJob():RenderJob
-	{
-		return renderJobPool.length > 0 ? renderJobPool.pop() : new RenderJob();
-	}
-	
-	public static inline function returnJob(renderJob:RenderJob):Void
-	{
-		renderJobPool.push(renderJob);
-	}
-	
 	private inline function setBlending(context:ContextWrapper):Void
 	{
 		var factors = RenderJob.premultipliedBlendFactors;
@@ -149,14 +166,18 @@ class RenderJob
 		context.context3D.setBlendFactors(factor[0], factor[1]);
 	}
 	
+	public function reset():Void
+	{
+		vertexPos = 0;
+		indexPos = 0;
+		numVertices = 0;
+		numIndices = 0;
+	}
+	
 	public static function __init__():Void
 	{
-		renderJobPool = [];
-		for (i in 0...NUM_JOBS_TO_POOL)
-		{
-			renderJobPool.push(new RenderJob());
-		}
-		
+	//	QuadRenderJob.__init__();
+	//	TriangleRenderJob.__init__();
 		RenderJob.initBlendFactors();
 	}
 	
@@ -179,3 +200,9 @@ class RenderJob
 	}
 }
 #end
+
+enum RenderJobType
+{
+	QUAD;
+	TRIANGLE;
+}

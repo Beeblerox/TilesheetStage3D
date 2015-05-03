@@ -1,6 +1,10 @@
 package com.asliceofcrazypie.flash;
 
 #if flash11
+import com.asliceofcrazypie.flash.jobs.RenderJob;
+import com.asliceofcrazypie.flash.jobs.QuadRenderJob;
+import com.asliceofcrazypie.flash.jobs.TriangleRenderJob;
+
 import flash.display3D.Context3D;
 import flash.display3D.Program3D;
 import flash.display3D.textures.Texture;
@@ -65,6 +69,8 @@ class ContextWrapper extends EventDispatcher
 	private var _initCallback:Void->Void;
 	
 	private var currentRenderJobs:Vector<RenderJob>;
+	private var quadRenderJobs:Vector<QuadRenderJob>;
+	private var triangleRenderJobs:Vector<TriangleRenderJob>;
 	
 	//avoid unneeded context changes
 	private var currentTexture:Texture;
@@ -104,6 +110,8 @@ class ContextWrapper extends EventDispatcher
 		fragmentData = 				rawDataToBytes(fragmentRawData);
 		
 		currentRenderJobs = new Vector<RenderJob>();
+		quadRenderJobs = new Vector<QuadRenderJob>();
+		triangleRenderJobs = new Vector<TriangleRenderJob>();
 	}
 	
 	public inline function setTexture(texture:Texture):Void
@@ -267,13 +275,23 @@ class ContextWrapper extends EventDispatcher
 	
 	private inline function clearJobs():Int
 	{
-		for (renderJob in currentRenderJobs)
+		for (renderJob in quadRenderJobs)
 		{
-			RenderJob.returnJob(renderJob);
+			renderJob.reset();
+			QuadRenderJob.returnJob(renderJob);
+		}
+		
+		for (renderJob in triangleRenderJobs)
+		{
+			renderJob.reset();
+			TriangleRenderJob.returnJob(renderJob);
 		}
 		
 		var numJobs:Int = currentRenderJobs.length;
 		untyped currentRenderJobs.length = 0;
+		untyped quadRenderJobs.length = 0;
+		untyped triangleRenderJobs.length = 0;
+		
 		return numJobs;
 	}
 	
@@ -360,9 +378,16 @@ class ContextWrapper extends EventDispatcher
 		}
 	}
 	
-	public function addJob(job:RenderJob):Void
+	public function addQuadJob(job:QuadRenderJob):Void
 	{
 		currentRenderJobs.push(job);
+		quadRenderJobs.push(job);
+	}
+	
+	public function addTriangleJob(job:TriangleRenderJob):Void
+	{
+		currentRenderJobs.push(job);
+		triangleRenderJobs.push(job);
 	}
 	
 	private static inline function rawDataToBytes(rawData:Array<Int>):ByteArray 
