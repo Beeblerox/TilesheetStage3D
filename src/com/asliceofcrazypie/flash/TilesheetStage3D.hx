@@ -216,47 +216,7 @@ class TilesheetStage3D extends Tilesheet
 			{
 				renderJob.blendMode = RenderJob.BLEND_NORMAL;
 			}
-			/*
-			var vertexPos:Int = renderJob.vertexPos;
-			var indexPos:Int = renderJob.indexPos;
-			var prevVerticesNumber:Int = Std.int(renderJob.vertexPos / dataPerVertice);
 			
-			var vertexIndex:Int = 0;
-			var vColor:Int;
-			
-			var jobVertices:Vector<Float> = renderJob.vertices;
-			var jobIndices:Vector<UInt> = renderJob.indicesVector;
-			
-			for (i in 0...numVertices)
-			{
-				vertexIndex = 2 * i;
-				
-				jobVertices[vertexPos++] = vertices[vertexIndex];
-				jobVertices[vertexPos++] = vertices[vertexIndex + 1];
-				
-				jobVertices[vertexPos++] = uvtData[vertexIndex];
-				jobVertices[vertexPos++] = uvtData[vertexIndex + 1];
-				
-				if (isColored)
-				{
-					vColor = colors[i];
-					jobVertices[vertexPos++] = ((vColor >> 16) & 0xff) / 255;
-					jobVertices[vertexPos++] = ((vColor >> 8) & 0xff) / 255;
-					jobVertices[vertexPos++] = (vColor & 0xff) / 255;
-					jobVertices[vertexPos++] = ((vColor >> 24) & 0xff) / 255;	
-				}
-			}
-			renderJob.vertexPos = vertexPos;
-			
-			for (i in 0...numIndices)
-			{
-				jobIndices[indexPos++] = prevVerticesNumber + indices[i];
-			}
-			renderJob.indexPos = indexPos;
-			
-			renderJob.numVertices += numVertices;
-			renderJob.numIndices += numIndices;
-			*/
 			renderJob.addTriangles(vertices, indices, uvtData, colors);
 			context.addTriangleJob(renderJob);
 		}
