@@ -216,7 +216,7 @@ class TilesheetStage3D extends Tilesheet
 			{
 				renderJob.blendMode = RenderJob.BLEND_NORMAL;
 			}
-			
+			/*
 			var vertexPos:Int = renderJob.vertexPos;
 			var indexPos:Int = renderJob.indexPos;
 			var prevVerticesNumber:Int = Std.int(renderJob.vertexPos / dataPerVertice);
@@ -256,7 +256,8 @@ class TilesheetStage3D extends Tilesheet
 			
 			renderJob.numVertices += numVertices;
 			renderJob.numIndices += numIndices;
-			
+			*/
+			renderJob.addTriangles(vertices, indices, uvtData, colors);
 			context.addTriangleJob(renderJob);
 		}
 		else if(!Type.enumEq(fallbackMode, FallbackMode.NO_FALLBACK))

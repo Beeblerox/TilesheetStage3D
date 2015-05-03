@@ -4,6 +4,7 @@ import com.asliceofcrazypie.flash.jobs.RenderJob.RenderJobType;
 import openfl.geom.Matrix;
 import openfl.geom.Point;
 import openfl.geom.Rectangle;
+import openfl.Vector;
 
 /**
  * ...
@@ -33,9 +34,45 @@ class TriangleRenderJob extends RenderJob
 		indicesVector[indexPos++] = prevVerticesNumber + 0;
 	}
 	
-	public function addTriangles():Void
+	public function addTriangles(vertices:Vector<Float>, indices:Vector<Int> = null, uvtData:Vector<Float> = null, colors:Vector<Int> = null):Void
 	{
+		var numIndices:Int = indices.length;
+		var numVertices:Int = Std.int(vertices.length / 2);
 		
+		var prevVerticesNumber:Int = Std.int(vertexPos / dataPerVertice);
+		
+		var vertexIndex:Int = 0;
+		var vColor:Int;
+		
+		var colored:Bool = (isRGB || isAlpha);
+		
+		for (i in 0...numVertices)
+		{
+			vertexIndex = 2 * i;
+			
+			this.vertices[vertexPos++] = vertices[vertexIndex];
+			this.vertices[vertexPos++] = vertices[vertexIndex + 1];
+			
+			this.vertices[vertexPos++] = uvtData[vertexIndex];
+			this.vertices[vertexPos++] = uvtData[vertexIndex + 1];
+			
+			if (colored)
+			{
+				vColor = colors[i];
+				this.vertices[vertexPos++] = ((vColor >> 16) & 0xff) / 255;
+				this.vertices[vertexPos++] = ((vColor >> 8) & 0xff) / 255;
+				this.vertices[vertexPos++] = (vColor & 0xff) / 255;
+				this.vertices[vertexPos++] = ((vColor >> 24) & 0xff) / 255;	
+			}
+		}
+		
+		for (i in 0...numIndices)
+		{
+			this.indicesVector[indexPos++] = prevVerticesNumber + indices[i];
+		}
+		
+		this.numVertices += numVertices;
+		this.numIndices += numIndices;
 	}
 	
 	public static inline function getJob():TriangleRenderJob
