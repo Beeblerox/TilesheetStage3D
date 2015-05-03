@@ -27,23 +27,41 @@ class Batcher
 			&& alpha == lastRenderJob.isAlpha
 			&& smooth == lastRenderJob.isSmooth
 			&& blend == lastRenderJob.blendMode
-			&& tilesheet.premultipliedAlpha == lastRenderJob.premultipliedAlpha
-			&& lastRenderJob.numVertices + 4 < TilesheetStage3D.MAX_VERTEX_PER_BUFFER) // TODO: check/change this line later
+			&& tilesheet.premultipliedAlpha == lastRenderJob.premultipliedAlpha) // TODO: add check/change for number of vertices / indices later...
 		{
 			return lastQuadRenderJob;
 		}
 		
+		return startNewQuadBatch(tilesheet, tinted, alpha, blend, smooth);
+	}
+	
+	public static function startNewQuadBatch(tilesheet:TilesheetStage3D, tinted:Bool, alpha:Bool, blend:BlendMode = null, smooth:Bool = false):QuadRenderJob
+	{
 		return QuadRenderJob.getJob(tilesheet.texture, tinted, alpha, smooth, blend, tilesheet.premultipliedAlpha);
 	}
 	
 	public static function startTrianglesBatch(tilesheet:TilesheetStage3D, colored:Bool = false, blend:BlendMode = null, smoothing:Bool = false):TriangleRenderJob
 	{
-		return null;
+		var lastRenderJob:RenderJob = TilesheetStage3D.context.getLastRenderJob();
+		var lastTriangleRenderJob:TriangleRenderJob = TilesheetStage3D.context.getLastTrianglesRenderJob();
+		
+		if (lastRenderJob == lastTriangleRenderJob 
+			&& tilesheet.texture == lastRenderJob.texture
+			&& colored == lastRenderJob.isRGB
+			&& colored == lastRenderJob.isAlpha
+			&& smooth == lastRenderJob.isSmooth
+			&& blend == lastRenderJob.blendMode
+			&& tilesheet.premultipliedAlpha == lastRenderJob.premultipliedAlpha) // TODO: add check/change for number of vertices / indices later...
+		{
+			return lastTriangleRenderJob;
+		}
+		
+		return getNewTrianglesBatch(tilesheet, colored, blend, smoothing);
 	}
 	
 	public static function getNewTrianglesBatch(tilesheet:TilesheetStage3D, colored:Bool = false, blend:BlendMode = null, smoothing:Bool = false):TriangleRenderJob
 	{
-		return null;
+		return TriangleRenderJob.getJob(tilesheet.texture, colored, colored, smoothing, blend, tilesheet.premultipliedAlpha);
 	}
 	
 	/*
