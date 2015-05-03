@@ -178,17 +178,18 @@ class TilesheetStage3D extends Tilesheet
 			var numIndices:Int = indices.length;
 			var numVertices:Int = Std.int(vertices.length / 2);
 			
-			if (numIndices > MAX_INDICES_PER_BUFFER)
+			var renderJob:TriangleRenderJob = TriangleRenderJob.getJob();
+			
+			if (numIndices + renderJob.numIndices > MAX_INDICES_PER_BUFFER)
 			{
 				throw ("Number of indices shouldn't be more than " + MAX_INDICES_PER_BUFFER);
 			}
 			
-			if (numVertices > MAX_VERTEX_PER_BUFFER)
+			if (numVertices + renderJob.numIndices > MAX_VERTEX_PER_BUFFER)
 			{
 				throw ("Number of vertices shouldn't be more than " + MAX_VERTEX_PER_BUFFER);
 			}
 			
-			var renderJob:TriangleRenderJob = TriangleRenderJob.getJob();
 			renderJob.texture = texture;
 			renderJob.isRGB = isColored;
 			renderJob.isAlpha = isColored;
