@@ -72,6 +72,10 @@ class ContextWrapper extends EventDispatcher
 	private var quadRenderJobs:Vector<QuadRenderJob>;
 	private var triangleRenderJobs:Vector<TriangleRenderJob>;
 	
+	private var numCurrentRenderJobs:Int = 0;
+	private var numQuadRenderJobs:Int = 0;
+	private var numTriangleRenderJobs:Int = 0;
+	
 	//avoid unneeded context changes
 	private var currentTexture:Texture;
 	private var currentProgram:Program3D;
@@ -161,18 +165,15 @@ class ContextWrapper extends EventDispatcher
 	{
 		if (context3D != null && !presented)
 		{
-			if (currentRenderJobs.length > 0)
+			if (numCurrentRenderJobs > 0)
 			{
 				for (renderJob in currentRenderJobs)
 				{
 					renderJob.render(this);
 				}
 				
-				if (currentRenderJobs.length > 0)
-				{
-					presented = true;
-					context3D.present();
-				}
+				presented = true;
+				context3D.present();
 			}
 		}
 	}
@@ -292,6 +293,10 @@ class ContextWrapper extends EventDispatcher
 		untyped quadRenderJobs.length = 0;
 		untyped triangleRenderJobs.length = 0;
 		
+		numCurrentRenderJobs = 0;
+		numQuadRenderJobs = 0;
+		numTriangleRenderJobs = 0;
+		
 		return numJobs;
 	}
 	
@@ -382,12 +387,33 @@ class ContextWrapper extends EventDispatcher
 	{
 		currentRenderJobs.push(job);
 		quadRenderJobs.push(job);
+		
+		numCurrentRenderJobs++;
+		numQuadRenderJobs++;
 	}
 	
 	public function addTriangleJob(job:TriangleRenderJob):Void
 	{
 		currentRenderJobs.push(job);
 		triangleRenderJobs.push(job);
+		
+		numCurrentRenderJobs++;
+		numTriangleRenderJobs++;
+	}
+	
+	public inline function getLastRenderJob():RenderJob
+	{
+		return currentRenderJobs[numCurrentRenderJobs - 1];
+	}
+	
+	public inline function getLastQuadRenderJob():QuadRenderJob
+	{
+		return quadRenderJobs[numQuadRenderJobs - 1];
+	}
+	
+	public inline function getLastTrianglesRenderJob():TriangleRenderJob
+	{
+		return triangleRenderJobs[numTriangleRenderJobs - 1];
 	}
 	
 	private static inline function rawDataToBytes(rawData:Array<Int>):ByteArray 

@@ -70,10 +70,10 @@ class TilesheetStage3D extends Tilesheet
 	
 	public var premultipliedAlpha(default, null):Bool;
 	
-	private var texture:Texture;
+	public var texture(default, null):Texture;
 	
 	//static vars
-	private static var context:ContextWrapper;
+	public static var context(default, null):ContextWrapper;
 	private static var _isInited:Bool;
 	
 	//config
@@ -181,7 +181,7 @@ class TilesheetStage3D extends Tilesheet
 			var numIndices:Int = indices.length;
 			var numVertices:Int = Std.int(vertices.length / 2);
 			
-			var renderJob:TriangleRenderJob = TriangleRenderJob.getJob();
+			var renderJob:TriangleRenderJob = TriangleRenderJob.getJob(texture, isColored, isColored, smooth, blending, premultipliedAlpha);
 			
 			if (numIndices + renderJob.numIndices > MAX_INDICES_PER_BUFFER)
 			{
@@ -191,30 +191,6 @@ class TilesheetStage3D extends Tilesheet
 			if (numVertices + renderJob.numIndices > MAX_VERTEX_PER_BUFFER)
 			{
 				throw ("Number of vertices shouldn't be more than " + MAX_VERTEX_PER_BUFFER);
-			}
-			
-			renderJob.texture = texture;
-			renderJob.isRGB = isColored;
-			renderJob.isAlpha = isColored;
-			renderJob.isSmooth = smooth;
-			renderJob.dataPerVertice = dataPerVertice;
-			renderJob.premultipliedAlpha = this.premultipliedAlpha;
-			
-			if (blending == BlendMode.ADD)
-			{
-				renderJob.blendMode = RenderJob.BLEND_ADD;
-			}
-			else if (blending == BlendMode.MULTIPLY)
-			{
-				renderJob.blendMode = RenderJob.BLEND_MULTIPLY;
-			}
-			else if (blending == BlendMode.SCREEN)
-			{
-				renderJob.blendMode = RenderJob.BLEND_SCREEN;
-			}
-			else
-			{
-				renderJob.blendMode = RenderJob.BLEND_NORMAL;
 			}
 			
 			renderJob.addTriangles(vertices, indices, uvtData, colors);
@@ -332,35 +308,26 @@ class TilesheetStage3D extends Tilesheet
 			var startItemPos:Int = 0;
 			var numItemsThisLoop:Int = 0;
 			
+			var blend:BlendMode = BlendMode.NORMAL;
+			if (isBlendAdd)
+			{
+				blend = BlendMode.ADD;
+			}
+			else if (isBlendMultiply)
+			{
+				blend = BlendMode.MULTIPLY;
+			}
+			else if (isBlendScreen)
+			{
+				blend = BlendMode.SCREEN;
+			}
+			
 			while (tileDataPos < totalCount)
 			{
 				numItemsThisLoop = numItems > maxNumItems ? maxNumItems : numItems;
 				numItems -= numItemsThisLoop;
 				
-				renderJob = QuadRenderJob.getJob();
-				renderJob.texture = texture;
-				renderJob.isRGB = isRGB;
-				renderJob.isAlpha = isAlpha;
-				renderJob.isSmooth = smooth;
-				renderJob.dataPerVertice = dataPerVertice;
-				renderJob.premultipliedAlpha = this.premultipliedAlpha;
-				
-				if (isBlendAdd)
-				{
-					renderJob.blendMode = RenderJob.BLEND_ADD;
-				}
-				else if (isBlendMultiply)
-				{
-					renderJob.blendMode = RenderJob.BLEND_MULTIPLY;
-				}
-				else if (isBlendScreen)
-				{
-					renderJob.blendMode = RenderJob.BLEND_SCREEN;
-				}
-				else
-				{
-					renderJob.blendMode = RenderJob.BLEND_NORMAL;
-				}
+				renderJob = QuadRenderJob.getJob(texture, isRGB, isAlpha, smooth, blend, premultipliedAlpha);
 				
 				for (i in 0...numItemsThisLoop)
 				{

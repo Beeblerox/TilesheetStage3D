@@ -1,4 +1,5 @@
 package com.asliceofcrazypie.flash.jobs;
+import openfl.display.BlendMode;
 import openfl.geom.Matrix;
 import openfl.geom.Point;
 import openfl.geom.Rectangle;
@@ -39,7 +40,7 @@ class RenderJob
 	public var isAlpha:Bool;
 	public var isSmooth:Bool;
 	
-	public var blendMode:String;
+	public var blendMode:BlendMode;
 	public var premultipliedAlpha:Bool;
 	
 	public var type(default, null):RenderJobType;
@@ -263,7 +264,19 @@ class RenderJob
 			factors = RenderJob.noPremultipliedBlendFactors;
 		}
 		
-		var factor:Array<Context3DBlendFactor> = factors.get(blendMode);
+		var blendString:String = switch (blendMode)
+		{
+			case BlendMode.ADD:
+				RenderJob.BLEND_ADD;
+			case BlendMode.MULTIPLY:
+				RenderJob.BLEND_MULTIPLY;
+			case BlendMode.SCREEN:
+				RenderJob.BLEND_SCREEN;
+			default:
+				RenderJob.BLEND_NORMAL;
+		}
+		
+		var factor:Array<Context3DBlendFactor> = factors.get(blendString);
 		if (factor == null)
 		{
 			factor = factors.get(RenderJob.BLEND_NORMAL);

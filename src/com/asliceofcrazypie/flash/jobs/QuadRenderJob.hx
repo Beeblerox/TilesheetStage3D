@@ -2,10 +2,12 @@ package com.asliceofcrazypie.flash.jobs;
 
 
 import com.asliceofcrazypie.flash.jobs.RenderJob.RenderJobType;
+import openfl.display.BlendMode;
 import openfl.geom.Matrix;
 import openfl.geom.Point;
 import openfl.geom.Rectangle;
 import openfl.utils.ByteArray;
+import flash.display3D.textures.Texture;
 
 /**
  * ...
@@ -27,9 +29,28 @@ class QuadRenderJob extends RenderJob
 		indexPos += 6;
 	}
 	
-	public static inline function getJob():QuadRenderJob
+	public static inline function getJob(texture:Texture, isRGB:Bool, isAlpha:Bool, isSmooth:Bool, blend:BlendMode, premultiplied:Bool):QuadRenderJob
 	{
-		return renderJobPool.length > 0 ? renderJobPool.pop() : new QuadRenderJob();
+		var job:QuadRenderJob = (renderJobPool.length > 0) ? renderJobPool.pop() : new QuadRenderJob();
+		
+		job.texture = texture;
+		job.isRGB = isRGB;
+		job.isAlpha = isAlpha;
+		job.isSmooth = isSmooth;
+		job.blendMode = blend;
+		job.premultipliedAlpha = premultiplied;
+		
+		job.dataPerVertice = 4;
+		if (isRGB)
+		{
+			job.dataPerVertice += 3;
+		}
+		if (isAlpha)
+		{
+			job.dataPerVertice++;
+		}
+		
+		return job;
 	}
 	
 	public static inline function returnJob(renderJob:QuadRenderJob):Void

@@ -6,6 +6,9 @@ import openfl.geom.Point;
 import openfl.geom.Rectangle;
 import openfl.Vector;
 
+import flash.display3D.textures.Texture;
+import flash.display.BlendMode;
+
 /**
  * ...
  * @author Zaphod
@@ -75,9 +78,28 @@ class TriangleRenderJob extends RenderJob
 		this.numIndices += numIndices;
 	}
 	
-	public static inline function getJob():TriangleRenderJob
+	public static inline function getJob(texture:Texture, isRGB:Bool, isAlpha:Bool, isSmooth:Bool, blend:BlendMode, premultiplied:Bool):TriangleRenderJob
 	{
-		return renderJobPool.length > 0 ? renderJobPool.pop() : new TriangleRenderJob();
+		var job:TriangleRenderJob = (renderJobPool.length > 0) ? renderJobPool.pop() : new TriangleRenderJob();
+		
+		job.texture = texture;
+		job.isRGB = isRGB;
+		job.isAlpha = isAlpha;
+		job.isSmooth = isSmooth;
+		job.blendMode = blend;
+		job.premultipliedAlpha = premultiplied;
+		
+		job.dataPerVertice = 4;
+		if (isRGB)
+		{
+			job.dataPerVertice += 3;
+		}
+		if (isAlpha)
+		{
+			job.dataPerVertice++;
+		}
+		
+		return job;
 	}
 	
 	public static inline function returnJob(renderJob:TriangleRenderJob):Void
