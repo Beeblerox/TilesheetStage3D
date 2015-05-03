@@ -5,6 +5,10 @@ import openfl.display.Tilesheet;
 import openfl.events.Event;
 
 #if flash11
+import com.asliceofcrazypie.flash.jobs.RenderJob;
+import com.asliceofcrazypie.flash.jobs.QuadRenderJob;
+import com.asliceofcrazypie.flash.jobs.TriangleRenderJob;
+
 import flash.Vector;
 import haxe.Timer;
 import flash.errors.Error;
@@ -151,7 +155,8 @@ class TilesheetStage3D extends Tilesheet
 		}
 	}
 	
-	// TODO: implement it and document it...
+	// TODO: document it...
+	// TODO: support culling...
 	/**
 	 * 
 	 * 
@@ -162,21 +167,99 @@ class TilesheetStage3D extends Tilesheet
 	 * @param	colors
 	 * @param	blending
 	 */
-	public function drawTriangles(vertices:Vector<Float>, indices:Vector<Int> = null, uvtData:Vector<Float> = null, culling:TriangleCulling = null, colors:Vector<Int> = null, blending:BlendMode):Void
+	public function drawTriangles(graphics:Graphics, vertices:Vector<Float>, indices:Vector<Int> = null, uvtData:Vector<Float> = null, culling:TriangleCulling = null, colors:Vector<Int> = null, smooth:Bool = false, blending:BlendMode = null):Void
 	{
-		
-	}
-	
-	// TODO: move this into batcher class, implement it and document it...
-	public function batchTriangles(vertices:Vector<Float>, indices:Vector<Int> = null, uvtData:Vector<Float> = null, culling:TriangleCulling = null, colors:Vector<Int> = null, blending:BlendMode):Void
-	{
-		
-	}
-	
-	// TODO: move this into batcher class, implement it and document it...
-	public function batchQuads(tileData:Array<Float>, smooth:Bool = false, flags:Int = 0):Void
-	{
-		
+		if (context != null && context.context3D != null && !Type.enumEq(fallbackMode, FallbackMode.FORCE_FALLBACK))
+		{
+			var isColored:Bool = (colors != null && colors.length > 0);
+			
+			var dataPerVertice:Int = (isColored) ? 8 : 4;
+			
+			var numIndices:Int = indices.length;
+			var numVertices:Int = Std.int(vertices.length / 2);
+			
+			if (numIndices > MAX_INDICES_PER_BUFFER)
+			{
+				throw ("Number of indices shouldn't be more than " + MAX_INDICES_PER_BUFFER);
+			}
+			
+			if (numVertices > MAX_VERTEX_PER_BUFFER)
+			{
+				throw ("Number of vertices shouldn't be more than " + MAX_VERTEX_PER_BUFFER);
+			}
+			
+			var renderJob:TriangleRenderJob = TriangleRenderJob.getJob();
+			renderJob.texture = texture;
+			renderJob.isRGB = isColored;
+			renderJob.isAlpha = isColored;
+			renderJob.isSmooth = smooth;
+			renderJob.dataPerVertice = dataPerVertice;
+			renderJob.numVertices = numVertices;
+			renderJob.premultipliedAlpha = this.premultipliedAlpha;
+			
+			if (blending == BlendMode.ADD)
+			{
+				renderJob.blendMode = RenderJob.BLEND_ADD;
+			}
+			else if (blending == BlendMode.MULTIPLY)
+			{
+				renderJob.blendMode = RenderJob.BLEND_MULTIPLY;
+			}
+			else if (blending == BlendMode.SCREEN)
+			{
+				renderJob.blendMode = RenderJob.BLEND_SCREEN;
+			}
+			else
+			{
+				renderJob.blendMode = RenderJob.BLEND_NORMAL;
+			}
+			
+			var vertexPos:Int = renderJob.vertexPos;
+			var indexPos:Int = renderJob.indexPos;
+			var prevVerticesNumber:Int = Std.int(renderJob.vertexPos / dataPerVertice);
+			
+			var vertexIndex:Int = 0;
+			var vColor:Int;
+			
+			var jobVertices:Vector<Float> = renderJob.vertices;
+			var jobIndices:Vector<UInt> = renderJob.indicesVector;
+			
+			for (i in 0...numVertices)
+			{
+				vertexIndex = 2 * i;
+				
+				jobVertices[vertexPos++] = vertices[vertexIndex];
+				jobVertices[vertexPos++] = vertices[vertexIndex + 1];
+				
+				jobVertices[vertexPos++] = uvtData[vertexIndex];
+				jobVertices[vertexPos++] = uvtData[vertexIndex + 1];
+				
+				if (isColored)
+				{
+					vColor = colors[i];
+					jobVertices[vertexPos++] = ((vColor >> 16) & 0xff) / 255;
+					jobVertices[vertexPos++] = ((vColor >> 8) & 0xff) / 255;
+					jobVertices[vertexPos++] = (vColor & 0xff) / 255;
+					jobVertices[vertexPos++] = ((vColor >> 24) & 0xff) / 255;	
+				}
+			}
+			renderJob.vertexPos = vertexPos;
+			
+			for (i in 0...numIndices)
+			{
+				jobIndices[indexPos++] = prevVerticesNumber + indices[i];
+			}
+			renderJob.indexPos = indexPos;
+			
+			renderJob.numVertices += numVertices;
+			renderJob.numIndices += numIndices;
+			
+			context.addTriangleJob(renderJob);
+		}
+		else if(!Type.enumEq(fallbackMode, FallbackMode.NO_FALLBACK))
+		{
+			graphics.drawTriangles(vertices, indices, uvtData, culling);
+		}
 	}
 	
 	override public function drawTiles(graphics:Graphics, tileData:Array<Float>, smooth:Bool = false, flags:Int = 0, count:Int = -1):Void
@@ -274,10 +357,9 @@ class TilesheetStage3D extends Tilesheet
 			var vertexPerItem:Int = 4;
 			var numVertices:Int = numItems * vertexPerItem;
 			
-			var renderJob:RenderJob;
+			var renderJob:QuadRenderJob;
 			
 			var tileDataPos:Int = 0;
-			var vertexPos:Int = 0;
 			
 			var transform_tx:Float, transform_ty:Float, transform_a:Float, transform_b:Float, transform_c:Float, transform_d:Float;
 			
@@ -293,7 +375,7 @@ class TilesheetStage3D extends Tilesheet
 				numItemsThisLoop = numItems > maxNumItems ? maxNumItems : numItems;
 				numItems -= numItemsThisLoop;
 				
-				renderJob = RenderJob.getJob();
+				renderJob = QuadRenderJob.getJob();
 				renderJob.texture = texture;
 				renderJob.isRGB = isRGB;
 				renderJob.isAlpha = isAlpha;
@@ -318,8 +400,6 @@ class TilesheetStage3D extends Tilesheet
 				{
 					renderJob.blendMode = RenderJob.BLEND_NORMAL;
 				}
-				
-				vertexPos = 0;
 				
 				for (i in 0...numItemsThisLoop)
 				{
@@ -392,6 +472,7 @@ class TilesheetStage3D extends Tilesheet
 					}
 					
 					setQuadData( 
+						renderJob,
 						Std.int(tileData[tileDataPos + tileIdOff]), 
 						transform_tx, 
 						transform_ty, 
@@ -405,18 +486,15 @@ class TilesheetStage3D extends Tilesheet
 						g, 
 						b, 
 						a, 
-						renderJob.vertices, 
-						vertexPos,
 						rect,
 						origin
 					);
 					
 					tileDataPos += tileDataPerItem;
-					vertexPos += vertexPerItem * dataPerVertice;
 				}
 				
 				//push vertices into jobs list
-				context.addJob(renderJob);		
+				context.addQuadJob(renderJob);		
 			}//end while
 		}
 		else if(!Type.enumEq(fallbackMode, FallbackMode.NO_FALLBACK))
@@ -425,8 +503,11 @@ class TilesheetStage3D extends Tilesheet
 		}
 	}
 	
-	private inline function setQuadData(tileId:Int, transform_tx:Float, transform_ty:Float, transform_a:Float, transform_b:Float, transform_c:Float, transform_d:Float, isRGB:Bool, isAlpha:Bool, r:Float, g:Float, b:Float, a:Float, vertices:Vector<Float>, vertexPos:Int, rect:Rectangle = null, origin:Point = null):Void 
+	private inline function setQuadData(renderJob:QuadRenderJob, tileId:Int, transform_tx:Float, transform_ty:Float, transform_a:Float, transform_b:Float, transform_c:Float, transform_d:Float, isRGB:Bool, isAlpha:Bool, r:Float, g:Float, b:Float, a:Float, rect:Rectangle = null, origin:Point = null):Void 
 	{
+		var vertices:Vector<Float> = renderJob.vertices;
+		var vertexPos:Int = renderJob.vertexPos;
+		
 		var c:Point = origin;
 		var tile:Rectangle = rect;
 		var uv:Rectangle = __rectUV;
@@ -540,6 +621,10 @@ class TilesheetStage3D extends Tilesheet
 		{
 			vertices[vertexPos++] = a;
 		}
+		
+		renderJob.vertexPos = vertexPos;
+		renderJob.indexPos += 6;
+		
 		/*
 		indices.position = 12 * quadPos; // 12 = 6 * 2 (6 indices per quad and 2 bytes per index)
 		var startIndex:Int = quadPos * 4;
