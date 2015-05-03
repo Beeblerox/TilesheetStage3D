@@ -1,6 +1,9 @@
 package com.asliceofcrazypie.flash.jobs;
 
 import com.asliceofcrazypie.flash.jobs.RenderJob.RenderJobType;
+import openfl.geom.Matrix;
+import openfl.geom.Point;
+import openfl.geom.Rectangle;
 
 /**
  * ...
@@ -14,6 +17,16 @@ class TriangleRenderJob extends RenderJob
 	{
 		super(false);
 		type = RenderJobType.TRIANGLE;
+	}
+	
+	override public function addQuad(rect:Rectangle, origin:Point, uv:Rectangle, matrix:Matrix, r:Float = 1, g:Float = 1, b:Float = 1, a:Float = 1):Void
+	{
+		
+	}
+	
+	public function addTriangles():Void
+	{
+		
 	}
 	
 	public static inline function getJob():TriangleRenderJob

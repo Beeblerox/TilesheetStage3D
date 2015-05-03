@@ -3,6 +3,7 @@ package com.asliceofcrazypie.flash;
 import openfl.display.BitmapData;
 import openfl.display.Tilesheet;
 import openfl.events.Event;
+import openfl.geom.Matrix;
 
 #if flash11
 import com.asliceofcrazypie.flash.jobs.RenderJob;
@@ -95,6 +96,8 @@ class TilesheetStage3D extends Tilesheet
 	public static var quadsPerBuffer(default, null):Int;
 	public static var trianglesPerBuffer(default, null):Int;
 	public static var indicesPerBuffer(default, null):Int;
+	
+	private static var matrix:Matrix = new Matrix();
 	
 	// TODO: document it and don't forget to use new batchSize argument...
 	/**
@@ -290,6 +293,8 @@ class TilesheetStage3D extends Tilesheet
 			
 			var rect:Rectangle;
 			var origin:Point;
+			var uv:Rectangle;
+			var tileId:Int;
 			
 			//determine data structure based on flags
 			var tileDataPerItem:Int = 3;
@@ -354,10 +359,6 @@ class TilesheetStage3D extends Tilesheet
 				throw new ArgumentError('tileData length must be a multiple of ' + tileDataPerItem);
 			}
 			
-			//vertex data
-			var vertexPerItem:Int = 4;
-			var numVertices:Int = numItems * vertexPerItem;
-			
 			var renderJob:QuadRenderJob;
 			
 			var tileDataPos:Int = 0;
@@ -382,7 +383,6 @@ class TilesheetStage3D extends Tilesheet
 				renderJob.isAlpha = isAlpha;
 				renderJob.isSmooth = smooth;
 				renderJob.dataPerVertice = dataPerVertice;
-				renderJob.numVertices = numItemsThisLoop * vertexPerItem;
 				renderJob.premultipliedAlpha = this.premultipliedAlpha;
 				
 				if (isBlendAdd)
@@ -406,6 +406,9 @@ class TilesheetStage3D extends Tilesheet
 				{
 					rect = null;
 					origin = null;
+					uv = null;
+					
+					r = g = b = a = 1.0;
 					
 					if (isRect) 
 					{ 
@@ -426,6 +429,16 @@ class TilesheetStage3D extends Tilesheet
 						{
 							origin.setTo(0, 0);
 						}
+						
+						uv = __rectUV;
+						uv.setTo(rect.left / __bitmapWidth, rect.top / __bitmapHeight, rect.right / __bitmapWidth, rect.bottom / __bitmapHeight);
+					}
+					else
+					{
+						tileId = Std.int(tileData[tileDataPos + tileIdOff]);
+						origin = __centerPoints[tileId];
+						uv = __tileUVs[tileId];
+						rect = __tileRects[tileId];
 					}
 					
 					//calculate transforms
@@ -472,24 +485,9 @@ class TilesheetStage3D extends Tilesheet
 						a = tileData[tileDataPos + aOff];
 					}
 					
-					setQuadData( 
-						renderJob,
-						Std.int(tileData[tileDataPos + tileIdOff]), 
-						transform_tx, 
-						transform_ty, 
-						transform_a, 
-						transform_b, 
-						transform_c, 
-						transform_d, 
-						isRGB, 
-						isAlpha, 
-						r, 
-						g, 
-						b, 
-						a, 
-						rect,
-						origin
-					);
+					matrix.setTo(transform_a, transform_b, transform_c, transform_d, transform_tx, transform_ty);
+					
+					renderJob.addQuad(rect, origin, uv, matrix, r, g, b, a);
 					
 					tileDataPos += tileDataPerItem;
 				}
@@ -502,140 +500,6 @@ class TilesheetStage3D extends Tilesheet
 		{
 			super.drawTiles(graphics, tileData, smooth, flags, count);
 		}
-	}
-	
-	private inline function setQuadData(renderJob:QuadRenderJob, tileId:Int, transform_tx:Float, transform_ty:Float, transform_a:Float, transform_b:Float, transform_c:Float, transform_d:Float, isRGB:Bool, isAlpha:Bool, r:Float, g:Float, b:Float, a:Float, rect:Rectangle = null, origin:Point = null):Void 
-	{
-		var vertices:Vector<Float> = renderJob.vertices;
-		var vertexPos:Int = renderJob.vertexPos;
-		
-		var c:Point = origin;
-		var tile:Rectangle = rect;
-		var uv:Rectangle = __rectUV;
-		
-		if (tile == null)
-		{
-			c = __centerPoints[tileId];
-			uv = __tileUVs[tileId];
-			tile = __tileRects[tileId];
-		}
-		else
-		{
-			uv.setTo(tile.left / __bitmapWidth, tile.top / __bitmapHeight, tile.right / __bitmapWidth, tile.bottom / __bitmapHeight);
-		}
-		
-		var imgWidth:Int = Std.int(tile.width);
-		var imgHeight:Int = Std.int(tile.height);
-		
-		var centerX:Float = c.x * imgWidth;
-		var centerY:Float = c.y * imgHeight;
-		
-		var px:Float;
-		var py:Float;
-		
-		//top left
-		px = -centerX;
-		py = -centerY;
-		
-		var off:Int = 0;
-		
-		vertices[vertexPos++] = px * transform_a + py * transform_c + transform_tx; //top left x
-		vertices[vertexPos++] = px * transform_b + py * transform_d + transform_ty; //top left y
-		
-		vertices[vertexPos++] = uv.x; //top left u
-		vertices[vertexPos++] = uv.y; //top left v
-		
-		if (isRGB)
-		{
-			vertices[vertexPos++] = r;
-			vertices[vertexPos++] = g;
-			vertices[vertexPos++] = b;
-		}
-		
-		if (isAlpha)
-		{
-			vertices[vertexPos++] = a;
-		}
-		
-		//top right
-		px = imgWidth - centerX;
-		py = -centerY;
-		
-		vertices[vertexPos++] = px * transform_a + py * transform_c + transform_tx; //top right x
-		vertices[vertexPos++] = px * transform_b + py * transform_d + transform_ty; //top right y
-		
-		vertices[vertexPos++] = uv.width; //top right u
-		vertices[vertexPos++] = uv.y; //top right v
-		
-		if (isRGB)
-		{
-			vertices[vertexPos++] = r;
-			vertices[vertexPos++] = g;
-			vertices[vertexPos++] = b;
-		}
-		
-		if (isAlpha)
-		{
-			vertices[vertexPos++] = a;
-		}
-		
-		//bottom right
-		px = imgWidth - centerX;
-		py = imgHeight - centerY;
-		
-		vertices[vertexPos++] = px * transform_a + py * transform_c + transform_tx; //bottom right x
-		vertices[vertexPos++] = px * transform_b + py * transform_d + transform_ty; //bottom right y
-		
-		vertices[vertexPos++] = uv.width; //bottom right u
-		vertices[vertexPos++] = uv.height; //bottom right v
-		
-		if (isRGB)
-		{
-			vertices[vertexPos++] = r;
-			vertices[vertexPos++] = g;
-			vertices[vertexPos++] = b;
-		}
-		
-		if (isAlpha)
-		{
-			vertices[vertexPos++] = a;
-		}
-		
-		//bottom left
-		px = -centerX;
-		py = imgHeight - centerY;
-		
-		vertices[vertexPos++] = px * transform_a + py * transform_c + transform_tx; //bottom left x
-		vertices[vertexPos++] = px * transform_b + py * transform_d + transform_ty; //bottom left y
-		
-		vertices[vertexPos++] = uv.x; //bottom left u
-		vertices[vertexPos++] = uv.height; //bottom left v
-		
-		if (isRGB)
-		{
-			vertices[vertexPos++] = r;
-			vertices[vertexPos++] = g;
-			vertices[vertexPos++] = b;
-		}
-		
-		if (isAlpha)
-		{
-			vertices[vertexPos++] = a;
-		}
-		
-		renderJob.vertexPos = vertexPos;
-		renderJob.indexPos += 6;
-		
-		/*
-		indices.position = 12 * quadPos; // 12 = 6 * 2 (6 indices per quad and 2 bytes per index)
-		var startIndex:Int = quadPos * 4;
-		indices.writeShort(startIndex + 2);
-		indices.writeShort(startIndex + 1);
-		indices.writeShort(startIndex + 0);
-		indices.writeShort(startIndex + 3);
-		indices.writeShort(startIndex + 2);
-		indices.writeShort(startIndex + 0);
-		*/
 	}
 	
 	public static var antiAliasing(default, set):Int;

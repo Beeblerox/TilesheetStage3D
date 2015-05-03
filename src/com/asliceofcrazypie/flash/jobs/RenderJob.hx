@@ -1,4 +1,7 @@
 package com.asliceofcrazypie.flash.jobs;
+import openfl.geom.Matrix;
+import openfl.geom.Point;
+import openfl.geom.Rectangle;
 
 #if flash11
 import flash.display3D.IndexBuffer3D;
@@ -42,8 +45,8 @@ class RenderJob
 	public var type(default, null):RenderJobType;
 	
 	public var dataPerVertice:Int;
-	public var numVertices(default, set):Int;
-	public var numIndices(default, set):Int;
+	public var numVertices:Int;
+	public var numIndices:Int;
 	
 	public var indicesBytes(default, null):ByteArray;
 	public var indicesVector(default, null):Vector<UInt>;
@@ -76,15 +79,9 @@ class RenderJob
 		}
 	}
 	
-	private function set_numVertices(n:Int):Int
+	public function addQuad(rect:Rectangle, origin:Point, uv:Rectangle, matrix:Matrix, r:Float = 1, g:Float = 1, b:Float = 1, a:Float = 1):Void
 	{
-		this.numVertices = n;
-		return n;
-	}
-	
-	private function set_numIndices(n:Int):Int
-	{
-		return this.numIndices = n;
+		
 	}
 	
 	public function render(context:ContextWrapper):Void
