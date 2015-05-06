@@ -16,10 +16,75 @@ class Batcher
 {
 	private static var matrix:Matrix = new Matrix();
 	
-	public static function startQuadBatch(tilesheet:TilesheetStage3D, tinted:Bool, alpha:Bool, blend:BlendMode = null, smooth:Bool = false):QuadRenderJob
+	private var numRenderJobs:Int = 0;
+	private var numQuadRenderJobs:Int = 0;
+	private var numTriangleRenderJobs:Int = 0;
+	
+	private var renderJobs:Vector<RenderJob>;
+	private var quadRenderJobs:Vector<QuadRenderJob>;
+	private var triangleRenderJobs:Vector<TriangleRenderJob>;
+	
+	public function new()
 	{
-		var lastRenderJob:RenderJob = TilesheetStage3D.context.getLastRenderJob();
-		var lastQuadRenderJob:QuadRenderJob = TilesheetStage3D.context.getLastQuadRenderJob();
+		renderJobs = new Vector<RenderJob>();
+		quadRenderJobs = new Vector<QuadRenderJob>();
+		triangleRenderJobs = new Vector<TriangleRenderJob>();
+		
+		
+	}
+	
+	public inline function getLastRenderJob():RenderJob
+	{
+		return currentRenderJobs[numRenderJobs - 1];
+	}
+	
+	public inline function getLastQuadRenderJob():QuadRenderJob
+	{
+		return quadRenderJobs[numQuadRenderJobs - 1];
+	}
+	
+	public inline function getLastTrianglesRenderJob():TriangleRenderJob
+	{
+		return triangleRenderJobs[numTriangleRenderJobs - 1];
+	}
+	
+	public inline function reset():Void
+	{
+		for (renderJob in quadRenderJobs)
+		{
+			renderJob.reset();
+			QuadRenderJob.returnJob(renderJob);
+		}
+		
+		for (renderJob in triangleRenderJobs)
+		{
+			renderJob.reset();
+			TriangleRenderJob.returnJob(renderJob);
+		}
+		
+		untyped renderJobs.length = 0;
+		untyped quadRenderJobs.length = 0;
+		untyped triangleRenderJobs.length = 0;
+		
+		numRenderJobs = 0;
+		numQuadRenderJobs = 0;
+		numTriangleRenderJobs = 0;
+	}
+	
+	public inline function render():Void
+	{
+		for (job in renderJobs)
+		{
+			TilesheetStage3D.context.renderJob(job);
+		}
+		
+		TilesheetStage3D.context.present();
+	}
+	
+	public function startQuadBatch(tilesheet:TilesheetStage3D, tinted:Bool, alpha:Bool, blend:BlendMode = null, smooth:Bool = false):QuadRenderJob
+	{
+		var lastRenderJob:RenderJob = getLastRenderJob();
+		var lastQuadRenderJob:QuadRenderJob = getLastQuadRenderJob();
 		
 		if (lastRenderJob == lastQuadRenderJob 
 			&& tilesheet.texture == lastRenderJob.texture
@@ -35,15 +100,20 @@ class Batcher
 		return startNewQuadBatch(tilesheet, tinted, alpha, blend, smooth);
 	}
 	
-	public static function startNewQuadBatch(tilesheet:TilesheetStage3D, tinted:Bool, alpha:Bool, blend:BlendMode = null, smooth:Bool = false):QuadRenderJob
+	public function startNewQuadBatch(tilesheet:TilesheetStage3D, tinted:Bool, alpha:Bool, blend:BlendMode = null, smooth:Bool = false):QuadRenderJob
 	{
-		return QuadRenderJob.getJob(tilesheet.texture, tinted, alpha, smooth, blend, tilesheet.premultipliedAlpha);
+		var job:QuadRenderJob = QuadRenderJob.getJob(tilesheet.texture, tinted, alpha, smooth, blend, tilesheet.premultipliedAlpha);
+		
+		renderJobs[numRenderJobs++] = job;
+		quadRenderJobs[numQuadRenderJobs++] = job;
+		
+		return job;
 	}
 	
-	public static function startTrianglesBatch(tilesheet:TilesheetStage3D, colored:Bool = false, blend:BlendMode = null, smoothing:Bool = false):TriangleRenderJob
+	public function startTrianglesBatch(tilesheet:TilesheetStage3D, colored:Bool = false, blend:BlendMode = null, smoothing:Bool = false):TriangleRenderJob
 	{
-		var lastRenderJob:RenderJob = TilesheetStage3D.context.getLastRenderJob();
-		var lastTriangleRenderJob:TriangleRenderJob = TilesheetStage3D.context.getLastTrianglesRenderJob();
+		var lastRenderJob:RenderJob = getLastRenderJob();
+		var lastTriangleRenderJob:TriangleRenderJob = getLastTrianglesRenderJob();
 		
 		if (lastRenderJob == lastTriangleRenderJob 
 			&& tilesheet.texture == lastRenderJob.texture
@@ -59,9 +129,14 @@ class Batcher
 		return getNewTrianglesBatch(tilesheet, colored, blend, smoothing);
 	}
 	
-	public static function getNewTrianglesBatch(tilesheet:TilesheetStage3D, colored:Bool = false, blend:BlendMode = null, smoothing:Bool = false):TriangleRenderJob
+	public function getNewTrianglesBatch(tilesheet:TilesheetStage3D, colored:Bool = false, blend:BlendMode = null, smoothing:Bool = false):TriangleRenderJob
 	{
-		return TriangleRenderJob.getJob(tilesheet.texture, colored, colored, smoothing, blend, tilesheet.premultipliedAlpha);
+		var job:TriangleRenderJob = TriangleRenderJob.getJob(tilesheet.texture, colored, colored, smoothing, blend, tilesheet.premultipliedAlpha);
+		
+		renderJobs[numRenderJobs++] = job;
+		triangleRenderJobs[numTriangleRenderJobs++] = job;
+		
+		return job;
 	}
 	
 	/*
