@@ -41,6 +41,8 @@ class ContextWrapper extends EventDispatcher
 	public var context3D:Context3D;
 	public var depth(default, null):Int;
 	
+	public var renderCallback:Void->Void;
+	
 	private var stage:Stage;
 	private var antiAliasLevel:Int;
 	private var baseTransformMatrix:Matrix3D;
@@ -157,7 +159,11 @@ class ContextWrapper extends EventDispatcher
 	private function onRender(e:Event):Void 
 	{
 		render();
-		// TODO: add render callback...
+		
+		if (renderCallback != null)
+		{
+			renderCallback();
+		}
 	}
 	
 	public inline function render():Void

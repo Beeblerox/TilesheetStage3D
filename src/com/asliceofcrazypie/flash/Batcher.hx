@@ -77,8 +77,16 @@ class Batcher
 		{
 			TilesheetStage3D.context.renderJob(job);
 		}
-		
+	}
+	
+	public static inline function present():Void
+	{
 		TilesheetStage3D.context.present();
+	}
+	
+	public static inline function clear():Void
+	{
+		TilesheetStage3D.clear();
 	}
 	
 	public function startQuadBatch(tilesheet:TilesheetStage3D, tinted:Bool, alpha:Bool, blend:BlendMode = null, smooth:Bool = false):QuadRenderJob
