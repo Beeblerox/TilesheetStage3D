@@ -84,22 +84,9 @@ class TilesheetStage3D extends Tilesheet
 	private static var _stage3DLevel:Int;
 	private static var _initCallback:String->Void;
 	
-	public static inline var MAX_INDICES_PER_BUFFER:Int = 98298;
-	public static inline var MAX_VERTEX_PER_BUFFER:Int = 65532;		// (MAX_INDICES_PER_BUFFER * 4 / 6)
-	public static inline var MAX_QUADS_PER_BUFFER:Int = 16383;		// (MAX_VERTEX_PER_BUFFER / 4)
-	public static inline var MAX_TRIANGLES_PER_BUFFER:Int = 21844;	// (MAX_VERTEX_PER_BUFFER / 3)
-	
-	// TODO: make batch size settable (this means adding static vars like VERTEX_PER_BUFFER, QUADS_PER_BUFFER and INDICES_PER_BUFFER)
-	
-	// TODO: use these static vars (and document them)...
-	public static var vertexPerBuffer(default, null):Int;
-	public static var quadsPerBuffer(default, null):Int;
-	public static var trianglesPerBuffer(default, null):Int;
-	public static var indicesPerBuffer(default, null):Int;
-	
 	private static var matrix:Matrix = new Matrix();
 	
-	// TODO: document it and don't forget to use new batchSize argument...
+	// TODO: document it...
 	/**
 	 * 
 	 * 
@@ -114,10 +101,7 @@ class TilesheetStage3D extends Tilesheet
 	{
 		if (!_isInited)
 		{
-			TilesheetStage3D.quadsPerBuffer = (MAX_QUADS_PER_BUFFER < batchSize || batchSize <= 0) ? MAX_QUADS_PER_BUFFER : batchSize;
-			TilesheetStage3D.vertexPerBuffer = TilesheetStage3D.quadsPerBuffer * 4;
-			TilesheetStage3D.indicesPerBuffer = TilesheetStage3D.quadsPerBuffer * 6;
-			TilesheetStage3D.trianglesPerBuffer = Std.int(TilesheetStage3D.vertexPerBuffer / 3);
+			RenderJob.init(batchSize);
 			
 			if (stage3DLevel < 0 || stage3DLevel >= Std.int(stage.stage3Ds.length))
 			{
@@ -183,14 +167,14 @@ class TilesheetStage3D extends Tilesheet
 			
 			var renderJob:TriangleRenderJob = TriangleRenderJob.getJob(texture, isColored, isColored, smooth, blending, premultipliedAlpha);
 			
-			if (numIndices + renderJob.numIndices > MAX_INDICES_PER_BUFFER)
+			if (numIndices + renderJob.numIndices > RenderJob.MAX_INDICES_PER_BUFFER)
 			{
-				throw ("Number of indices shouldn't be more than " + MAX_INDICES_PER_BUFFER);
+				throw ("Number of indices shouldn't be more than " + RenderJob.MAX_INDICES_PER_BUFFER);
 			}
 			
-			if (numVertices + renderJob.numIndices > MAX_VERTEX_PER_BUFFER)
+			if (numVertices + renderJob.numIndices > RenderJob.MAX_VERTEX_PER_BUFFER)
 			{
-				throw ("Number of vertices shouldn't be more than " + MAX_VERTEX_PER_BUFFER);
+				throw ("Number of vertices shouldn't be more than " + RenderJob.MAX_VERTEX_PER_BUFFER);
 			}
 			
 			renderJob.addTriangles(vertices, indices, uvtData, colors);
@@ -304,7 +288,7 @@ class TilesheetStage3D extends Tilesheet
 			///////////////////
 			// for each item //
 			///////////////////
-			var maxNumItems:Int = MAX_QUADS_PER_BUFFER;
+			var maxNumItems:Int = RenderJob.quadsPerBuffer;
 			var startItemPos:Int = 0;
 			var numItemsThisLoop:Int = 0;
 			

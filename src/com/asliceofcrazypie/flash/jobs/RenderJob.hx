@@ -31,6 +31,19 @@ class RenderJob
 	public static inline var BLEND_MULTIPLY:String = "multiply";
 	public static inline var BLEND_SCREEN:String = "screen";
 	
+	public static inline var MAX_INDICES_PER_BUFFER:Int = 98298;
+	public static inline var MAX_VERTEX_PER_BUFFER:Int = 65532;		// (MAX_INDICES_PER_BUFFER * 4 / 6)
+	public static inline var MAX_QUADS_PER_BUFFER:Int = 16383;		// (MAX_VERTEX_PER_BUFFER / 4)
+	public static inline var MAX_TRIANGLES_PER_BUFFER:Int = 21844;	// (MAX_VERTEX_PER_BUFFER / 3)
+	
+	// TODO: make batch size settable (this means adding static vars like VERTEX_PER_BUFFER, QUADS_PER_BUFFER and INDICES_PER_BUFFER)
+	
+	// TODO: use these static vars (and document them)...
+	public static var vertexPerBuffer(default, null):Int;
+	public static var quadsPerBuffer(default, null):Int;
+	public static var trianglesPerBuffer(default, null):Int;
+	public static var indicesPerBuffer(default, null):Int;
+	
 	private static var premultipliedBlendFactors:StringMap<Array<Context3DBlendFactor>>;
 	private static var noPremultipliedBlendFactors:StringMap<Array<Context3DBlendFactor>>;
 	
@@ -55,16 +68,30 @@ class RenderJob
 	public var vertexPos:Int = 0;
 	public var indexPos:Int = 0;
 	
+	@:allow(com.asliceofcrazypie.flash)
+	private static function init(batchSize:Int = 0):Void
+	{
+		if (batchSize <= 0 || batchSize > MAX_QUADS_PER_BUFFER)
+		{
+			batchSize = MAX_QUADS_PER_BUFFER;
+		}
+		
+		quadsPerBuffer = batchSize;
+		vertexPerBuffer = batchSize * 4;
+		trianglesPerBuffer = Std.int(vertexPerBuffer / 3);
+		indicesPerBuffer = Std.int(vertexPerBuffer * 6 / 4);
+	}
+	
 	public function new(useBytes:Bool = false)
 	{
-		this.vertices = new Vector<Float>(TilesheetStage3D.vertexPerBuffer >> 2);
+		this.vertices = new Vector<Float>(RenderJob.vertexPerBuffer >> 2);
 		
 		if (useBytes)
 		{
 			indicesBytes = new ByteArray();
 			indicesBytes.endian = Endian.LITTLE_ENDIAN;
 			
-			for (i in 0...Std.int(TilesheetStage3D.vertexPerBuffer / 4))
+			for (i in 0...Std.int(RenderJob.vertexPerBuffer / 4))
 			{
 				indicesBytes.writeShort((i * 4) + 2);
 				indicesBytes.writeShort((i * 4) + 1);
@@ -254,6 +281,21 @@ class RenderJob
 			
 			context.context3D.drawTriangles(indexbuffer);
 		}
+	}
+	
+	public inline function canAddQuad():Bool
+	{
+		return (numVertices + 4) <= RenderJob.vertexPerBuffer;
+	}
+	
+	public inline function canAddTriangles(numVertices:Int):Bool
+	{
+		return (numVertices + this.numVertices) <= RenderJob.vertexPerBuffer;
+	}
+	
+	public inline function checkMaxTrianglesCapacity(numVertices:Int):Bool
+	{
+		return numVertices <= RenderJob.vertexPerBuffer;
 	}
 	
 	private inline function setBlending(context:ContextWrapper):Void

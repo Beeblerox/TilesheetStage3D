@@ -157,6 +157,7 @@ class ContextWrapper extends EventDispatcher
 	private function onRender(e:Event):Void 
 	{
 		render();
+		// TODO: add render callback...
 	}
 	
 	public inline function render():Void
@@ -277,15 +278,14 @@ class ContextWrapper extends EventDispatcher
 	
 	public inline function clear():Void
 	{
-		if (clearJobs() > 0)
+		clearJobs();
+		
+		if (context3D != null)
 		{
-			if (context3D != null)
-			{
-				context3D.clear(0, 0, 0, 1);
-			}
-			
-			presented = false;
+			context3D.clear(0, 0, 0, 1);
 		}
+		
+		presented = false;
 	}
 	
 	private inline function clearJobs():Int
