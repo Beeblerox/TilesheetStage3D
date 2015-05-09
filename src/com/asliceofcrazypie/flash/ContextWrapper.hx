@@ -165,20 +165,17 @@ class ContextWrapper extends EventDispatcher
 		{
 			renderCallback();
 		}
+		
+		present();
 	}
 	
 	public inline function render():Void
 	{
 		if (context3D != null && !presented)
 		{
-			if (numCurrentRenderJobs > 0)
+			for (job in currentRenderJobs)
 			{
-				for (job in currentRenderJobs)
-				{
-					renderJob(job);
-				}
-				
-				present();
+				renderJob(job);
 			}
 		}
 	}
