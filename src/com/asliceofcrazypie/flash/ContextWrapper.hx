@@ -22,6 +22,7 @@ import flash.events.Event;
 import flash.events.EventDispatcher;
 import flash.geom.Matrix;
 import flash.geom.Matrix3D;
+import flash.geom.Rectangle;
 import flash.utils.ByteArray;
 import flash.display3D.Context3DRenderMode;
 import flash.display3D.Context3DBlendFactor;
@@ -283,8 +284,7 @@ class ContextWrapper extends EventDispatcher
 			
 		//	baseTransformMatrix.appendScale(2, 2, 1); // viewport scale
 			
-			//apply the transform matrix
-			context3D.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 0, baseTransformMatrix, true);
+			setMatrix(baseTransformMatrix);
 		}
 	}
 	
@@ -404,6 +404,22 @@ class ContextWrapper extends EventDispatcher
 			{
 				doSetProgram(program);
 			}
+		}
+	}
+	
+	public function setMatrix(matrix:Matrix3D):Void
+	{
+		if (context3D != null)
+		{
+			context3D.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 0, matrix, true);
+		}
+	}
+	
+	public function setScissor(rect:Rectangle):Void
+	{
+		if (context3D != null)
+		{
+			context3D.setScissorRectangle(rect);
 		}
 	}
 	
