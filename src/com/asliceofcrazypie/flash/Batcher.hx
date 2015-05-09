@@ -73,15 +73,14 @@ class Batcher
 	
 	public inline function render():Void
 	{
+		var context = TilesheetStage3D.context;
+		
 		for (job in renderJobs)
 		{
-			TilesheetStage3D.context.renderJob(job);
+			context.renderJob(job);
 		}
-	}
-	
-	public static inline function present():Void
-	{
-		TilesheetStage3D.context.present();
+		
+		context.present();
 	}
 	
 	public static inline function clear():Void
