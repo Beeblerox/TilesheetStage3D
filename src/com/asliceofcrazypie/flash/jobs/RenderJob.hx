@@ -1,8 +1,4 @@
 package com.asliceofcrazypie.flash.jobs;
-import openfl.display.BlendMode;
-import openfl.geom.Matrix;
-import openfl.geom.Point;
-import openfl.geom.Rectangle;
 
 #if flash11
 import flash.display3D.IndexBuffer3D;
@@ -12,6 +8,10 @@ import flash.display3D.Context3DBlendFactor;
 import flash.display3D.VertexBuffer3D;
 import flash.display3D.Context3DTriangleFace;
 import flash.display.TriangleCulling;
+import flash.display.BlendMode;
+import flash.geom.Matrix;
+import flash.geom.Point;
+import flash.geom.Rectangle;
 import flash.Vector;
 import flash.errors.Error;
 import flash.utils.ByteArray;
@@ -35,8 +35,6 @@ class RenderJob
 	public static inline var MAX_VERTEX_PER_BUFFER:Int = 65532;		// (MAX_INDICES_PER_BUFFER * 4 / 6)
 	public static inline var MAX_QUADS_PER_BUFFER:Int = 16383;		// (MAX_VERTEX_PER_BUFFER / 4)
 	public static inline var MAX_TRIANGLES_PER_BUFFER:Int = 21844;	// (MAX_VERTEX_PER_BUFFER / 3)
-	
-	// TODO: make batch size settable (this means adding static vars like VERTEX_PER_BUFFER, QUADS_PER_BUFFER and INDICES_PER_BUFFER)
 	
 	// TODO: use these static vars (and document them)...
 	public static var vertexPerBuffer(default, null):Int;

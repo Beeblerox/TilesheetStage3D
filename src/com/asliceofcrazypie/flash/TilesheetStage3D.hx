@@ -10,8 +10,6 @@ import com.asliceofcrazypie.flash.jobs.RenderJob;
 import com.asliceofcrazypie.flash.jobs.QuadRenderJob;
 import com.asliceofcrazypie.flash.jobs.TriangleRenderJob;
 
-import flash.Vector;
-import haxe.Timer;
 import flash.errors.Error;
 import flash.display3D.Context3D;
 import flash.display3D.Context3DRenderMode;
@@ -26,9 +24,10 @@ import flash.errors.ArgumentError;
 import flash.events.ErrorEvent;
 import flash.geom.Point;
 import flash.geom.Rectangle;
-
 import flash.utils.ByteArray;
 import flash.utils.Endian;
+import flash.Vector;
+import haxe.Timer;
 #end
 
 /**

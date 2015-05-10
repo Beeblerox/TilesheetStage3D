@@ -1,12 +1,11 @@
 package com.asliceofcrazypie.flash.jobs;
 
-
+#if flash11
 import com.asliceofcrazypie.flash.jobs.RenderJob.RenderJobType;
-import openfl.display.BlendMode;
-import openfl.geom.Matrix;
-import openfl.geom.Point;
-import openfl.geom.Rectangle;
-import openfl.utils.ByteArray;
+import flash.display.BlendMode;
+import flash.geom.Matrix;
+import flash.geom.Point;
+import flash.geom.Rectangle;
 import flash.display3D.textures.Texture;
 
 /**
@@ -67,3 +66,4 @@ class QuadRenderJob extends RenderJob
 		}
 	}
 }
+#end

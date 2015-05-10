@@ -1,13 +1,13 @@
 package com.asliceofcrazypie.flash.jobs;
 
+#if flash11
 import com.asliceofcrazypie.flash.jobs.RenderJob.RenderJobType;
-import openfl.geom.Matrix;
-import openfl.geom.Point;
-import openfl.geom.Rectangle;
-import openfl.Vector;
-
-import flash.display3D.textures.Texture;
 import flash.display.BlendMode;
+import flash.display3D.textures.Texture;
+import flash.geom.Matrix;
+import flash.geom.Point;
+import flash.geom.Rectangle;
+import flash.Vector;
 
 /**
  * ...
@@ -116,3 +116,4 @@ class TriangleRenderJob extends RenderJob
 		}
 	}
 }
+#end

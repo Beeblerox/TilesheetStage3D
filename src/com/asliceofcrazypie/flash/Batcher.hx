@@ -3,15 +3,15 @@ package com.asliceofcrazypie.flash;
 import com.asliceofcrazypie.flash.jobs.QuadRenderJob;
 import com.asliceofcrazypie.flash.jobs.RenderJob;
 import com.asliceofcrazypie.flash.jobs.TriangleRenderJob;
-import openfl.display.Stage;
-import openfl.geom.Matrix;
-import openfl.geom.Point;
-import openfl.geom.Rectangle;
-import openfl.Lib;
-import openfl.Vector;
-import flash.display.TriangleCulling;
 import flash.display.BlendMode;
 import flash.display3D.Context3DRenderMode;
+import flash.display.Stage;
+import flash.display.TriangleCulling;
+import flash.geom.Matrix;
+import flash.geom.Point;
+import flash.geom.Rectangle;
+import flash.Vector;
+import openfl.Lib;
 
 /**
  * ...

@@ -5,17 +5,16 @@ import com.asliceofcrazypie.flash.jobs.RenderJob;
 import com.asliceofcrazypie.flash.jobs.QuadRenderJob;
 import com.asliceofcrazypie.flash.jobs.TriangleRenderJob;
 
+import flash.display3D.Context3DRenderMode;
+import flash.display3D.Context3DBlendFactor;
+import flash.display3D.Context3DProgramType;
+import flash.display3D.Context3DTextureFormat;
 import flash.display3D.Context3D;
 import flash.display3D.Program3D;
 import flash.display3D.textures.Texture;
-import flash.Vector;
-import flash.Vector;
 import flash.display.BitmapData;
 import flash.display.DisplayObject;
 import flash.display.DisplayObjectContainer;
-import flash.display.Graphics;
-import flash.display.SimpleButton;
-import flash.display.Sprite;
 import flash.display.Stage;
 import flash.events.ErrorEvent;
 import flash.events.Event;
@@ -24,11 +23,8 @@ import flash.geom.Matrix;
 import flash.geom.Matrix3D;
 import flash.geom.Rectangle;
 import flash.utils.ByteArray;
-import flash.display3D.Context3DRenderMode;
-import flash.display3D.Context3DBlendFactor;
-import flash.display3D.Context3DProgramType;
-import flash.display3D.Context3DTextureFormat;
 import flash.utils.Endian;
+import flash.Vector;
 
 /**
  * ...
