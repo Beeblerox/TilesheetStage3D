@@ -133,7 +133,7 @@ class Viewport
 			&& alpha == lastRenderJob.isAlpha
 			&& smooth == lastRenderJob.isSmooth
 			&& blend == lastRenderJob.blendMode
-			&& tilesheet.premultipliedAlpha == lastRenderJob.premultipliedAlpha) // TODO: add check/change for number of vertices / indices later...
+			&& tilesheet.premultipliedAlpha == lastRenderJob.premultipliedAlpha)
 		{
 			return lastQuadRenderJob;
 		}
@@ -161,7 +161,7 @@ class Viewport
 			&& colored == lastRenderJob.isAlpha
 			&& smoothing == lastRenderJob.isSmooth
 			&& blend == lastRenderJob.blendMode
-			&& tilesheet.premultipliedAlpha == lastRenderJob.premultipliedAlpha) // TODO: add check/change for number of vertices / indices later...
+			&& tilesheet.premultipliedAlpha == lastRenderJob.premultipliedAlpha) 
 		{
 			return lastTriangleRenderJob;
 		}

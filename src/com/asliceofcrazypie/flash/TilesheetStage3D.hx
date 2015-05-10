@@ -36,6 +36,8 @@ import haxe.Timer;
  */
 class TilesheetStage3D extends Tilesheet
 {
+	public var bitmap(get, set):BitmapData;
+	
 	public function new(inImage:BitmapData, premultipliedAlpha:Bool = true) 
 	{
 		#if flash11
@@ -436,6 +438,21 @@ class TilesheetStage3D extends Tilesheet
 		}
 		
 		return '';
+	}
+	
+	private function get_bitmap():BitmapData
+	{
+		return __bitmap;
+	}
+	
+	// TODO: implement it and document it...
+	/**
+	 * 
+	 * @param	bitmap
+	 */
+	private function set_bitmap(bitmap:BitmapData):BitmapData
+	{
+		return __bitmap = bitmap;
 	}
 	
 	public function dispose():Void
