@@ -48,14 +48,14 @@ class Batcher
 		return null;
 	}
 	
-	public static function addViewport(x:Float, y:Float, width:Float, height:Float, scaleX:Float = 1, scaleY:Float = 1):Int
+	public static function addViewport(x:Float, y:Float, width:Float, height:Float, scaleX:Float = 1, scaleY:Float = 1):Viewport
 	{
 		var viewport:Viewport = new Viewport(x, y, width, height, scaleX, scaleY);
 		var index:Int = numViewports;
 		viewports[index] = viewport;
 		viewport.index = index;
 		numViewports++;
-		return index;
+		return viewport;
 	}
 	
 	public static function removeViewport(index:Int):Void

@@ -44,6 +44,10 @@ class Viewport
 	private var quadRenderJobs:Vector<QuadRenderJob>;
 	private var triangleRenderJobs:Vector<TriangleRenderJob>;
 	
+	// TODO: use these vars for matrix calculations
+	private var initialScaleX:Float;
+	private var initialScaleY:Float;
+	
 	public function new(x:Float, y:Float, width:Float, height:Float, scaleX:Float = 1, scaleY:Float = 1) 
 	{
 		scissor = new Rectangle();
@@ -52,6 +56,9 @@ class Viewport
 		renderJobs = new Vector<RenderJob>();
 		quadRenderJobs = new Vector<QuadRenderJob>();
 		triangleRenderJobs = new Vector<TriangleRenderJob>();
+		
+		initialScaleX = scaleX;
+		initialScaleY = scaleY;
 		
 		this.x = x;
 		this.y = y;
@@ -266,14 +273,22 @@ class Viewport
 		
 		var stage:Stage = Lib.current.stage;
 		
-		var totalScaleX:Float = (scaleX * Batcher.gameScaleX);
-		var totalScaleY:Float = (scaleY * Batcher.gameScaleY);
+		// TODO: optimize this method...
+		
+		var totalScaleX:Float = scaleX * Batcher.gameScaleX;
+		var totalScaleY:Float = scaleY * Batcher.gameScaleY;
+		
+		var initialTotalScaleX:Float = initialScaleX * Batcher.gameScaleX;
+		var initialTotalScaleY:Float = initialScaleY * Batcher.gameScaleY;
 		
 		matrix.identity();
 		matrix.appendTranslation( -0.5 * stage.stageWidth / totalScaleX, -0.5 * stage.stageHeight / totalScaleY, 0);
-		matrix.appendTranslation(	(Batcher.gameX + x * Batcher.gameScaleX) / totalScaleX,
-									(Batcher.gameY + y * Batcher.gameScaleY) / totalScaleY,
+		matrix.appendTranslation(	(Batcher.gameX + (x + 0.5 * width) * Batcher.gameScaleX) / totalScaleX,
+									(Batcher.gameY + (y + 0.5 * height) * Batcher.gameScaleY) / totalScaleY,
 									0); // viewport position
+		matrix.appendTranslation( 	-0.5 * width * Batcher.gameScaleX / initialTotalScaleX,
+									-0.5 * height * Batcher.gameScaleY / initialTotalScaleY,
+									0);
 		
 		matrix.appendScale(2 / stage.stageWidth, -2 / stage.stageHeight, 1);
 		matrix.appendScale(totalScaleX, totalScaleY, 1); // viewport scale
