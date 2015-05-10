@@ -173,6 +173,9 @@ class ContextWrapper extends EventDispatcher
 	{
 		if (context3D != null && !presented)
 		{
+			setMatrix(baseTransformMatrix);
+			setScissor(null);
+			
 			for (job in currentRenderJobs)
 			{
 				renderJob(job);

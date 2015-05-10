@@ -3,6 +3,7 @@ package com.asliceofcrazypie.flash;
 import com.asliceofcrazypie.flash.jobs.QuadRenderJob;
 import com.asliceofcrazypie.flash.jobs.RenderJob;
 import com.asliceofcrazypie.flash.jobs.TriangleRenderJob;
+import openfl.display.Stage;
 import openfl.geom.Matrix;
 import openfl.geom.Point;
 import openfl.geom.Rectangle;
@@ -10,6 +11,7 @@ import openfl.Lib;
 import openfl.Vector;
 import flash.display.TriangleCulling;
 import flash.display.BlendMode;
+import flash.display3D.Context3DRenderMode;
 
 /**
  * ...
@@ -28,6 +30,8 @@ class Batcher
 	public static var numViewports(default, null):Int;
 	
 	public static var defaultViewport(get, null):Viewport;
+	
+	private static var _isInited:Bool = false;
 	
 	private static inline function get_defaultViewport():Viewport
 	{
@@ -105,12 +109,16 @@ class Batcher
 		}
 	}
 	
-	public static function init():Void
+	public static function init(stage:Stage, stage3DLevel:Int = 0, antiAliasLevel:Int = 5, initCallback:String->Void = null, renderMode:Context3DRenderMode = null, batchSize:Int = 0):Void
 	{
-		TilesheetStage3D.context.renderCallback = render;
+		if (!_isInited)
+		{
+			TilesheetStage3D.init(stage, stage3DLevel, antiAliasLevel, initCallback, renderMode, batchSize);
+			TilesheetStage3D.context.renderCallback = render;
+		}
 	}
 	
-	public static inline function reset():Void
+	private static inline function reset():Void
 	{
 		for (viewport in viewports)
 		{
@@ -130,5 +138,6 @@ class Batcher
 	public static inline function clear():Void
 	{
 		TilesheetStage3D.clear();
+		reset();
 	}
 }
