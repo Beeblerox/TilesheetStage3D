@@ -273,25 +273,26 @@ class Viewport
 		
 		var stage:Stage = Lib.current.stage;
 		
-		// TODO: optimize this method...
-		
 		var totalScaleX:Float = scaleX * Batcher.gameScaleX;
 		var totalScaleY:Float = scaleY * Batcher.gameScaleY;
 		
-		var initialTotalScaleX:Float = initialScaleX * Batcher.gameScaleX;
-		var initialTotalScaleY:Float = initialScaleY * Batcher.gameScaleY;
-		
 		matrix.identity();
 		matrix.appendTranslation( -0.5 * stage.stageWidth / totalScaleX, -0.5 * stage.stageHeight / totalScaleY, 0);
-		matrix.appendTranslation(	(Batcher.gameX + (x + 0.5 * width) * Batcher.gameScaleX) / totalScaleX,
-									(Batcher.gameY + (y + 0.5 * height) * Batcher.gameScaleY) / totalScaleY,
-									0); // viewport position
-		matrix.appendTranslation( 	-0.5 * width * Batcher.gameScaleX / initialTotalScaleX,
-									-0.5 * height * Batcher.gameScaleY / initialTotalScaleY,
-									0);
+		// viewport position
+		matrix.appendTranslation(	Batcher.gameX / totalScaleX,
+									Batcher.gameY / totalScaleY,
+									0); // game position offset
+									
+		matrix.appendTranslation(	(x + 0.5 * width) / scaleX,
+									(y + 0.5 * height) / scaleY,
+									0); // viewport center offset
+									
+		matrix.appendTranslation( 	-0.5 * width / initialScaleX,
+									-0.5 * height / initialScaleY,
+									0); // viewport top left corner
 		
 		matrix.appendScale(2 / stage.stageWidth, -2 / stage.stageHeight, 1);
-		matrix.appendScale(totalScaleX, totalScaleY, 1); // viewport scale
+		matrix.appendScale(totalScaleX, totalScaleY, 1); // total viewport scale
 	}
 	
 	private function updateScissor():Void
