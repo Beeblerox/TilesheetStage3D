@@ -272,15 +272,8 @@ class ContextWrapper extends EventDispatcher
 			context3D.configureBackBuffer(stage.stageWidth, stage.stageHeight, TilesheetStage3D.antiAliasing, false);
 			
 			baseTransformMatrix.identity();
-			
 			baseTransformMatrix.appendTranslation( -stage.stageWidth * 0.5, -stage.stageHeight * 0.5, 0);
-			
-		//	baseTransformMatrix.appendTranslation(stage.stageWidth * 0.5, stage.stageHeight * 0.5, 0); // viewport position
-			
 			baseTransformMatrix.appendScale(2 / stage.stageWidth, -2 / stage.stageHeight, 1);
-			
-		//	baseTransformMatrix.appendScale(2, 2, 1); // viewport scale
-			
 			setMatrix(baseTransformMatrix);
 		}
 	}

@@ -4,10 +4,12 @@ import com.asliceofcrazypie.flash.jobs.QuadRenderJob;
 import com.asliceofcrazypie.flash.jobs.RenderJob;
 import com.asliceofcrazypie.flash.jobs.TriangleRenderJob;
 import openfl.display.BlendMode;
+import openfl.display.Stage;
 import openfl.geom.Matrix;
 import openfl.geom.Matrix3D;
 import openfl.geom.Point;
 import openfl.geom.Rectangle;
+import openfl.Lib;
 import openfl.Vector;
 
 /**
@@ -41,7 +43,7 @@ class Viewport
 	private var quadRenderJobs:Vector<QuadRenderJob>;
 	private var triangleRenderJobs:Vector<TriangleRenderJob>;
 	
-	public function new(x:Float, y:Float, width:Float, height:Float, scaleX:Float, scaleY:Float) 
+	public function new(x:Float, y:Float, width:Float, height:Float, scaleX:Float = 1, scaleY:Float = 1) 
 	{
 		scissor = new Rectangle();
 		matrix = new Matrix3D();
@@ -54,11 +56,19 @@ class Viewport
 		this.y = y;
 		this.width = width;
 		this.height = height;
+		this.scaleX = scaleX;
+		this.scaleY = scaleY;
 	}
 	
 	public function dispose():Void
 	{
+		reset();
+		renderJobs = null;
+		quadRenderJobs = null;
+		triangleRenderJobs = null;
 		
+		scissor = null;
+		matrix = null;
 	}
 	
 	private inline function getLastRenderJob():RenderJob
@@ -101,6 +111,9 @@ class Viewport
 	
 	public inline function render(context:ContextWrapper):Void
 	{
+		context.setMatrix(matrix);
+		context.setScissor(scissor);
+		
 		for (job in renderJobs)
 		{
 			context.renderJob(job);
@@ -206,31 +219,78 @@ class Viewport
 	
 	private function set_x(value:Float):Float
 	{
-		return x = value;
+		x = value;
+		update();
+		return value;
 	}
 	
 	private function set_y(value:Float):Float
 	{
-		return y = value;
+		y = value;
+		update();
+		return value;
 	}
 	
 	private function set_width(value:Float):Float
 	{
-		return width = value;
+		width = value;
+		update();
+		return value;
 	}
 	
 	private function set_height(value:Float):Float
 	{
-		return height = value;
+		height = value;
+		update();
+		return value;
 	}
 	
 	private function set_scaleX(value:Float):Float
 	{
-		return scaleX = value;
+		scaleX = value;
+		update();
+		return value;
 	}
 	
 	private function set_scaleY(value:Float):Float
 	{
-		return scaleY = value;
+		scaleY = value;
+		update();
+		return value;
+	}
+	
+	private function updateMatrix():Void
+	{
+		if (matrix == null)	return;
+		
+		var stage:Stage = Lib.current.stage;
+		
+		var totalScaleX:Float = (scaleX * Batcher.gameScaleX);
+		var totalScaleY:Float = (scaleY * Batcher.gameScaleY);
+		
+		matrix.identity();
+		matrix.appendTranslation( -0.5 * stage.stageWidth / totalScaleX, -0.5 * stage.stageHeight / totalScaleY, 0);
+		matrix.appendTranslation(	(Batcher.gameX + x * Batcher.gameScaleX) / totalScaleX,
+									(Batcher.gameY + y * Batcher.gameScaleY) / totalScaleY,
+									0); // viewport position
+		
+		matrix.appendScale(2 / stage.stageWidth, -2 / stage.stageHeight, 1);
+		matrix.appendScale(totalScaleX, totalScaleY, 1); // viewport scale
+	}
+	
+	private function updateScissor():Void
+	{
+		if (scissor == null)	return;
+		
+		scissor.setTo(	Batcher.gameX + x * Batcher.gameScaleX, 
+						Batcher.gameY + y * Batcher.gameScaleY, 
+						width * Batcher.gameScaleX, 
+						height * Batcher.gameScaleY);
+	}
+	
+	public function update():Void
+	{
+		updateMatrix();
+		updateScissor();
 	}
 }

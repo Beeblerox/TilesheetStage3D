@@ -17,8 +17,11 @@ import flash.display.BlendMode;
  */
 class Batcher
 {
-	public static var gameScaleX(default, set):Float;
-	public static var gameScaleY(default, set):Float;
+	public static var gameScaleX(default, set):Float = 1;
+	public static var gameScaleY(default, set):Float = 1;
+	
+	public static var gameX(default, set):Float = 0;
+	public static var gameY(default, set):Float = 0;
 	
 	private static var viewports:Array<Viewport> = [];
 	
@@ -68,12 +71,38 @@ class Batcher
 	
 	private static function set_gameScaleX(value:Float):Float
 	{
-		return gameScaleX = value;
+		gameScaleX = value;
+		updateViewports();
+		return value;
 	}
 	
 	private static function set_gameScaleY(value:Float):Float
 	{
-		return gameScaleY = value;
+		gameScaleY = value;
+		updateViewports();
+		return value;
+	}
+	
+	private static function set_gameX(value:Float):Float
+	{
+		gameX = value;
+		updateViewports();
+		return value;
+	}
+	
+	private static function set_gameY(value:Float):Float
+	{
+		gameY = value;
+		updateViewports();
+		return value;
+	}
+	
+	private static function updateViewports():Void
+	{
+		for (viewport in viewports)
+		{
+			viewport.update();
+		}
 	}
 	
 	public static function init():Void
