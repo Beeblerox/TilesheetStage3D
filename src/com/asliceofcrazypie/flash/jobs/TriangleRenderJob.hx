@@ -37,7 +37,7 @@ class TriangleRenderJob extends RenderJob
 		indicesVector[indexPos++] = prevVerticesNumber + 0;
 	}
 	
-	public function addTriangles(vertices:Vector<Float>, indices:Vector<Int> = null, uvtData:Vector<Float> = null, colors:Vector<Int> = null):Void
+	public function addTriangles(vertices:Vector<Float>, indices:Vector<Int> = null, uvtData:Vector<Float> = null, colors:Vector<Int> = null, position:Point = null):Void
 	{
 		var numIndices:Int = indices.length;
 		var numVertices:Int = Std.int(vertices.length / 2);
@@ -49,12 +49,21 @@ class TriangleRenderJob extends RenderJob
 		
 		var colored:Bool = (isRGB || isAlpha);
 		
+		var x:Float = 0;
+		var y:Float = 0;
+		
+		if (position != null)
+		{
+			x = position.x;
+			y = position.y;
+		}
+		
 		for (i in 0...numVertices)
 		{
 			vertexIndex = 2 * i;
 			
-			this.vertices[vertexPos++] = vertices[vertexIndex];
-			this.vertices[vertexPos++] = vertices[vertexIndex + 1];
+			this.vertices[vertexPos++] = vertices[vertexIndex] + x;
+			this.vertices[vertexPos++] = vertices[vertexIndex + 1] + y;
 			
 			this.vertices[vertexPos++] = uvtData[vertexIndex];
 			this.vertices[vertexPos++] = uvtData[vertexIndex + 1];

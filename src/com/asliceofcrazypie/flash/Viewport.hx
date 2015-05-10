@@ -197,7 +197,7 @@ class Viewport
 		drawPixels(tilesheet, sourceRect, origin, uv, helperMatrix, cr, cg, cb, ca, blend, smoothing);
 	}
 	
-	public function drawTriangles(tilesheet:TilesheetStage3D, vertices:Vector<Float>, indices:Vector<Int>, uv:Vector<Float>, colors:Vector<Int> = null, blend:BlendMode = null, smoothing:Bool = false):Void
+	public function drawTriangles(tilesheet:TilesheetStage3D, vertices:Vector<Float>, indices:Vector<Int>, uv:Vector<Float>, colors:Vector<Int> = null, blend:BlendMode = null, smoothing:Bool = false, position:Point = null):Void
 	{
 		var colored:Bool = (colors != null && colors.length != 0);
 		var job:TriangleRenderJob = startTrianglesBatch(tilesheet, colored, blend, smoothing);
@@ -215,7 +215,7 @@ class Viewport
 			}
 		}
 		
-		job.addTriangles(vertices, indices, uv, colors);
+		job.addTriangles(vertices, indices, uv, colors, position);
 	}
 	
 	private function set_x(value:Float):Float
