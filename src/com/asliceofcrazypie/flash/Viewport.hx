@@ -287,7 +287,7 @@ class Viewport
 									(y + 0.5 * height) / scaleY,
 									0); // viewport center offset
 									
-		matrix.appendTranslation( 	-0.5 * width / initialScaleX,
+		matrix.appendTranslation(	-0.5 * width / initialScaleX,
 									-0.5 * height / initialScaleY,
 									0); // viewport top left corner
 		

@@ -41,7 +41,7 @@ class TilesheetStage3D extends Tilesheet
 	public function new(inImage:BitmapData, premultipliedAlpha:Bool = true) 
 	{
 		#if flash11
-		inImage = TilesheetStage3D.fixTextureSize(inImage.clone(), true);
+		inImage = TilesheetStage3D.fixTextureSize(inImage);
 		#end
 		
 		super(inImage);
@@ -452,7 +452,28 @@ class TilesheetStage3D extends Tilesheet
 	 */
 	private function set_bitmap(bitmap:BitmapData):BitmapData
 	{
-		return __bitmap = bitmap;
+		// check the size of texture
+		__bitmap = TilesheetStage3D.fixTextureSize(bitmap);
+		__bitmapWidth = __bitmap.width;
+		__bitmapHeight = __bitmap.height;
+		
+		// upload texture on gpu
+		if (context != null && context.context3D != null)
+		{
+			onResetTexture(null);
+		}
+		
+		// update uvs
+		var tileRect:Rectangle, uv:Rectangle;
+		var numTiles:Int = __tileRects.length;
+		for (i in 0...numTiles)
+		{
+			tileRect = __tileRects[i];
+			uv = __tileUVs[i];
+			uv.setTo(tileRect.left / __bitmapWidth, tileRect.top / __bitmapHeight, tileRect.right / __bitmapWidth, tileRect.bottom / __bitmapHeight);
+		}
+		
+		return __bitmap;
 	}
 	
 	public function dispose():Void
@@ -470,6 +491,11 @@ class TilesheetStage3D extends Tilesheet
 			this.__bitmap.dispose();
 			this.__bitmap = null;
 		}
+		
+		__ids = null;
+		__indices = null;
+		__uvs = null;
+		__vertices = null;
 	}
 	
 	//helper methods
@@ -490,7 +516,7 @@ class TilesheetStage3D extends Tilesheet
 		return (roundUpToPow2(texture.width) == texture.width && roundUpToPow2(texture.height) == texture.height);
 	}
 	
-	public static inline function fixTextureSize(texture:BitmapData, autoDispose:Bool = false):BitmapData
+	public static inline function fixTextureSize(texture:BitmapData):BitmapData
 	{
 		return if (isTextureOk(texture))
 		{
@@ -500,12 +526,6 @@ class TilesheetStage3D extends Tilesheet
 		{
 			var newTexture:BitmapData = new BitmapData(roundUpToPow2(texture.width), roundUpToPow2(texture.height), true, 0);
 			newTexture.copyPixels(texture, texture.rect, new Point(), null, null, true);
-			
-			if (autoDispose)
-			{
-				texture.dispose();
-			}
-			
 			newTexture;
 		}
 	}

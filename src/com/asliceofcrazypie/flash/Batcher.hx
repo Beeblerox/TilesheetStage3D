@@ -66,7 +66,7 @@ class Batcher
 			viewport.dispose();
 			viewports.splice(index, 1);
 			numViewports--;
-			for (i in index...(numViewports - 1))
+			for (i in index...numViewports)
 			{
 				viewports[i].index = i; 
 			}
