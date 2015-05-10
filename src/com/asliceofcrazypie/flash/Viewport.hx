@@ -22,6 +22,8 @@ class Viewport
 	public var scaleX(default, set):Float;
 	public var scaleY(default, set):Float;
 	
+	public var index:Int;
+	
 	public function new(x:Float, y:Float, width:Float, height:Float, scaleX:Float, scaleY:Float) 
 	{
 		scissor = new Rectangle();
