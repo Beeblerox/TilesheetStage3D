@@ -43,7 +43,7 @@ class Batcher
 		return viewports[0];
 	}
 	
-	public static function getViewport(index:Int):Viewport
+	public static function getViewportAt(index:Int):Viewport
 	{
 		return null;
 	}
@@ -58,7 +58,17 @@ class Batcher
 		return viewport;
 	}
 	
-	public static function removeViewport(index:Int):Void
+	public static function addViewportAt(x:Float, y:Float, width:Float, height:Float, scaleX:Float = 1, scaleY:Float = 1):Viewport
+	{
+		// TODO: implement it...
+	}
+	
+	public static function removeViewport(viewport:Viewport):Void
+	{
+		// TODO: implement it...
+	}
+	
+	public static function removeViewportAt(index:Int):Void
 	{
 		if (index < numViewports)
 		{
@@ -66,10 +76,44 @@ class Batcher
 			viewport.dispose();
 			viewports.splice(index, 1);
 			numViewports--;
-			for (i in index...numViewports)
-			{
-				viewports[i].index = i; 
-			}
+			updateViewportIndices();
+		}
+	}
+	
+	/**
+	 * 
+	 * 
+	 * @param	view1
+	 * @param	view2
+	 */
+	public static function swapViewports(view1:Viewport, view2:Viewport):Void
+	{
+		// TODO: implement it...
+	}
+	
+	/**
+	 * 
+	 * 
+	 * @param	index1
+	 * @param	index2
+	 */
+	public static function swapViewportsAt(index1:Viewport, index2:Viewport):Void
+	{
+		if (index1 >= numViewports || index2 >= numViewports)	return;
+		
+		// TODO: implement it...
+	}
+	
+	public static function setViewportIndex(viewport:Viewport, index:Int):Void
+	{
+		// TODO: implement it...
+	}
+	
+	private static inline function updateViewportIndices():Void
+	{
+		for (i in 0...numViewports)
+		{
+			viewports[i].index = i; 
 		}
 	}
 	

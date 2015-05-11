@@ -14,28 +14,52 @@ import flash.Vector;
 import openfl.Lib;
 
 /**
- * ...
+ * Some sort of camera class (works like camera in Flixel engine). Can be zoomed in/out, moved and resized.
  * @author Zaphod
  */
 class Viewport
 {
+	private static var helperMatrix:Matrix = new Matrix();
+	private static var helperRect:Rectangle = new Rectangle();
+	
+	/**
+	 * Viewport transformation matrix
+	 */
 	public var matrix(default, null):Matrix3D;
 	
+	/**
+	 * Viewport scissor rectangle for clipping everything that's outside viewport bounds
+	 */
 	public var scissor(default, null):Rectangle;
 	
+	/**
+	 * Viewport position. Actual position on the screen is affected by Batcher's gameX/gameY and gameScaleX/gameScaleY values.
+	 */
 	public var x(default, set):Float;
 	public var y(default, set):Float;
 	
+	/**
+	 * Viewport dimensions. Actual size on the screen is affected by Batcher's gameScaleX/gameScaleY values.
+	 */
 	public var width(default, set):Float;
 	public var height(default, set):Float;
 	
+	/**
+	 * Viewport scale. Result scale on the screen equals to the product of viewport scale and Batcher's gameScale.
+	 */
 	public var scaleX(default, set):Float;
 	public var scaleY(default, set):Float;
 	
+	/**
+	 * Draw order of the viewport. Don't change it manually.
+	 */
 	public var index:Int;
 	
-	private static var helperMatrix:Matrix = new Matrix();
-	private static var helperRect:Rectangle = new Rectangle();
+	/**
+	 * Initial viewport scale.
+	 */
+	private var initialScaleX:Float;
+	private var initialScaleY:Float;
 	
 	private var numRenderJobs:Int = 0;
 	private var numQuadRenderJobs:Int = 0;
@@ -45,9 +69,18 @@ class Viewport
 	private var quadRenderJobs:Vector<QuadRenderJob>;
 	private var triangleRenderJobs:Vector<TriangleRenderJob>;
 	
-	private var initialScaleX:Float;
-	private var initialScaleY:Float;
+	// TODO: add viewport tinting (this will require adding new shaders or some additional multiplications)...
 	
+	/**
+	 * Viewport consctructor.
+	 * 
+	 * @param	x		x position of viewport
+	 * @param	y		y position of viewport
+	 * @param	width	width of viewport
+	 * @param	height	height of viewport
+	 * @param	scaleX	initial x scale of viewport
+	 * @param	scaleY	initial y scale of viewport
+	 */
 	public function new(x:Float, y:Float, width:Float, height:Float, scaleX:Float = 1, scaleY:Float = 1) 
 	{
 		scissor = new Rectangle();
@@ -68,6 +101,9 @@ class Viewport
 		this.scaleY = scaleY;
 	}
 	
+	/**
+	 * Viewport disposing method for nulling some variables, which should help automatic garbage collection.
+	 */
 	public function dispose():Void
 	{
 		reset();
@@ -94,6 +130,9 @@ class Viewport
 		return (numTriangleRenderJobs > 0) ? triangleRenderJobs[numTriangleRenderJobs - 1] : null;
 	}
 	
+	/**
+	 * Reseting Viewport before next rendering.
+	 */
 	public inline function reset():Void
 	{
 		for (renderJob in quadRenderJobs)
@@ -184,6 +223,20 @@ class Viewport
 		return job;
 	}
 	
+	/**
+	 * Drawing transformed part of image. 
+	 * 
+	 * @param	tilesheet
+	 * @param	sourceRect
+	 * @param	origin
+	 * @param	matrix
+	 * @param	cr
+	 * @param	cg
+	 * @param	cb
+	 * @param	ca
+	 * @param	blend
+	 * @param	smoothing
+	 */
 	public inline function drawPixels(tilesheet:TilesheetStage3D, sourceRect:Rectangle, origin:Point, matrix:Matrix, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null, smoothing:Bool = false):Void
 	{
 		var uv:Rectangle = Viewport.helperRect;
@@ -191,6 +244,21 @@ class Viewport
 		drawPixels2(tilesheet, sourceRect, origin, uv, matrix, cr, cg, cb, ca, blend, smoothing);
 	}
 	
+	/**
+	 * 
+	 * 
+	 * @param	tilesheet
+	 * @param	sourceRect
+	 * @param	origin
+	 * @param	uv
+	 * @param	matrix
+	 * @param	cr
+	 * @param	cg
+	 * @param	cb
+	 * @param	ca
+	 * @param	blend
+	 * @param	smoothing
+	 */
 	public inline function drawPixels2(tilesheet:TilesheetStage3D, sourceRect:Rectangle, origin:Point, uv:Rectangle, matrix:Matrix, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null, smoothing:Bool = false):Void
 	{
 		var colored:Bool = (cr != 1.0) || (cg != 1.0) || (cb != 1.0) || (ca != 1.0);
