@@ -1,4 +1,5 @@
 package com.asliceofcrazypie.flash.jobs;
+import com.asliceofcrazypie.flash.TilesheetStage3D;
 
 #if flash11
 import flash.display3D.IndexBuffer3D;
@@ -45,7 +46,7 @@ class RenderJob
 	private static var premultipliedBlendFactors:StringMap<Array<Context3DBlendFactor>>;
 	private static var noPremultipliedBlendFactors:StringMap<Array<Context3DBlendFactor>>;
 	
-	public var texture:Texture;
+	public var tilesheet:TilesheetStage3D;
 	public var vertices(default, null):Vector<Float>;
 	public var isRGB:Bool;
 	public var isAlpha:Bool;
@@ -230,7 +231,7 @@ class RenderJob
 			
 			// context.context3D.setCulling();
 			
-			context.setTexture(texture);
+			context.setTexture(tilesheet.texture);
 			
 			//actually create the buffers
 			var vertexbuffer:VertexBuffer3D = null;

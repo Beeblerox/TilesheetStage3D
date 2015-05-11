@@ -55,6 +55,11 @@ class Viewport
 	 */
 	public var index:Int;
 	
+	// TODO: use this var...
+	public var visible:Bool = true;
+	// TODO: use this var...
+	public var active:Bool = true;
+	
 	/**
 	 * Initial viewport scale.
 	 */
@@ -174,7 +179,7 @@ class Viewport
 		
 		if (lastRenderJob != null && lastQuadRenderJob != null
 			&& lastRenderJob == lastQuadRenderJob 
-			&& tilesheet.texture == lastRenderJob.texture
+			&& tilesheet == lastRenderJob.tilesheet
 			&& tinted == lastRenderJob.isRGB
 			&& alpha == lastRenderJob.isAlpha
 			&& smooth == lastRenderJob.isSmooth
@@ -189,7 +194,7 @@ class Viewport
 	
 	public inline function startNewQuadBatch(tilesheet:TilesheetStage3D, tinted:Bool, alpha:Bool, blend:BlendMode = null, smooth:Bool = false):QuadRenderJob
 	{
-		var job:QuadRenderJob = QuadRenderJob.getJob(tilesheet.texture, tinted, alpha, smooth, blend, tilesheet.premultipliedAlpha);
+		var job:QuadRenderJob = QuadRenderJob.getJob(tilesheet, tinted, alpha, smooth, blend, tilesheet.premultipliedAlpha);
 		renderJobs[numRenderJobs++] = job;
 		quadRenderJobs[numQuadRenderJobs++] = job;
 		return job;
@@ -202,7 +207,7 @@ class Viewport
 		
 		if (lastRenderJob != null && lastTriangleRenderJob != null
 			&& lastRenderJob == lastTriangleRenderJob 
-			&& tilesheet.texture == lastRenderJob.texture
+			&& tilesheet == lastRenderJob.tilesheet
 			&& colored == lastRenderJob.isRGB
 			&& colored == lastRenderJob.isAlpha
 			&& smoothing == lastRenderJob.isSmooth
@@ -217,7 +222,7 @@ class Viewport
 	
 	public inline function startNewTrianglesBatch(tilesheet:TilesheetStage3D, colored:Bool = false, blend:BlendMode = null, smoothing:Bool = false):TriangleRenderJob
 	{
-		var job:TriangleRenderJob = TriangleRenderJob.getJob(tilesheet.texture, colored, colored, smoothing, blend, tilesheet.premultipliedAlpha);
+		var job:TriangleRenderJob = TriangleRenderJob.getJob(tilesheet, colored, colored, smoothing, blend, tilesheet.premultipliedAlpha);
 		renderJobs[numRenderJobs++] = job;
 		triangleRenderJobs[numTriangleRenderJobs++] = job;
 		return job;

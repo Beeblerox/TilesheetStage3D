@@ -1,4 +1,5 @@
 package com.asliceofcrazypie.flash.jobs;
+import com.asliceofcrazypie.flash.TilesheetStage3D;
 
 #if flash11
 import com.asliceofcrazypie.flash.jobs.RenderJob.RenderJobType;
@@ -28,11 +29,11 @@ class QuadRenderJob extends RenderJob
 		indexPos += 6;
 	}
 	
-	public static inline function getJob(texture:Texture, isRGB:Bool, isAlpha:Bool, isSmooth:Bool, blend:BlendMode, premultiplied:Bool):QuadRenderJob
+	public static inline function getJob(tilesheet:TilesheetStage3D, isRGB:Bool, isAlpha:Bool, isSmooth:Bool, blend:BlendMode, premultiplied:Bool):QuadRenderJob
 	{
 		var job:QuadRenderJob = (renderJobPool.length > 0) ? renderJobPool.pop() : new QuadRenderJob();
 		
-		job.texture = texture;
+		job.tilesheet = tilesheet;
 		job.isRGB = isRGB;
 		job.isAlpha = isAlpha;
 		job.isSmooth = isSmooth;

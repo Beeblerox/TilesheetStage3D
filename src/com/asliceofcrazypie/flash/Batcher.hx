@@ -61,6 +61,8 @@ class Batcher
 	public static function addViewportAt(x:Float, y:Float, width:Float, height:Float, scaleX:Float = 1, scaleY:Float = 1):Viewport
 	{
 		// TODO: implement it...
+		
+		return null;
 	}
 	
 	public static function removeViewport(viewport:Viewport):Void
@@ -97,7 +99,7 @@ class Batcher
 	 * @param	index1
 	 * @param	index2
 	 */
-	public static function swapViewportsAt(index1:Viewport, index2:Viewport):Void
+	public static function swapViewportsAt(index1:Int, index2:Int):Void
 	{
 		if (index1 >= numViewports || index2 >= numViewports)	return;
 		

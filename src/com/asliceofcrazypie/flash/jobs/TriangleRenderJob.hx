@@ -1,4 +1,5 @@
 package com.asliceofcrazypie.flash.jobs;
+import com.asliceofcrazypie.flash.TilesheetStage3D;
 
 #if flash11
 import com.asliceofcrazypie.flash.jobs.RenderJob.RenderJobType;
@@ -87,11 +88,11 @@ class TriangleRenderJob extends RenderJob
 		this.numIndices += numIndices;
 	}
 	
-	public static inline function getJob(texture:Texture, isRGB:Bool, isAlpha:Bool, isSmooth:Bool, blend:BlendMode, premultiplied:Bool):TriangleRenderJob
+	public static inline function getJob(tilesheet:TilesheetStage3D, isRGB:Bool, isAlpha:Bool, isSmooth:Bool, blend:BlendMode, premultiplied:Bool):TriangleRenderJob
 	{
 		var job:TriangleRenderJob = (renderJobPool.length > 0) ? renderJobPool.pop() : new TriangleRenderJob();
 		
-		job.texture = texture;
+		job.tilesheet = tilesheet;
 		job.isRGB = isRGB;
 		job.isAlpha = isAlpha;
 		job.isSmooth = isSmooth;
