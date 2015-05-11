@@ -451,13 +451,22 @@ class TilesheetStage3D extends Tilesheet
 		return __bitmap;
 	}
 	
-	// TODO: implement it and document it...
+	// TODO: document it...
 	/**
 	 * 
 	 * @param	bitmap
 	 */
 	private function set_bitmap(bitmap:BitmapData):BitmapData
 	{
+		var oldWidth:Int = 0;
+		var oldHeight:Int = 0;
+		
+		if (__bitmap != null)
+		{
+			oldWidth = __bitmapWidth;
+			oldHeight = __bitmapHeight;
+		}
+		
 		// check the size of texture
 		__bitmap = TilesheetStage3D.fixTextureSize(bitmap);
 		__bitmapWidth = __bitmap.width;
@@ -472,14 +481,17 @@ class TilesheetStage3D extends Tilesheet
 			onResetTexture(null);
 		}
 		
-		// update uvs
-		var tileRect:Rectangle, uv:Rectangle;
-		var numTiles:Int = __tileRects.length;
-		for (i in 0...numTiles)
+		if ((oldWidth != __bitmapWidth) || (oldHeight != __bitmapHeight))
 		{
-			tileRect = __tileRects[i];
-			uv = __tileUVs[i];
-			uv.setTo(tileRect.left / __bitmapWidth, tileRect.top / __bitmapHeight, tileRect.right / __bitmapWidth, tileRect.bottom / __bitmapHeight);
+			// update uvs
+			var tileRect:Rectangle, uv:Rectangle;
+			var numTiles:Int = __tileRects.length;
+			for (i in 0...numTiles)
+			{
+				tileRect = __tileRects[i];
+				uv = __tileUVs[i];
+				uv.setTo(tileRect.left / __bitmapWidth, tileRect.top / __bitmapHeight, tileRect.right / __bitmapWidth, tileRect.bottom / __bitmapHeight);
+			}
 		}
 		
 		return __bitmap;
