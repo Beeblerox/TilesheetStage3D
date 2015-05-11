@@ -65,17 +65,30 @@ class Batcher
 		return null;
 	}
 	
-	public static function removeViewport(viewport:Viewport):Void
+	/**
+	 * 
+	 * 
+	 * @param	viewport
+	 * @param	dispose
+	 */
+	public static function removeViewport(viewport:Viewport, dispose:Bool = true):Void
 	{
-		// TODO: implement it...
+		var index:Int = viewports.indexOf(viewport);
+		removeViewportAt(index, dispose);
 	}
 	
-	public static function removeViewportAt(index:Int):Void
+	/**
+	 * 
+	 * 
+	 * @param	index
+	 * @param	dispose
+	 */
+	public static function removeViewportAt(index:Int, dispose:Bool = true):Void
 	{
-		if (index < numViewports)
+		if (index >= 0 || index < numViewports)
 		{
 			var viewport:Viewport = viewports[index];
-			viewport.dispose();
+			if (dispose)	viewport.dispose();
 			viewports.splice(index, 1);
 			numViewports--;
 			updateViewportIndices();
@@ -90,7 +103,9 @@ class Batcher
 	 */
 	public static function swapViewports(view1:Viewport, view2:Viewport):Void
 	{
-		// TODO: implement it...
+		var index1:Int = viewports.indexOf(view1);
+		var index2:Int = viewports.indexOf(view2);
+		swapViewportsAt(index1, index2);
 	}
 	
 	/**
@@ -101,9 +116,16 @@ class Batcher
 	 */
 	public static function swapViewportsAt(index1:Int, index2:Int):Void
 	{
-		if (index1 >= numViewports || index2 >= numViewports)	return;
+		if (index1 < 0 || index2 < 0 || index1 == index2 || index1 >= numViewports || index2 >= numViewports)	return;
 		
-		// TODO: implement it...
+		var view1:Viewport = viewports[index1];
+		var view2:Viewport = viewports[index2];
+		
+		viewports[index1] = view2;
+		viewports[index2] = view1;
+		
+		view1.index = index2;
+		view2.index = index1;
 	}
 	
 	public static function setViewportIndex(viewport:Viewport, index:Int):Void
