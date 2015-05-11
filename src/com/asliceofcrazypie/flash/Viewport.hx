@@ -35,6 +35,7 @@ class Viewport
 	public var index:Int;
 	
 	private static var helperMatrix:Matrix = new Matrix();
+	private static var helperRect:Rectangle = new Rectangle();
 	
 	private var numRenderJobs:Int = 0;
 	private var numQuadRenderJobs:Int = 0;
@@ -44,7 +45,6 @@ class Viewport
 	private var quadRenderJobs:Vector<QuadRenderJob>;
 	private var triangleRenderJobs:Vector<TriangleRenderJob>;
 	
-	// TODO: use these vars for matrix calculations
 	private var initialScaleX:Float;
 	private var initialScaleY:Float;
 	
@@ -184,7 +184,14 @@ class Viewport
 		return job;
 	}
 	
-	public inline function drawPixels(tilesheet:TilesheetStage3D, sourceRect:Rectangle, origin:Point, uv:Rectangle, matrix:Matrix, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null, smoothing:Bool = false):Void
+	public inline function drawPixels(tilesheet:TilesheetStage3D, sourceRect:Rectangle, origin:Point, matrix:Matrix, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null, smoothing:Bool = false):Void
+	{
+		var uv:Rectangle = Viewport.helperRect;
+		uv.setTo(sourceRect.left / tilesheet.bitmapWidth, sourceRect.top / tilesheet.bitmapHeight, sourceRect.right / tilesheet.bitmapWidth, sourceRect.bottom / tilesheet.bitmapHeight);
+		drawPixels2(tilesheet, sourceRect, origin, uv, matrix, cr, cg, cb, ca, blend, smoothing);
+	}
+	
+	public inline function drawPixels2(tilesheet:TilesheetStage3D, sourceRect:Rectangle, origin:Point, uv:Rectangle, matrix:Matrix, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null, smoothing:Bool = false):Void
 	{
 		var colored:Bool = (cr != 1.0) || (cg != 1.0) || (cb != 1.0) || (ca != 1.0);
 		var job:QuadRenderJob = startQuadBatch(tilesheet, colored, colored, blend, smoothing);
@@ -197,11 +204,25 @@ class Viewport
 		job.addQuad(sourceRect, origin, uv, matrix, cr, cg, cb, ca);
 	}
 	
-	public function copyPixels(tilesheet:TilesheetStage3D, sourceRect:Rectangle, origin:Point, uv:Rectangle, destPoint:Point = null, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null, smoothing:Bool = false):Void
+	public function copyPixels(tilesheet:TilesheetStage3D, sourceRect:Rectangle, origin:Point, destPoint:Point = null, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null, smoothing:Bool = false):Void
+	{
+		helperMatrix.identity();
+		var destX:Float = 0;
+		var destY:Float = 0;
+		if (destPoint != null)
+		{
+			destX = destPoint.x;
+			destY = destPoint.y;
+		}
+		helperMatrix.translate(destX, destY);
+		drawPixels(tilesheet, sourceRect, origin, helperMatrix, cr, cg, cb, ca, blend, smoothing);
+	}
+	
+	public function copyPixels2(tilesheet:TilesheetStage3D, sourceRect:Rectangle, origin:Point, uv:Rectangle, destPoint:Point = null, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null, smoothing:Bool = false):Void
 	{
 		helperMatrix.identity();
 		helperMatrix.translate(destPoint.x, destPoint.y);
-		drawPixels(tilesheet, sourceRect, origin, uv, helperMatrix, cr, cg, cb, ca, blend, smoothing);
+		drawPixels2(tilesheet, sourceRect, origin, uv, helperMatrix, cr, cg, cb, ca, blend, smoothing);
 	}
 	
 	public function drawTriangles(tilesheet:TilesheetStage3D, vertices:Vector<Float>, indices:Vector<Int>, uv:Vector<Float>, colors:Vector<Int> = null, blend:BlendMode = null, smoothing:Bool = false, position:Point = null):Void

@@ -38,6 +38,9 @@ class TilesheetStage3D extends Tilesheet
 {
 	public var bitmap(get, set):BitmapData;
 	
+	public var bitmapWidth(default, null):Int;
+	public var bitmapHeight(default, null):Int;
+	
 	public function new(inImage:BitmapData, premultipliedAlpha:Bool = true) 
 	{
 		#if flash11
@@ -45,6 +48,9 @@ class TilesheetStage3D extends Tilesheet
 		#end
 		
 		super(inImage);
+		
+		bitmapWidth = __bitmapWidth;
+		bitmapHeight = __bitmapHeight;
 		
 		#if flash11
 		this.premultipliedAlpha = premultipliedAlpha;
@@ -456,6 +462,9 @@ class TilesheetStage3D extends Tilesheet
 		__bitmap = TilesheetStage3D.fixTextureSize(bitmap);
 		__bitmapWidth = __bitmap.width;
 		__bitmapHeight = __bitmap.height;
+		
+		bitmapWidth = __bitmapWidth;
+		bitmapHeight = __bitmapHeight;
 		
 		// upload texture on gpu
 		if (context != null && context.context3D != null)
