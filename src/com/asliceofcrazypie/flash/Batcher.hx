@@ -58,8 +58,21 @@ class Batcher
 		return viewport;
 	}
 	
-	public static function addViewportAt(x:Float, y:Float, width:Float, height:Float, scaleX:Float = 1, scaleY:Float = 1):Viewport
+	public static function addViewportAt(index:Int, x:Float, y:Float, width:Float, height:Float, scaleX:Float = 1, scaleY:Float = 1):Viewport
 	{
+		if (index < 0)
+		{
+			
+		}
+		else if (index >= numViewports)
+		{
+			
+		}
+		else
+		{
+			
+		}
+		
 		// TODO: implement it...
 		
 		return null;
@@ -130,6 +143,19 @@ class Batcher
 	
 	public static function setViewportIndex(viewport:Viewport, index:Int):Void
 	{
+		if (index < 0)
+		{
+			
+		}
+		else if (index >= numViewports)
+		{
+			
+		}
+		else
+		{
+			
+		}
+		
 		// TODO: implement it...
 	}
 	
