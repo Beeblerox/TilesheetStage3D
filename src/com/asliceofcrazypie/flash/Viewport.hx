@@ -21,6 +21,7 @@ class Viewport
 {
 	private static var helperMatrix:Matrix = new Matrix();
 	private static var helperRect:Rectangle = new Rectangle();
+	private static var helperPoint:Point = new Point();
 	
 	/**
 	 * Viewport transformation matrix
@@ -229,9 +230,9 @@ class Viewport
 	}
 	
 	/**
-	 * Drawing a transformed part of image. 
+	 * Drawing a transformed image region.
 	 * 
-	 * @param	tilesheet		texture provider for image
+	 * @param	tilesheet		texture provider
 	 * @param	sourceRect		source rectangle from image to draw
 	 * @param	origin			point to transform image around
 	 * @param	matrix			image transformation matrix
@@ -250,22 +251,22 @@ class Viewport
 	}
 	
 	/**
+	 * Drawing scaled and rotated image region
 	 * 
-	 * 
-	 * @param	tilesheet
-	 * @param	sourceRect
-	 * @param	origin
-	 * @param	x
-	 * @param	y
-	 * @param	scaleX
-	 * @param	scaleY
-	 * @param	radians
-	 * @param	cr
-	 * @param	cg
-	 * @param	cb
-	 * @param	ca
-	 * @param	blend
-	 * @param	smoothing
+	 * @param	tilesheet	texture provider
+	 * @param	sourceRect	source rectangle from image to draw
+	 * @param	origin		point to transform image around
+	 * @param	x			image x position
+	 * @param	y			image y position
+	 * @param	scaleX		image x scale
+	 * @param	scaleY		image y scale
+	 * @param	radians		image rotation
+	 * @param	cr			red color multiplier
+	 * @param	cg			green color multiplier
+	 * @param	cb			blue color multiplier
+	 * @param	ca			alpha multiplier
+	 * @param	blend		image blending mode
+	 * @param	smoothing	image smoothing
 	 */
 	public inline function drawPixels(tilesheet:TilesheetStage3D, sourceRect:Rectangle, origin:Point, x:Float, y:Float, scaleX:Float = 1, scaleY:Float = 1, radians:Float = 0, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null, smoothing:Bool = false):Void
 	{
@@ -278,19 +279,19 @@ class Viewport
 	}
 	
 	/**
+	 * Drawing a transformed image region. It expects region's uv for less calculations
 	 * 
-	 * 
-	 * @param	tilesheet
-	 * @param	sourceRect
-	 * @param	origin
-	 * @param	uv
-	 * @param	matrix
-	 * @param	cr
-	 * @param	cg
-	 * @param	cb
-	 * @param	ca
-	 * @param	blend
-	 * @param	smoothing
+	 * @param	tilesheet	texture provider
+	 * @param	sourceRect	source rectangle from image to draw
+	 * @param	origin		point to transform image around
+	 * @param	uv			image region uv
+	 * @param	matrix		image transformation matrix
+	 * @param	cr			red color multiplier
+	 * @param	cg			green color multiplier
+	 * @param	cb			blue color multiplier
+	 * @param	ca			alpha multiplier
+	 * @param	blend		image blending mode
+	 * @param	smoothing	image smoothing
 	 */
 	public inline function drawMatrix2(tilesheet:TilesheetStage3D, sourceRect:Rectangle, origin:Point, uv:Rectangle, matrix:Matrix, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null, smoothing:Bool = false):Void
 	{
@@ -305,27 +306,61 @@ class Viewport
 		job.addQuad(sourceRect, origin, uv, matrix, cr, cg, cb, ca);
 	}
 	
-	public function copyPixels(tilesheet:TilesheetStage3D, sourceRect:Rectangle, origin:Point, destPoint:Point = null, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null, smoothing:Bool = false):Void
-	{
-		helperMatrix.identity();
-		var destX:Float = 0;
-		var destY:Float = 0;
-		if (destPoint != null)
-		{
-			destX = destPoint.x;
-			destY = destPoint.y;
-		}
-		helperMatrix.translate(destX, destY);
-		drawMatrix(tilesheet, sourceRect, origin, helperMatrix, cr, cg, cb, ca, blend, smoothing);
-	}
-	
-	public function copyPixels2(tilesheet:TilesheetStage3D, sourceRect:Rectangle, origin:Point, uv:Rectangle, destPoint:Point = null, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null, smoothing:Bool = false):Void
+	/**
+	 * Drawing non-transformed region of image at specified position
+	 * 
+	 * @param	tilesheet	texture provider
+	 * @param	sourceRect	source rectangle from image to draw
+	 * @param	destPoint	where to draw image
+	 * @param	cr			red color multiplier
+	 * @param	cg			green color multiplier
+	 * @param	cb			blue color multiplier
+	 * @param	ca			alpha multiplier
+	 * @param	blend		image blending mode
+	 * @param	smoothing	image smoothing
+	 */
+	public function copyPixels(tilesheet:TilesheetStage3D, sourceRect:Rectangle, destPoint:Point, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null, smoothing:Bool = false):Void
 	{
 		helperMatrix.identity();
 		helperMatrix.translate(destPoint.x, destPoint.y);
-		drawMatrix2(tilesheet, sourceRect, origin, uv, helperMatrix, cr, cg, cb, ca, blend, smoothing);
+		helperPoint.setTo(0, 0);
+		drawMatrix(tilesheet, sourceRect, helperPoint, helperMatrix, cr, cg, cb, ca, blend, smoothing);
 	}
 	
+	/**
+	 * Drawing non-transformed region of image at specified position. It expects region's uv for less calculations
+	 * 
+	 * @param	tilesheet	texture provider
+	 * @param	sourceRect	source rectangle from image to draw
+	 * @param	uv			image region uv
+	 * @param	destPoint	where to draw image
+	 * @param	cr			red color multiplier
+	 * @param	cg			green color multiplier
+	 * @param	cb			blue color multiplier
+	 * @param	ca			alpha multiplier
+	 * @param	blend		image blending mode
+	 * @param	smoothing	image smoothing
+	 */
+	public function copyPixels2(tilesheet:TilesheetStage3D, sourceRect:Rectangle, uv:Rectangle, destPoint:Point = null, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null, smoothing:Bool = false):Void
+	{
+		helperMatrix.identity();
+		helperMatrix.translate(destPoint.x, destPoint.y);
+		helperPoint.setTo(0, 0);
+		drawMatrix2(tilesheet, sourceRect, helperPoint, uv, helperMatrix, cr, cg, cb, ca, blend, smoothing);
+	}
+	
+	/**
+	 * Renders a set of triangles, typically to distort bitmaps and give them a three-dimensional appearance.
+	 * 
+	 * @param	tilesheet	texture provider
+	 * @param	vertices	a Vector of Numbers where each pair of numbers is treated as a coordinate location (an x, y pair)
+	 * @param	indices		a Vector of integers or indexes, where every three indexes define a triangle. 
+	 * @param	uv			a Vector of normalized coordinates used to apply texture mapping.
+	 * @param	colors		a Vector of colors in 0xRRGGBBAA format for vertex tinting.
+	 * @param	blend		image blending mode
+	 * @param	smoothing	image smoothing
+	 * @param	position	position to add to each vertex
+	 */
 	public function drawTriangles(tilesheet:TilesheetStage3D, vertices:Vector<Float>, indices:Vector<Int>, uv:Vector<Float>, colors:Vector<Int> = null, blend:BlendMode = null, smoothing:Bool = false, position:Point = null):Void
 	{
 		var colored:Bool = (colors != null && colors.length != 0);
@@ -427,6 +462,9 @@ class Viewport
 						height * Batcher.gameScaleY);
 	}
 	
+	/**
+	 * Matrix and scissor rectangle recalculation
+	 */
 	public function update():Void
 	{
 		updateMatrix();
