@@ -45,7 +45,7 @@ class Batcher
 	
 	public static function getViewportAt(index:Int):Viewport
 	{
-		return null;
+		return viewports[index];
 	}
 	
 	public static function addViewport(x:Float, y:Float, width:Float, height:Float, scaleX:Float = 1, scaleY:Float = 1):Viewport
@@ -60,22 +60,9 @@ class Batcher
 	
 	public static function addViewportAt(index:Int, x:Float, y:Float, width:Float, height:Float, scaleX:Float = 1, scaleY:Float = 1):Viewport
 	{
-		if (index < 0)
-		{
-			
-		}
-		else if (index >= numViewports)
-		{
-			
-		}
-		else
-		{
-			
-		}
-		
-		// TODO: implement it...
-		
-		return null;
+		var viewport:Viewport = new Viewport(x, y, width, height, scaleX, scaleY);
+		setViewportIndex(viewport, index);
+		return viewport;
 	}
 	
 	/**
@@ -143,20 +130,20 @@ class Batcher
 	
 	public static function setViewportIndex(viewport:Viewport, index:Int):Void
 	{
+		viewports.remove(viewport);
+		
 		if (index < 0)
 		{
-			
+			index = 0;
 		}
 		else if (index >= numViewports)
 		{
-			
-		}
-		else
-		{
-			
+			index = viewports.length;
 		}
 		
-		// TODO: implement it...
+		viewports.insert(index, viewport);
+		numViewports = viewports.length;
+		updateViewportIndices();
 	}
 	
 	private static inline function updateViewportIndices():Void
