@@ -229,12 +229,37 @@ class Viewport
 	}
 	
 	/**
-	 * Drawing transformed part of image. 
+	 * Drawing a transformed part of image. 
+	 * 
+	 * @param	tilesheet		texture provider for image
+	 * @param	sourceRect		source rectangle from image to draw
+	 * @param	origin			point to transform image around
+	 * @param	matrix			image transformation matrix
+	 * @param	cr				red color multiplier
+	 * @param	cg				green color multiplier
+	 * @param	cb				blue color multiplier
+	 * @param	ca				alpha multiplier
+	 * @param	blend			image blending mode
+	 * @param	smoothing		image smoothing
+	 */
+	public inline function drawMatrix(tilesheet:TilesheetStage3D, sourceRect:Rectangle, origin:Point, matrix:Matrix, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null, smoothing:Bool = false):Void
+	{
+		var uv:Rectangle = Viewport.helperRect;
+		uv.setTo(sourceRect.left / tilesheet.bitmapWidth, sourceRect.top / tilesheet.bitmapHeight, sourceRect.right / tilesheet.bitmapWidth, sourceRect.bottom / tilesheet.bitmapHeight);
+		drawMatrix2(tilesheet, sourceRect, origin, uv, matrix, cr, cg, cb, ca, blend, smoothing);
+	}
+	
+	/**
+	 * 
 	 * 
 	 * @param	tilesheet
 	 * @param	sourceRect
 	 * @param	origin
-	 * @param	matrix
+	 * @param	x
+	 * @param	y
+	 * @param	scaleX
+	 * @param	scaleY
+	 * @param	radians
 	 * @param	cr
 	 * @param	cg
 	 * @param	cb
@@ -242,11 +267,14 @@ class Viewport
 	 * @param	blend
 	 * @param	smoothing
 	 */
-	public inline function drawPixels(tilesheet:TilesheetStage3D, sourceRect:Rectangle, origin:Point, matrix:Matrix, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null, smoothing:Bool = false):Void
+	public inline function drawPixels(tilesheet:TilesheetStage3D, sourceRect:Rectangle, origin:Point, x:Float, y:Float, scaleX:Float = 1, scaleY:Float = 1, radians:Float = 0, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null, smoothing:Bool = false):Void
 	{
-		var uv:Rectangle = Viewport.helperRect;
-		uv.setTo(sourceRect.left / tilesheet.bitmapWidth, sourceRect.top / tilesheet.bitmapHeight, sourceRect.right / tilesheet.bitmapWidth, sourceRect.bottom / tilesheet.bitmapHeight);
-		drawPixels2(tilesheet, sourceRect, origin, uv, matrix, cr, cg, cb, ca, blend, smoothing);
+		helperMatrix.identity();
+		helperMatrix.scale(scaleX, scaleY);
+		helperMatrix.rotate(radians);
+		helperMatrix.tx = x;
+		helperMatrix.ty = y;
+		drawMatrix(tilesheet, sourceRect, origin, helperMatrix, cr, cg, cb, ca, blend, smoothing);
 	}
 	
 	/**
@@ -264,7 +292,7 @@ class Viewport
 	 * @param	blend
 	 * @param	smoothing
 	 */
-	public inline function drawPixels2(tilesheet:TilesheetStage3D, sourceRect:Rectangle, origin:Point, uv:Rectangle, matrix:Matrix, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null, smoothing:Bool = false):Void
+	public inline function drawMatrix2(tilesheet:TilesheetStage3D, sourceRect:Rectangle, origin:Point, uv:Rectangle, matrix:Matrix, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null, smoothing:Bool = false):Void
 	{
 		var colored:Bool = (cr != 1.0) || (cg != 1.0) || (cb != 1.0) || (ca != 1.0);
 		var job:QuadRenderJob = startQuadBatch(tilesheet, colored, colored, blend, smoothing);
@@ -288,14 +316,14 @@ class Viewport
 			destY = destPoint.y;
 		}
 		helperMatrix.translate(destX, destY);
-		drawPixels(tilesheet, sourceRect, origin, helperMatrix, cr, cg, cb, ca, blend, smoothing);
+		drawMatrix(tilesheet, sourceRect, origin, helperMatrix, cr, cg, cb, ca, blend, smoothing);
 	}
 	
 	public function copyPixels2(tilesheet:TilesheetStage3D, sourceRect:Rectangle, origin:Point, uv:Rectangle, destPoint:Point = null, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null, smoothing:Bool = false):Void
 	{
 		helperMatrix.identity();
 		helperMatrix.translate(destPoint.x, destPoint.y);
-		drawPixels2(tilesheet, sourceRect, origin, uv, helperMatrix, cr, cg, cb, ca, blend, smoothing);
+		drawMatrix2(tilesheet, sourceRect, origin, uv, helperMatrix, cr, cg, cb, ca, blend, smoothing);
 	}
 	
 	public function drawTriangles(tilesheet:TilesheetStage3D, vertices:Vector<Float>, indices:Vector<Int>, uv:Vector<Float>, colors:Vector<Int> = null, blend:BlendMode = null, smoothing:Bool = false, position:Point = null):Void
