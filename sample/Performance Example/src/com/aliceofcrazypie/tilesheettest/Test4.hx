@@ -1,6 +1,7 @@
 package com.aliceofcrazypie.tilesheettest;
+import com.asliceofcrazypie.flash.TextureUtil;
 import com.asliceofcrazypie.flash.TilesheetStage3D;
-import net.hires.debug.Stats;
+//import net.hires.debug.Stats;
 import openfl.Assets;
 import flash.display.BitmapData;
 import flash.display.Sprite;
@@ -34,7 +35,7 @@ class Test4 extends ATest
 		var bmp:BitmapData = Assets.getBitmapData( 'img/Rock.png' ).clone();
 		var rect:Rectangle = bmp.rect.clone();
 		#if flash11
-		bmp = TilesheetStage3D.fixTextureSize( bmp, true );
+		bmp = TextureUtil.fixTextureSize( bmp );
 		#end
 		var center:Point = new Point( rect.width * 0.5, rect.height * 0.5 );
 		
@@ -61,7 +62,7 @@ class Test4 extends ATest
 		tileData = [105, 105, 0];
 		tilesheet.drawTiles( layer2.graphics, tileData, smooth, flags );
 		
-		addChild( new Stats() );
+	//	addChild( new Stats() );
 	}
 	
 	override public function dispose():Void 
@@ -73,11 +74,10 @@ class Test4 extends ATest
 	
 	private function onEnterFrame( e:Event ):Void
 	{
-		if (Lib.getTimer() > 3000 )
+		if (Lib.getTimer() > 3000)
 		{
-			
 			#if flash11
-			TilesheetStage3D.clearGraphic( graphics );
+			TilesheetStage3D.clear();
 			#else
 			graphics.clear();
 			#end
