@@ -46,7 +46,6 @@ class TextureUtil
 		return null;
 	}
 	
-	
 	//helper methods
 	public static inline function roundUpToPow2(number:Int):Int
 	{
