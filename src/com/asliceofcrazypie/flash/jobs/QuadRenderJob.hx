@@ -23,9 +23,9 @@ class QuadRenderJob extends RenderJob
 		type = RenderJobType.QUAD;
 	}
 	
-	override public function addQuad(rect:Rectangle, origin:Point, uv:Rectangle, matrix:Matrix, r:Float = 1, g:Float = 1, b:Float = 1, a:Float = 1):Void
+	override public function addQuad(rect:Rectangle, normalizedOrigin:Point, uv:Rectangle, matrix:Matrix, r:Float = 1, g:Float = 1, b:Float = 1, a:Float = 1):Void
 	{
-		super.addQuad(rect, origin, uv, matrix, r, g, b, a);
+		super.addQuad(rect, normalizedOrigin, uv, matrix, r, g, b, a);
 		indexPos += 6;
 	}
 	

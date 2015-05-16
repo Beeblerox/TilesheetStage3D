@@ -106,13 +106,13 @@ class RenderJob
 		}
 	}
 	
-	public function addQuad(rect:Rectangle, origin:Point, uv:Rectangle, matrix:Matrix, r:Float = 1, g:Float = 1, b:Float = 1, a:Float = 1):Void
+	public function addQuad(rect:Rectangle, normalizedOrigin:Point, uv:Rectangle, matrix:Matrix, r:Float = 1, g:Float = 1, b:Float = 1, a:Float = 1):Void
 	{
 		var imgWidth:Int = Std.int(rect.width);
 		var imgHeight:Int = Std.int(rect.height);
 		
-		var centerX:Float = origin.x * imgWidth;
-		var centerY:Float = origin.y * imgHeight;
+		var centerX:Float = normalizedOrigin.x * imgWidth;
+		var centerY:Float = normalizedOrigin.y * imgHeight;
 		
 		var px:Float;
 		var py:Float;

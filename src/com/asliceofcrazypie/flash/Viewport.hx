@@ -22,6 +22,7 @@ class Viewport
 	private static var helperMatrix:Matrix = new Matrix();
 	private static var helperRect:Rectangle = new Rectangle();
 	private static var helperPoint:Point = new Point();
+	private static var helperPoint2:Point = new Point();
 	
 	/**
 	 * Viewport transformation matrix
@@ -303,7 +304,8 @@ class Viewport
 			job = startNewQuadBatch(tilesheet, colored, colored, blend, smoothing);
 		}
 		
-		job.addQuad(sourceRect, origin, uv, matrix, cr, cg, cb, ca);
+		helperPoint2.setTo(origin.x / sourceRect.width, origin.y / sourceRect.height); // normalize origin
+		job.addQuad(sourceRect, helperPoint2, uv, matrix, cr, cg, cb, ca);
 	}
 	
 	/**

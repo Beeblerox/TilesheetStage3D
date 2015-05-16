@@ -19,9 +19,15 @@ import openfl.Lib;
  */
 class Batcher
 {
+	/**
+	 * Application scale
+	 */
 	public static var gameScaleX(default, set):Float = 1;
 	public static var gameScaleY(default, set):Float = 1;
 	
+	/**
+	 * Application onscreen position
+	 */
 	public static var gameX(default, set):Float = 0;
 	public static var gameY(default, set):Float = 0;
 	
@@ -29,6 +35,9 @@ class Batcher
 	
 	public static var numViewports(default, null):Int;
 	
+	/**
+	 * The first viewport.
+	 */
 	public static var defaultViewport(get, null):Viewport;
 	
 	private static var _isInited:Bool = false;
@@ -65,24 +74,12 @@ class Batcher
 		return viewport;
 	}
 	
-	/**
-	 * 
-	 * 
-	 * @param	viewport
-	 * @param	dispose
-	 */
 	public static function removeViewport(viewport:Viewport, dispose:Bool = true):Void
 	{
 		var index:Int = viewports.indexOf(viewport);
 		removeViewportAt(index, dispose);
 	}
 	
-	/**
-	 * 
-	 * 
-	 * @param	index
-	 * @param	dispose
-	 */
 	public static function removeViewportAt(index:Int, dispose:Bool = true):Void
 	{
 		if (index >= 0 || index < numViewports)
@@ -95,12 +92,6 @@ class Batcher
 		}
 	}
 	
-	/**
-	 * 
-	 * 
-	 * @param	view1
-	 * @param	view2
-	 */
 	public static function swapViewports(view1:Viewport, view2:Viewport):Void
 	{
 		var index1:Int = viewports.indexOf(view1);
@@ -108,12 +99,6 @@ class Batcher
 		swapViewportsAt(index1, index2);
 	}
 	
-	/**
-	 * 
-	 * 
-	 * @param	index1
-	 * @param	index2
-	 */
 	public static function swapViewportsAt(index1:Int, index2:Int):Void
 	{
 		if (index1 < 0 || index2 < 0 || index1 == index2 || index1 >= numViewports || index2 >= numViewports)	return;
@@ -190,6 +175,9 @@ class Batcher
 		}
 	}
 	
+	/**
+	 * Batcher initialization method. It also calls TilesheetStage3D.init() method.
+	 */
 	public static function init(stage:Stage, stage3DLevel:Int = 0, antiAliasLevel:Int = 5, initCallback:String->Void = null, renderMode:Context3DRenderMode = null, batchSize:Int = 0):Void
 	{
 		if (!_isInited)

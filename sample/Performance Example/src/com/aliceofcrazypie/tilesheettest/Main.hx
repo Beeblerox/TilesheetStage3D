@@ -1,11 +1,13 @@
 package com.aliceofcrazypie.tilesheettest;
 
+import com.asliceofcrazypie.flash.Batcher;
 import com.asliceofcrazypie.flash.TilesheetStage3D;
 import flash.display.Sprite;
 import flash.events.Event;
 import flash.events.KeyboardEvent;
 import flash.Lib;
 import flash.ui.Keyboard;
+import openfl.display.FPS;
 
 #if flash11
 import flash.display3D.Context3DRenderMode;
@@ -34,7 +36,7 @@ class Main extends Sprite
 	{
 		// entry point
 		#if flash11
-		TilesheetStage3D.init( stage, 0, 5, engineReady, Context3DRenderMode.AUTO );
+		Batcher.init( stage, 0, 5, engineReady, Context3DRenderMode.AUTO, 2000);
 		#else
 		engineReady();
 		#end
@@ -43,13 +45,19 @@ class Main extends Sprite
 	private function engineReady( result:String = '' ):Void
 	{
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, keyPressed);
-		setTest( 1 );
+		setTest( 0 );
+		
+		stage.addChild(new FPS());
 	}
 	
 	private function keyPressed(e:KeyboardEvent):Void 
 	{
 		switch( e.keyCode )
 		{
+			case Keyboard.NUMBER_0:
+			{
+				setTest( 0 );
+			}	
 			case Keyboard.NUMBER_1:
 			{
 				setTest( 1 );
@@ -85,6 +93,10 @@ class Main extends Sprite
 		
 		switch( testNum )
 		{
+			case 0:
+			{
+				newTest = new Test0();
+			}
 			case 1:
 			{
 				newTest = new Test1();

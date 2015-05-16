@@ -24,11 +24,11 @@ class TriangleRenderJob extends RenderJob
 		type = RenderJobType.TRIANGLE;
 	}
 	
-	override public function addQuad(rect:Rectangle, origin:Point, uv:Rectangle, matrix:Matrix, r:Float = 1, g:Float = 1, b:Float = 1, a:Float = 1):Void
+	override public function addQuad(rect:Rectangle, normalizedOrigin:Point, uv:Rectangle, matrix:Matrix, r:Float = 1, g:Float = 1, b:Float = 1, a:Float = 1):Void
 	{
 		var prevVerticesNumber:Int = Std.int(vertexPos / dataPerVertice);
 		
-		super.addQuad(rect, origin, uv, matrix, r, g, b, a);
+		super.addQuad(rect, normalizedOrigin, uv, matrix, r, g, b, a);
 		
 		indicesVector[indexPos++] = prevVerticesNumber + 2;
 		indicesVector[indexPos++] = prevVerticesNumber + 1;
