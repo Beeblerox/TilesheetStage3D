@@ -315,34 +315,7 @@ class ContextWrapper extends EventDispatcher
 	
 	public function uploadTexture(image:BitmapData):Texture
 	{
-		if (context3D != null)
-		{
-			var texture:Texture = context3D.createTexture(image.width, image.height, Context3DTextureFormat.BGRA, false);
-			
-			texture.uploadFromBitmapData(image);
-			
-			// generate mipmaps
-			var currentWidth:Int = image.width;
-			var currentHeight:Int = image.height;
-			var level:Int = 1;
-			var canvas:BitmapData = new BitmapData(currentWidth >> 1, currentHeight >> 1, true, 0);
-			var transform:Matrix = new Matrix(0.5, 0, 0, 0.5);
-			
-			while (currentWidth >= 2 && currentHeight >= 2) //should that be an OR?
-			{
-				currentWidth = currentWidth >> 1;
-				currentHeight = currentHeight >> 1;
-				canvas.fillRect(canvas.rect, 0);
-				canvas.draw(image, transform, null, null, null, true);
-				texture.uploadFromBitmapData(canvas, level++);
-				transform.scale(0.5, 0.5); 
-			}
-			
-			canvas.dispose();
-			return texture;
-		}
-		
-		return null;
+		return TextureUtil.uploadTexture(image, context3D);
 	}
 	
 	private inline function doSetProgram(program:Program3D):Void

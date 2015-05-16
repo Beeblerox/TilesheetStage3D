@@ -44,7 +44,7 @@ class TilesheetStage3D extends Tilesheet
 	public function new(inImage:BitmapData, premultipliedAlpha:Bool = true) 
 	{
 		#if flash11
-		inImage = TilesheetStage3D.fixTextureSize(inImage);
+		inImage = TextureUtil.fixTextureSize(inImage);
 		#end
 		
 		super(inImage);
@@ -468,7 +468,7 @@ class TilesheetStage3D extends Tilesheet
 		}
 		
 		// check the size of texture
-		__bitmap = TilesheetStage3D.fixTextureSize(bitmap);
+		__bitmap = TextureUtil.fixTextureSize(bitmap);
 		__bitmapWidth = __bitmap.width;
 		__bitmapHeight = __bitmap.height;
 		
@@ -517,38 +517,6 @@ class TilesheetStage3D extends Tilesheet
 		__indices = null;
 		__uvs = null;
 		__vertices = null;
-	}
-	
-	//helper methods
-	public static inline function roundUpToPow2(number:Int):Int
-	{
-		number--;
-		number |= number >> 1;
-		number |= number >> 2;
-		number |= number >> 4;
-		number |= number >> 8;
-		number |= number >> 16;
-		number++;
-		return number;
-	}
-	
-	public static inline function isTextureOk(texture:BitmapData):Bool
-	{
-		return (roundUpToPow2(texture.width) == texture.width && roundUpToPow2(texture.height) == texture.height);
-	}
-	
-	public static inline function fixTextureSize(texture:BitmapData):BitmapData
-	{
-		return if (isTextureOk(texture))
-		{
-			texture;
-		}
-		else
-		{
-			var newTexture:BitmapData = new BitmapData(roundUpToPow2(texture.width), roundUpToPow2(texture.height), true, 0);
-			newTexture.copyPixels(texture, texture.rect, new Point(), null, null, true);
-			newTexture;
-		}
 	}
 	#end
 }
