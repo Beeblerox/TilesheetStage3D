@@ -104,7 +104,7 @@ class TilesheetStage3D extends Tilesheet
 	 * @param	renderMode
 	 * @param	batchSize
 	 */
-	public static function init(stage:Stage, stage3DLevel:Int = 0, antiAliasLevel:Int = 5, initCallback:String->Void = null, renderMode:Context3DRenderMode = null, batchSize:Int = 0):Void
+	public static function init(stage:Stage, stage3DLevel:Int = 0, antiAliasLevel:Int = 5, initCallback:String->Void = null, renderMode:Dynamic = null, batchSize:Int = 0):Void
 	{
 		if (!_isInited)
 		{
@@ -451,11 +451,6 @@ class TilesheetStage3D extends Tilesheet
 		return __bitmap;
 	}
 	
-	// TODO: document it...
-	/**
-	 * 
-	 * @param	bitmap
-	 */
 	private function set_bitmap(bitmap:BitmapData):BitmapData
 	{
 		var oldWidth:Int = 0;

@@ -127,7 +127,7 @@ class ContextWrapper extends EventDispatcher
 		}
 	}
 	
-	public inline function init(stage:Stage, initCallback:Void->Void = null, renderMode:Context3DRenderMode):Void
+	public inline function init(stage:Stage, initCallback:Void->Void = null, renderMode:Dynamic):Void
 	{
 		if (context3D == null)
 		{

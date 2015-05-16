@@ -1,16 +1,21 @@
 package com.asliceofcrazypie.flash;
 
+#if flash11
+import flash.display3D.Context3DRenderMode;
+#end
+
 import com.asliceofcrazypie.flash.jobs.QuadRenderJob;
 import com.asliceofcrazypie.flash.jobs.RenderJob;
 import com.asliceofcrazypie.flash.jobs.TriangleRenderJob;
 import flash.display.BlendMode;
-import flash.display3D.Context3DRenderMode;
 import flash.display.Stage;
 import flash.display.TriangleCulling;
 import flash.geom.Matrix;
 import flash.geom.Point;
 import flash.geom.Rectangle;
 import flash.Vector;
+
+import openfl.display.Sprite;
 import openfl.Lib;
 
 /**
@@ -30,6 +35,8 @@ class Batcher
 	 */
 	public static var gameX(default, set):Float = 0;
 	public static var gameY(default, set):Float = 0;
+	
+	public static var game(default, null):Sprite;
 	
 	private static var viewports:Array<Viewport> = [];
 	
@@ -178,12 +185,17 @@ class Batcher
 	/**
 	 * Batcher initialization method. It also calls TilesheetStage3D.init() method.
 	 */
-	public static function init(stage:Stage, stage3DLevel:Int = 0, antiAliasLevel:Int = 5, initCallback:String->Void = null, renderMode:Context3DRenderMode = null, batchSize:Int = 0):Void
+	public static function init(stage:Stage, stage3DLevel:Int = 0, antiAliasLevel:Int = 5, initCallback:String->Void = null, renderMode:Dynamic = null, batchSize:Int = 0):Void
 	{
 		if (!_isInited)
 		{
+			#if flash11
 			TilesheetStage3D.init(stage, stage3DLevel, antiAliasLevel, initCallback, renderMode, batchSize);
 			TilesheetStage3D.context.renderCallback = render;
+			#else
+			game = new Sprite();
+			stage.addChild(game);
+			#end
 		}
 	}
 	
