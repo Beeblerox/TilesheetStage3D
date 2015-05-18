@@ -313,9 +313,9 @@ class ContextWrapper extends EventDispatcher
 		return numJobs;
 	}
 	
-	public function uploadTexture(image:BitmapData):Texture
+	public function uploadTexture(image:BitmapData, mipmap:Bool = true):Texture
 	{
-		return TextureUtil.uploadTexture(image, context3D);
+		return TextureUtil.uploadTexture(image, context3D, mipmap);
 	}
 	
 	private inline function doSetProgram(program:Program3D):Void

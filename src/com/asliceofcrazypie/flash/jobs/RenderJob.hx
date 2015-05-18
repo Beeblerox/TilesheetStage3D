@@ -220,9 +220,9 @@ class RenderJob
 		*/
 	}
 	
-	public function render(context:ContextWrapper):Void
+	public function render(context:ContextWrapper = null):Void
 	{
-		if (context.context3D.driverInfo != 'Disposed')
+		if (context != null && context.context3D.driverInfo != 'Disposed')
 		{
 			//blend mode
 			setBlending(context);

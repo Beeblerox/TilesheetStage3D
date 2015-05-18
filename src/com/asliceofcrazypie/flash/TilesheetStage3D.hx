@@ -41,7 +41,7 @@ class TilesheetStage3D extends Tilesheet
 	public var bitmapWidth(default, null):Int;
 	public var bitmapHeight(default, null):Int;
 	
-	public function new(inImage:BitmapData, premultipliedAlpha:Bool = true) 
+	public function new(inImage:BitmapData, premultipliedAlpha:Bool = true, mipmap:Bool = true) 
 	{
 		#if flash11
 		inImage = TextureUtil.fixTextureSize(inImage);
@@ -53,6 +53,7 @@ class TilesheetStage3D extends Tilesheet
 		bitmapHeight = __bitmapHeight;
 		
 		#if flash11
+		this.mipmap = mipmap;
 		this.premultipliedAlpha = premultipliedAlpha;
 		fallbackMode = FallbackMode.ALLOW_FALLBACK;
 		
@@ -72,10 +73,12 @@ class TilesheetStage3D extends Tilesheet
 	#if flash11
 	private function onResetTexture(e:Event):Void 
 	{
-		texture = context.uploadTexture(__bitmap);
+		texture = context.uploadTexture(__bitmap, mipmap);
 	}
 	
 	public var premultipliedAlpha(default, null):Bool;
+	
+	public var mipmap(default, null):Bool;
 	
 	public var texture(default, null):Texture;
 	

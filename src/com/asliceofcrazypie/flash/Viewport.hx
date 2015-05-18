@@ -163,6 +163,7 @@ class Viewport
 		numTriangleRenderJobs = 0;
 	}
 	
+	#if flash11
 	public inline function render(context:ContextWrapper):Void
 	{
 		context.setMatrix(matrix);
@@ -173,6 +174,12 @@ class Viewport
 			context.renderJob(job);
 		}
 	}
+	#else
+	public inline function render(context:Dynamic = null):Void
+	{
+		
+	}
+	#end
 	
 	public function startQuadBatch(tilesheet:TilesheetStage3D, tinted:Bool, alpha:Bool, blend:BlendMode = null, smooth:Bool = false):QuadRenderJob
 	{
