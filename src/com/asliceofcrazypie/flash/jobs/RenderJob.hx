@@ -81,7 +81,8 @@ class RenderJob
 		indicesPerBuffer = Std.int(vertexPerBuffer * 6 / 4);
 	}
 	
-	public function new(useBytes:Bool = false)
+	// TODO: use `useBytes` not only in constructor...
+	private function new(useBytes:Bool = false)
 	{
 		this.vertices = new Vector<Float>(RenderJob.vertexPerBuffer >> 2);
 		

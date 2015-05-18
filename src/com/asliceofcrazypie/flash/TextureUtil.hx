@@ -40,9 +40,10 @@ class TextureUtil
 					texture.uploadFromBitmapData(canvas, level++);
 					transform.scale(0.5, 0.5); 
 				}
+				
+				canvas.dispose();
 			}
 			
-			canvas.dispose();
 			return texture;
 		}
 		
