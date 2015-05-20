@@ -51,6 +51,7 @@ class RenderJob
 	public var isRGB:Bool;
 	public var isAlpha:Bool;
 	public var isSmooth:Bool;
+	public var isGlobalColor:Bool;
 	
 	public var blendMode:BlendMode;
 	public var premultipliedAlpha:Bool;
@@ -228,7 +229,7 @@ class RenderJob
 			//blend mode
 			setBlending(context);
 			
-			context.setProgram(isRGB, isAlpha, isSmooth); //assign appropriate shader
+			context.setProgramNoGlobalColor(isRGB, isAlpha, isSmooth, tilesheet.mipmap); //assign appropriate shader
 			
 			// context.context3D.setCulling();
 			

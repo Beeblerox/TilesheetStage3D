@@ -327,7 +327,7 @@ class ContextWrapper extends EventDispatcher
 		}
 	}
 	
-	public function setProgram(isRGB:Bool, isAlpha:Bool, smooth:Bool):Void
+	public function setProgramNoGlobalColor(isRGB:Bool, isAlpha:Bool, smooth:Bool, mipmap:Bool = true):Void
 	{
 		if (smooth)
 		{
@@ -368,6 +368,179 @@ class ContextWrapper extends EventDispatcher
 			}
 		}
 	}
+	
+	public function setProgramWithGlobalColor(isRGB:Bool, isAlpha:Bool, smooth:Bool, mipmap:Bool = true):Void
+	{
+		
+	}
+	
+	/*
+	private function getProgram(tinted:Bool):Program3D
+	{
+		var programName:String = QUAD_PROGRAM_NAME;
+		
+		if (mTexture != null) {
+			programName = getImageProgramName(tinted, mTexture.mipMapping, mTexture.repeat, mTexture.format, mSmoothing);
+		}
+		
+		var program:Program3D = target.getProgram(programName);
+		
+		if (program == null)
+		{
+			// this is the input data we'll pass to the shaders:
+			// 
+			// va0 -> position
+			// va1 -> color
+			// va2 -> texCoords
+			// vc0 -> alpha
+			// vc1 -> mvpMatrix
+			// fs0 -> texture
+			
+			var vertexShader:String;
+			var fragmentShader:String;
+
+			if (mTexture == null) // Quad-Shaders
+			{
+				vertexShader =
+					"m44 op, va0, vc1 \n" + // 4x4 matrix transform to output clipspace
+					"mul v0, va1, vc0 \n";  // multiply alpha (vc0) with color (va1)
+				
+				fragmentShader =
+					"mov oc, v0       \n";  // output color
+			}
+			else // Image-Shaders
+			{
+				vertexShader = tinted ?
+					"m44 op, va0, vc1 \n" + // 4x4 matrix transform to output clipspace
+					"mul v0, va1, vc0 \n" + // multiply alpha (vc0) with color (va1)
+					"mov v1, va2      \n"   // pass texture coordinates to fragment program
+					:
+					"m44 op, va0, vc1 \n" + // 4x4 matrix transform to output clipspace
+					"mov v1, va2      \n";  // pass texture coordinates to fragment program
+				
+				fragmentShader = tinted ?
+					"tex ft1,  v1, fs0 <???> \n" + // sample texture 0
+					"mul  oc, ft1,  v0       \n"   // multiply color with texel color
+					:
+					"tex  oc,  v1, fs0 <???> \n";  // sample texture 0
+				
+				fragmentShader = StringTools.replace(fragmentShader, "<???>",
+					RenderSupport.getTextureLookupFlags(
+						mTexture.format, mTexture.mipMapping, mTexture.repeat, smoothing));
+			}
+			
+			program = target.registerProgramFromSource(programName,
+				vertexShader, fragmentShader);
+		}
+		
+		return program;
+	}
+	*/
+	
+	/*
+	private static const VERTEX_SHADER:Array = [
+			// va0 = [x, y, , ]
+			// va1 = [u, v, , ]
+			// va2 = [r, g, b, a]
+			// vc0 = transform matrix
+			"mov v1, va1",			// move uv to fragment shader
+			"mov v2, va2",			// move color transform to fragment shader
+			"m44 op, va0, vc0"		// multiply position by transform matrix 
+		];
+		
+		private static const FRAGMENT_SHADER:Array = [
+			// ft0 = tilemap texture
+			// v1  = uv
+			// v2  = rgba
+			// fs0 = something
+			// fc0 = color
+			"tex ft0, v1, fs0 <2d,nearest,mipnone>",	// sample texture
+			"mul ft1, v2, fc0",						// multiple sprite color by global color
+			"mul oc, ft0, ft1",							// multiply texture by color
+		];
+		
+		Ax.context.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 0, matrix, true);
+		Ax.context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 0, colorTransform);
+	*/
+		
+	/*
+	private static function getImageProgramName(tinted:Bool, mipMap:Bool, 
+												repeat:Bool, smoothing:TextureSmoothing):String
+	{
+		var format = Context3DTextureFormat.BGRA;
+		var bitField:UInt = 0;
+		
+		if (tinted) bitField |= 1;
+		if (mipMap) bitField |= 1 << 1;
+		if (repeat) bitField |= 1 << 2;
+		
+		if (smoothing == TextureSmoothing.NONE)
+			bitField |= 1 << 3;
+		else if (smoothing == TextureSmoothing.TRILINEAR)
+			bitField |= 1 << 4;
+		
+		var name:String = sProgramNameCache[bitField];
+		
+		if (name == null)
+		{
+			name = "QB_i." + StringTools.hex(bitField);
+			sProgramNameCache[bitField] = name;
+		}
+		
+		return name;
+	}
+	
+	public function isStateChange(tinted:Bool, parentAlpha:Float, texture:Texture, smoothing:String, blendMode:String, numQuads:Int=1):Bool
+	{
+		if (mNumQuads == 0) return false;
+		else if (mNumQuads + numQuads > MAX_NUM_QUADS) return true; // maximum buffer size
+		else if (mTexture == null && texture == null) 
+			return this.blendMode != blendMode;
+		else if (mTexture != null && texture != null)
+			return mTexture.base != texture.base ||
+				   mTexture.repeat != texture.repeat ||
+				   mSmoothing != smoothing ||
+				   mTinted != (tinted || parentAlpha != 1.0) ||
+				   this.blendMode != blendMode;
+		else return true;
+	}
+	
+	public static function assembleAgal(vertexShader:String, fragmentShader:String,
+										resultProgram:Program3D = null):Program3D
+	{
+		if (resultProgram == null) 
+		{
+			var context:Context3D = Starling.Context;
+			if (context == null) throw new MissingContextError();
+			resultProgram = context.createProgram();
+		}
+		
+		var vertexByteCode = AGLSLShaderUtils.createShader(Context3DProgramType.VERTEX, vertexShader);
+		var fragmentByteCode = AGLSLShaderUtils.createShader(Context3DProgramType.FRAGMENT, fragmentShader);
+		
+		resultProgram.upload(vertexByteCode, fragmentByteCode);
+		
+		return resultProgram;
+	}
+	
+	public static function getTextureLookupFlags(mipMapping:Bool,
+												 repeat:Bool,
+												 smoothing:TextureSmoothing):String
+	{
+		var options:Array<Dynamic> = ["2d", repeat ? "repeat" : "clamp"];
+		
+		if (smoothing == TextureSmoothing.NONE) {
+			options.push("nearest");
+			options.push(mipMapping ? "mipnearest" : "mipnone");
+		}
+		else {
+			options.push("linear");
+			options.push(mipMapping ? "miplinear" : "mipnone");
+		}
+		
+		return "<" + options.join("") + ">";
+	}
+	*/
 	
 	public function setMatrix(matrix:Matrix3D):Void
 	{
