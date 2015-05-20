@@ -1,4 +1,5 @@
 package com.asliceofcrazypie.flash;
+import haxe.ds.IntMap;
 
 #if flash11
 import com.asliceofcrazypie.flash.jobs.RenderJob;
@@ -44,6 +45,8 @@ class ContextWrapper extends EventDispatcher
 	private var antiAliasLevel:Int;
 	private var baseTransformMatrix:Matrix3D;
 	
+	private var programNameCache:IntMap<String>;
+	
 	public var programRGBASmooth:Program3D;
 	public var programRGBSmooth:Program3D;
 	public var programASmooth:Program3D;
@@ -80,6 +83,8 @@ class ContextWrapper extends EventDispatcher
 	public function new(depth:Int, antiAliasLevel:Int = 1)
 	{
 		super();
+		
+		programNameCache = new IntMap<String>();
 		
 		this.depth = depth;
 		this.antiAliasLevel = antiAliasLevel;
@@ -464,32 +469,6 @@ class ContextWrapper extends EventDispatcher
 	*/
 		
 	/*
-	private static function getImageProgramName(tinted:Bool, mipMap:Bool, 
-												repeat:Bool, smoothing:TextureSmoothing):String
-	{
-		var format = Context3DTextureFormat.BGRA;
-		var bitField:UInt = 0;
-		
-		if (tinted) bitField |= 1;
-		if (mipMap) bitField |= 1 << 1;
-		if (repeat) bitField |= 1 << 2;
-		
-		if (smoothing == TextureSmoothing.NONE)
-			bitField |= 1 << 3;
-		else if (smoothing == TextureSmoothing.TRILINEAR)
-			bitField |= 1 << 4;
-		
-		var name:String = sProgramNameCache[bitField];
-		
-		if (name == null)
-		{
-			name = "QB_i." + StringTools.hex(bitField);
-			sProgramNameCache[bitField] = name;
-		}
-		
-		return name;
-	}
-	
 	public function isStateChange(tinted:Bool, parentAlpha:Float, texture:Texture, smoothing:String, blendMode:String, numQuads:Int=1):Bool
 	{
 		if (mNumQuads == 0) return false;
@@ -523,11 +502,34 @@ class ContextWrapper extends EventDispatcher
 		return resultProgram;
 	}
 	
-	public static function getTextureLookupFlags(mipMapping:Bool,
-												 repeat:Bool,
-												 smoothing:TextureSmoothing):String
+	private function getImageProgramName(tinted:Bool, mipMap:Bool, 
+												smoothing:TextureSmoothing, repeat:Bool = true):String
 	{
-		var options:Array<Dynamic> = ["2d", repeat ? "repeat" : "clamp"];
+		var bitField:UInt = 0;
+		
+		if (tinted) bitField |= 1;
+		if (mipMap) bitField |= 1 << 1;
+		if (repeat) bitField |= 1 << 2;
+		
+		if (smoothing == TextureSmoothing.NONE)
+			bitField |= 1 << 3;
+		else if (smoothing == TextureSmoothing.LINEAR)
+			bitField |= 1 << 4;
+		
+		var name:String = null;
+		if (!programNameCache.exists(bitField))
+		{
+			name = "QB_i." + StringTools.hex(bitField);
+			programNameCache.set(bitField, name);
+		}
+		
+		return programNameCache.get(bitField);
+	}
+	*/
+	
+	private function getTextureLookupFlags(mipMapping:Bool, smoothing:TextureSmoothing, repeat:Bool = true):String
+	{
+		var options:Array<String> = ["2d", repeat ? "repeat" : "clamp"];
 		
 		if (smoothing == TextureSmoothing.NONE) {
 			options.push("nearest");
@@ -540,7 +542,6 @@ class ContextWrapper extends EventDispatcher
 		
 		return "<" + options.join("") + ">";
 	}
-	*/
 	
 	public function setMatrix(matrix:Matrix3D):Void
 	{
@@ -596,5 +597,11 @@ class ContextWrapper extends EventDispatcher
            untyped array.length = 0;
         #end
 	}
+}
+
+enum TextureSmoothing
+{
+	NONE;
+	LINEAR;
 }
 #end
