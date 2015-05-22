@@ -55,11 +55,13 @@ class ContextWrapper extends EventDispatcher
 	public var programRGB:Program3D;
 	public var programA:Program3D;
 	public var program:Program3D;
+	public var programNoImage:Program3D;
 	
 	private var imagePrograms:IntMap<Program3D>;
 	
 	private var vertexDataRGBA:ByteArray;
 	private var vertexData:ByteArray;
+	private var vertexDataNoImage:ByteArray;
 	
 	private var fragmentDataRGBASmooth:ByteArray;
 	private var fragmentDataRGBSmooth:ByteArray;
@@ -69,6 +71,7 @@ class ContextWrapper extends EventDispatcher
 	private var fragmentDataRGB:ByteArray;
 	private var fragmentDataA:ByteArray;
 	private var fragmentData:ByteArray;
+	private var fragmentDataNoImage:ByteArray;
 	
 	private var _initCallback:Void->Void;
 	
@@ -100,9 +103,15 @@ class ContextWrapper extends EventDispatcher
 	{
 		imagePrograms = new IntMap<Program3D>();
 		
-		//rgb:Bool, alpha:Bool, mipMap:Bool, smoothing:Bool, repeat:Bool = true, globalColor:Bool = false
+		// colored triangles
+		var vertexStringNoImage:String = 	"m44 op, va0, vc0   \n" +	// 4x4 matrix transform to output clipspace
+											"mov v0, va1 		\n";	// move color transform to fragment shader
 		
-		//vertex shader data
+		var fragmentStringNoImage = 		"mov oc, v0			\n";	// output color
+		
+		// TODO: upload to gpu
+		
+		// vertex shader data
 		var vertexStringRGBA:String =	"mov v0, va1      \n" +		// move uv to fragment shader
 										"mov v1, va2      \n" +		// move color transform to fragment shader
 										"m44 op, va0, vc0 \n";		// multiply position by transform matrix 
@@ -113,9 +122,9 @@ class ContextWrapper extends EventDispatcher
 		vertexData = AGLSLShaderUtils.createShader(Context3DProgramType.VERTEX, vertexString);
 		vertexDataRGBA = AGLSLShaderUtils.createShader(Context3DProgramType.VERTEX, vertexStringRGBA);
 		
-		//fragment shaders data
+		// fragment shaders data
 		
-		// programs without global color multiplier
+		// programs without global color multiplier...
 		var mipmap:Bool = true;
 		var smoothing:Bool = false;
 		var fragmentStringA:String = 	"tex ft0, v0, fs0 <???>	\n"+
@@ -158,6 +167,10 @@ class ContextWrapper extends EventDispatcher
 		
 		fragmentDataRGBASmooth = AGLSLShaderUtils.createShader(Context3DProgramType.FRAGMENT, fragmentStringRGBASmooth);
 		fragmentDataRGBSmooth = fragmentDataRGBASmooth;
+		
+		// programs with global color multiplier...
+		
+		
 	}
 	
 	public inline function setTexture(texture:Texture):Void
@@ -283,7 +296,7 @@ class ContextWrapper extends EventDispatcher
 				programRGB.upload(vertexDataRGBA, fragmentDataRGB);
 				
 				programA = context3D.createProgram();
-				programA.upload( vertexDataRGBA, fragmentDataA);
+				programA.upload(vertexDataRGBA, fragmentDataA);
 				
 				program = context3D.createProgram();
 				program.upload(vertexData, fragmentData);
@@ -523,29 +536,25 @@ class ContextWrapper extends EventDispatcher
 				   this.blendMode != blendMode;
 		else return true;
 	}
-	
-	public static function assembleAgal(vertexShader:String, fragmentShader:String,
-										resultProgram:Program3D = null):Program3D
-	{
-		if (resultProgram == null) 
-		{
-			var context:Context3D = Starling.Context;
-			if (context == null) throw new MissingContextError();
-			resultProgram = context.createProgram();
-		}
-		
-		var vertexByteCode = AGLSLShaderUtils.createShader(Context3DProgramType.VERTEX, vertexShader);
-		var fragmentByteCode = AGLSLShaderUtils.createShader(Context3DProgramType.FRAGMENT, fragmentShader);
-		
-		resultProgram.upload(vertexByteCode, fragmentByteCode);
-		
-		return resultProgram;
-	}
 	*/
 	
-	// TODO: add globalColor argument
-	private function getImageProgramName(rgb:Bool, alpha:Bool, mipMap:Bool, 
-												smoothing:Bool, globalColor:Bool = false):UInt
+	public function assembleAgal(vertexString:String, fragmentString:String, result:Program3D = null):Program3D
+	{
+		if (context3D == null)	return null;
+		
+		if (result == null) 
+		{
+			result = context3D.createProgram();
+		}
+		
+		var vertexByteCode = AGLSLShaderUtils.createShader(Context3DProgramType.VERTEX, vertexString);
+		var fragmentByteCode = AGLSLShaderUtils.createShader(Context3DProgramType.FRAGMENT, fragmentString);
+		
+		result.upload(vertexByteCode, fragmentByteCode);
+		return result;
+	}
+	
+	private function getImageProgramName(rgb:Bool, alpha:Bool, mipMap:Bool, smoothing:Bool, globalColor:Bool = false):UInt
 	{
 		var repeat:Bool = true;
 		var bitField:UInt = 0;
