@@ -6,6 +6,8 @@ import com.asliceofcrazypie.flash.jobs.RenderJob;
 import com.asliceofcrazypie.flash.jobs.QuadRenderJob;
 import com.asliceofcrazypie.flash.jobs.TriangleRenderJob;
 
+import openfl.display3D._shaders.AGLSLShaderUtils;
+
 import flash.display3D.Context3DRenderMode;
 import flash.display3D.Context3DBlendFactor;
 import flash.display3D.Context3DProgramType;
@@ -45,8 +47,6 @@ class ContextWrapper extends EventDispatcher
 	private var antiAliasLevel:Int;
 	private var baseTransformMatrix:Matrix3D;
 	
-	private var programNameCache:IntMap<String>;
-	
 	public var programRGBASmooth:Program3D;
 	public var programRGBSmooth:Program3D;
 	public var programASmooth:Program3D;
@@ -55,6 +55,8 @@ class ContextWrapper extends EventDispatcher
 	public var programRGB:Program3D;
 	public var programA:Program3D;
 	public var program:Program3D;
+	
+	private var imagePrograms:IntMap<Program3D>;
 	
 	private var vertexDataRGBA:ByteArray;
 	private var vertexData:ByteArray;
@@ -84,40 +86,78 @@ class ContextWrapper extends EventDispatcher
 	{
 		super();
 		
-		programNameCache = new IntMap<String>();
-		
 		this.depth = depth;
 		this.antiAliasLevel = antiAliasLevel;
 		
-		//vertex shader data
-		var vertexRawDataRGBA:Array<Int> = 	[ -96, 1, 0, 0, 0, -95, 0, 24, 0, 0, 0, 0, 0, 15, 3, 0, 0, 0, -28, 0, 0, 0, 0, 0, 0, 0, -28, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 4, 1, 0, 0, -28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 15, 4, 2, 0, 0, -28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-		var vertexRawData:Array<Int> = 		[ -96, 1, 0, 0, 0, -95, 0, 24, 0, 0, 0, 0, 0, 15, 3, 0, 0, 0, -28, 0, 0, 0, 0, 0, 0, 0, -28, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 4, 1, 0, 0, -28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-		
-		//fragment shaders
-		var fragmentRawDataRGBASmooth:Array<Int> = 	[ -96, 1, 0, 0, 0, -95, 1, 40, 0, 0, 0, 1, 0, 15, 2, 0, 0, 0, -28, 4, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 16, 3, 0, 0, 0, 2, 0, 15, 2, 1, 0, 0, -28, 2, 0, 0, 0, 1, 0, 0, -28, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 3, 2, 0, 0, -28, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-		var fragmentRawDataRGBSmooth:Array<Int> = 	[ -96, 1, 0, 0, 0, -95, 1, 40, 0, 0, 0, 1, 0, 15, 2, 0, 0, 0, -28, 4, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 16, 3, 0, 0, 0, 1, 0, 15, 2, 1, 0, 0, -28, 2, 0, 0, 0, 1, 0, 0, -28, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 3, 1, 0, 0, -28, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-		var fragmentRawDataASmooth:Array<Int> = 	[ -96, 1, 0, 0, 0, -95, 1, 40, 0, 0, 0, 1, 0, 15, 2, 0, 0, 0, -28, 4, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 16, 3, 0, 0, 0, 1, 0, 8, 2, 1, 0, 0, -1, 2, 0, 0, 0, 1, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 3, 1, 0, 0, -28, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-		var fragmentRawDataSmooth:Array<Int> = 		[ -96, 1, 0, 0, 0, -95, 1, 40, 0, 0, 0, 1, 0, 15, 2, 0, 0, 0, -28, 4, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 16, 0, 0, 0, 0, 0, 0, 15, 3, 1, 0, 0, -28, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-		var fragmentRawDataRGBA:Array<Int> = 		[ -96, 1, 0, 0, 0, -95, 1, 40, 0, 0, 0, 1, 0, 15, 2, 0, 0, 0, -28, 4, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 3, 0, 0, 0, 2, 0, 15, 2, 1, 0, 0, -28, 2, 0, 0, 0, 1, 0, 0, -28, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 3, 2, 0, 0, -28, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-		var fragmentRawDataRGB:Array<Int> = 		[ -96, 1, 0, 0, 0, -95, 1, 40, 0, 0, 0, 1, 0, 15, 2, 0, 0, 0, -28, 4, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 3, 0, 0, 0, 2, 0, 15, 2, 1, 0, 0, -28, 2, 0, 0, 0, 1, 0, 0, -28, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 3, 2, 0, 0, -28, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-		var fragmentRawDataA:Array<Int> = 			[ -96, 1, 0, 0, 0, -95, 1, 40, 0, 0, 0, 1, 0, 15, 2, 0, 0, 0, -28, 4, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 3, 0, 0, 0, 1, 0, 8, 2, 1, 0, 0, -1, 2, 0, 0, 0, 1, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 3, 1, 0, 0, -28, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-		var fragmentRawData:Array<Int> = 			[ -96, 1, 0, 0, 0, -95, 1, 40, 0, 0, 0, 1, 0, 15, 2, 0, 0, 0, -28, 4, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 3, 1, 0, 0, -28, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-		
-		vertexDataRGBA = 	rawDataToBytes(vertexRawDataRGBA);
-		vertexData = 		rawDataToBytes(vertexRawData);
-		
-		fragmentDataRGBASmooth = 	rawDataToBytes(fragmentRawDataRGBASmooth);
-		fragmentDataRGBSmooth = 	rawDataToBytes(fragmentRawDataRGBSmooth);
-		fragmentDataASmooth = 		rawDataToBytes(fragmentRawDataASmooth);
-		fragmentDataSmooth = 		rawDataToBytes(fragmentRawDataSmooth);
-		fragmentDataRGBA = 			rawDataToBytes(fragmentRawDataRGBA);
-		fragmentDataRGB = 			rawDataToBytes(fragmentRawDataRGB);
-		fragmentDataA = 			rawDataToBytes(fragmentRawDataA);
-		fragmentData = 				rawDataToBytes(fragmentRawData);
+		initPrograms();
 		
 		currentRenderJobs = new Vector<RenderJob>();
 		quadRenderJobs = new Vector<QuadRenderJob>();
 		triangleRenderJobs = new Vector<TriangleRenderJob>();
+	}
+	
+	private function initPrograms():Void
+	{
+		imagePrograms = new IntMap<Program3D>();
+		
+		//rgb:Bool, alpha:Bool, mipMap:Bool, smoothing:Bool, repeat:Bool = true, globalColor:Bool = false
+		
+		//vertex shader data
+		var vertexStringRGBA:String =	"mov v0, va1      \n" +		// move uv to fragment shader
+										"mov v1, va2      \n" +		// move color transform to fragment shader
+										"m44 op, va0, vc0 \n";		// multiply position by transform matrix 
+		
+		var vertexString:String =		"m44 op, va0, vc0 \n" + 	// 4x4 matrix transform to output clipspace
+										"mov v0, va1      \n";  	// pass texture coordinates to fragment program
+		
+		vertexData = AGLSLShaderUtils.createShader(Context3DProgramType.VERTEX, vertexString);
+		vertexDataRGBA = AGLSLShaderUtils.createShader(Context3DProgramType.VERTEX, vertexStringRGBA);
+		
+		//fragment shaders data
+		
+		// programs without global color multiplier
+		var mipmap:Bool = true;
+		var smoothing:Bool = false;
+		var fragmentStringA:String = 	"tex ft0, v0, fs0 <???>	\n"+
+										"mul oc, ft0, v1.zzzz	\n";
+		fragmentStringA = StringTools.replace(fragmentStringA, "<???>", getTextureLookupFlags(mipmap, smoothing));
+		
+		fragmentDataA = AGLSLShaderUtils.createShader(Context3DProgramType.FRAGMENT, fragmentStringA);				
+		
+		smoothing = true;
+		var fragmentStringASmooth:String = 	"tex ft0, v0, fs0 <???> \n"+
+											"mul oc, ft0, v1.zzzz	\n";
+		fragmentStringASmooth = StringTools.replace(fragmentStringASmooth, "<???>", getTextureLookupFlags(mipmap, smoothing));
+		
+		fragmentDataASmooth = AGLSLShaderUtils.createShader(Context3DProgramType.FRAGMENT, fragmentStringASmooth);
+		
+		smoothing = false;
+		var fragmentString:String = "tex oc, v0, fs0 <???> \n"; // sample texture 0
+		fragmentString = StringTools.replace(fragmentString, "<???>", getTextureLookupFlags(mipmap, smoothing));
+		
+		fragmentData = AGLSLShaderUtils.createShader(Context3DProgramType.FRAGMENT, fragmentString);
+		
+		smoothing = true;
+		var fragmentStringSmooth:String = "tex oc, v0, fs0 <???> \n"; // sample texture 0
+		fragmentStringSmooth = StringTools.replace(fragmentStringSmooth, "<???>", getTextureLookupFlags(mipmap, smoothing));
+		
+		fragmentDataSmooth = AGLSLShaderUtils.createShader(Context3DProgramType.FRAGMENT, fragmentStringSmooth);
+		
+		smoothing = false;
+		var fragmentStringRGBA:String = "tex ft0, v0, fs0 <???> \n"+
+										"mul oc, ft0, v1		\n";
+		fragmentStringRGBA = StringTools.replace(fragmentStringRGBA, "<???>", getTextureLookupFlags(mipmap, smoothing));
+		
+		fragmentDataRGBA = AGLSLShaderUtils.createShader(Context3DProgramType.FRAGMENT, fragmentStringRGBA);
+		fragmentDataRGB = fragmentDataRGBA;
+		
+		smoothing = true;
+		var fragmentStringRGBASmooth:String = 	"tex ft0, v0, fs0 <???> \n"+
+												"mul oc, ft0, v1		\n";
+		fragmentStringRGBASmooth = StringTools.replace(fragmentStringRGBASmooth, "<???>", getTextureLookupFlags(mipmap, smoothing));
+		
+		fragmentDataRGBASmooth = AGLSLShaderUtils.createShader(Context3DProgramType.FRAGMENT, fragmentStringRGBASmooth);
+		fragmentDataRGBSmooth = fragmentDataRGBASmooth;
 	}
 	
 	public inline function setTexture(texture:Texture):Void
@@ -145,7 +185,7 @@ class ContextWrapper extends EventDispatcher
 			this._initCallback = initCallback;
 			stage.stage3Ds[depth].addEventListener(Event.CONTEXT3D_CREATE, initStage3D);
 			stage.stage3Ds[depth].addEventListener(ErrorEvent.ERROR, initStage3DError);
-			stage.stage3Ds[depth].requestContext3D(Std.string(renderMode));
+			stage.stage3Ds[depth].requestContext3D(renderMode);
 			
 			stage.addEventListener(Event.EXIT_FRAME, onRender, false, -0xFFFFFE);
 		}
@@ -467,7 +507,7 @@ class ContextWrapper extends EventDispatcher
 		Ax.context.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 0, matrix, true);
 		Ax.context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 0, colorTransform);
 	*/
-		
+	
 	/*
 	public function isStateChange(tinted:Bool, parentAlpha:Float, texture:Texture, smoothing:String, blendMode:String, numQuads:Int=1):Bool
 	{
@@ -501,37 +541,32 @@ class ContextWrapper extends EventDispatcher
 		
 		return resultProgram;
 	}
-	
-	private function getImageProgramName(tinted:Bool, mipMap:Bool, 
-												smoothing:TextureSmoothing, repeat:Bool = true):String
-	{
-		var bitField:UInt = 0;
-		
-		if (tinted) bitField |= 1;
-		if (mipMap) bitField |= 1 << 1;
-		if (repeat) bitField |= 1 << 2;
-		
-		if (smoothing == TextureSmoothing.NONE)
-			bitField |= 1 << 3;
-		else if (smoothing == TextureSmoothing.LINEAR)
-			bitField |= 1 << 4;
-		
-		var name:String = null;
-		if (!programNameCache.exists(bitField))
-		{
-			name = "QB_i." + StringTools.hex(bitField);
-			programNameCache.set(bitField, name);
-		}
-		
-		return programNameCache.get(bitField);
-	}
 	*/
 	
-	private function getTextureLookupFlags(mipMapping:Bool, smoothing:TextureSmoothing, repeat:Bool = true):String
+	// TODO: add globalColor argument
+	private function getImageProgramName(rgb:Bool, alpha:Bool, mipMap:Bool, 
+												smoothing:Bool, globalColor:Bool = false):UInt
 	{
+		var repeat:Bool = true;
+		var bitField:UInt = 0;
+		
+		if (rgb) bitField |= 1;
+		if (alpha) bitField |= 1 << 1;
+		if (mipMap) bitField |= 1 << 2;
+		if (repeat) bitField |= 1 << 3;
+		if (smoothing) bitField |= 1 << 4;
+		if (globalColor) bitField |= 1 << 5;
+		
+		return bitField;
+	}
+	
+	private function getTextureLookupFlags(mipMapping:Bool, smoothing:Bool):String
+	{
+		var repeat:Bool = true; // making it default for now (to make things simpler)
+		
 		var options:Array<String> = ["2d", repeat ? "repeat" : "clamp"];
 		
-		if (smoothing == TextureSmoothing.NONE) {
+		if (smoothing == false) {
 			options.push("nearest");
 			options.push(mipMapping ? "mipnearest" : "mipnone");
 		}
@@ -597,11 +632,5 @@ class ContextWrapper extends EventDispatcher
            untyped array.length = 0;
         #end
 	}
-}
-
-enum TextureSmoothing
-{
-	NONE;
-	LINEAR;
 }
 #end

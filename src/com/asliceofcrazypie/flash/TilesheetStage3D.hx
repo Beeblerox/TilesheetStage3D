@@ -41,7 +41,7 @@ class TilesheetStage3D extends Tilesheet
 	public var bitmapWidth(default, null):Int;
 	public var bitmapHeight(default, null):Int;
 	
-	public function new(inImage:BitmapData, premultipliedAlpha:Bool = true, mipmap:Bool = true) 
+	public function new(inImage:BitmapData, premultipliedAlpha:Bool = false, mipmap:Bool = true) 
 	{
 		#if flash11
 		inImage = TextureUtil.fixTextureSize(inImage);
