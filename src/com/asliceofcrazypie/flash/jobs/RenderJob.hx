@@ -1,4 +1,5 @@
 package com.asliceofcrazypie.flash.jobs;
+
 import com.asliceofcrazypie.flash.TilesheetStage3D;
 
 #if flash11
@@ -51,7 +52,6 @@ class RenderJob
 	public var isRGB:Bool;
 	public var isAlpha:Bool;
 	public var isSmooth:Bool;
-	public var isGlobalColor:Bool;
 	
 	public var blendMode:BlendMode;
 	public var premultipliedAlpha:Bool;
@@ -231,6 +231,7 @@ class RenderJob
 			
 			context.setImageProgram(isRGB, isAlpha, isSmooth, tilesheet.mipmap, colored); //assign appropriate shader
 			
+			// TODO: culling support...
 			// context.context3D.setCulling();
 			
 			context.setTexture(tilesheet.texture);
@@ -368,4 +369,5 @@ enum RenderJobType
 {
 	QUAD;
 	TRIANGLE;
+	NO_IMAGE;
 }
