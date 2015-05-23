@@ -62,9 +62,13 @@ class ContextWrapper extends EventDispatcher
 	private var currentTexture:Texture;
 	private var currentProgram:Program3D;
 	
+	private var globalMultiplier:Vector<Float>;
+	
 	public function new(depth:Int, antiAliasLevel:Int = 1)
 	{
 		super();
+		
+		globalMultiplier = new Vector<Float>();
 		
 		this.depth = depth;
 		this.antiAliasLevel = antiAliasLevel;
@@ -245,11 +249,11 @@ class ContextWrapper extends EventDispatcher
 		}
 	}
 	
-	public inline function renderJob(job:RenderJob):Void
+	public inline function renderJob(job:RenderJob, colored:Bool = false):Void
 	{
 		if (context3D != null && !presented)
 		{
-			job.render(this);
+			job.render(this, colored);
 		}
 	}
 	
@@ -384,32 +388,6 @@ class ContextWrapper extends EventDispatcher
 	}
 	
 	/*
-	private static const VERTEX_SHADER:Array = [
-			// va0 = [x, y, , ]
-			// va1 = [u, v, , ]
-			// va2 = [r, g, b, a]
-			// vc0 = transform matrix
-			"mov v1, va1",			// move uv to fragment shader
-			"mov v2, va2",			// move color transform to fragment shader
-			"m44 op, va0, vc0"		// multiply position by transform matrix 
-		];
-		
-		private static const FRAGMENT_SHADER:Array = [
-			// ft0 = tilemap texture
-			// v1  = uv
-			// v2  = rgba
-			// fs0 = something
-			// fc0 = color
-			"tex ft0, v1, fs0 <2d,nearest,mipnone>",	// sample texture
-			"mul ft1, v2, fc0",						// multiple sprite color by global color
-			"mul oc, ft0, ft1",							// multiply texture by color
-		];
-		
-		Ax.context.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 0, matrix, true);
-		Ax.context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 0, colorTransform);
-	*/
-	
-	/*
 	public function isStateChange(tinted:Bool, parentAlpha:Float, texture:Texture, smoothing:String, blendMode:String, numQuads:Int=1):Bool
 	{
 		if (mNumQuads == 0) return false;
@@ -495,6 +473,18 @@ class ContextWrapper extends EventDispatcher
 		if (context3D != null)
 		{
 			context3D.setScissorRectangle(rect);
+		}
+	}
+	
+	public function setColorMultiplier(r:Float, g:Float, b:Float, a:Float):Void
+	{
+		if (context3D != null)
+		{
+			globalMultiplier[0] = r;
+			globalMultiplier[1] = g;
+			globalMultiplier[2] = b;
+			globalMultiplier[3] = a;
+			context3D.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 0, globalMultiplier);
 		}
 	}
 	

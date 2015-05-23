@@ -76,6 +76,12 @@ class Viewport
 	private var quadRenderJobs:Vector<QuadRenderJob>;
 	private var triangleRenderJobs:Vector<TriangleRenderJob>;
 	
+	private var isColored:Bool = false;
+	private var r:Float = 1.0;
+	private var g:Float = 1.0;
+	private var b:Float = 1.0;
+	private var a:Float = 1.0;
+	
 	// TODO: add viewport tinting (this will require adding new shaders or some additional multiplications)...
 	
 	/**
@@ -169,9 +175,11 @@ class Viewport
 		context.setMatrix(matrix);
 		context.setScissor(scissor);
 		
+		if (isColored) context.setColorMultiplier(r, g, b, a);
+		
 		for (job in renderJobs)
 		{
-			context.renderJob(job);
+			context.renderJob(job, isColored);
 		}
 	}
 	#else

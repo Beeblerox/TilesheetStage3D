@@ -222,14 +222,14 @@ class RenderJob
 		*/
 	}
 	
-	public function render(context:ContextWrapper = null):Void
+	public function render(context:ContextWrapper = null, colored:Bool = false):Void
 	{
 		if (context != null && context.context3D.driverInfo != 'Disposed')
 		{
 			//blend mode
 			setBlending(context);
 			
-			context.setImageProgram(isRGB, isAlpha, isSmooth, tilesheet.mipmap); //assign appropriate shader
+			context.setImageProgram(isRGB, isAlpha, isSmooth, tilesheet.mipmap, colored); //assign appropriate shader
 			
 			// context.context3D.setCulling();
 			
