@@ -77,7 +77,34 @@ class ContextWrapper extends EventDispatcher
 		triangleRenderJobs = new Vector<TriangleRenderJob>();
 	}
 	
-	private function getProgram(isRGB:Bool, isAlpha:Bool, smooth:Bool, mipmap:Bool, globalColor:Bool = false):Program3D
+	private function getNoImageProgram(globalColor:Bool = false):Program3D
+	{
+		var programName:UInt = getNoImageProgramName(globalColor);
+		
+		if (noImagePrograms.exists(programName))
+		{
+			return noImagePrograms.get(programName);
+		}
+		
+		var vertexString:String =	"m44 op, va0, vc0   \n" +		// 4x4 matrix transform to output clipspace
+									"mov v0, va1 		\n";		// move color transform to fragment shader
+		
+		var fragmentString:String = null;
+		if (globalColor)
+		{
+			fragmentString =	"mul oc, v0, fc0	\n";	// multiply global color by quad color and put result in output color
+		}
+		else
+		{
+			fragmentString =	"mov oc, v0			\n";	// output color
+		}
+		
+		var program:Program3D = assembleAgal(vertexString, fragmentString);
+		noImagePrograms.set(programName, program);
+		return program;
+	}
+	
+	private function getImageProgram(isRGB:Bool, isAlpha:Bool, smooth:Bool, mipmap:Bool, globalColor:Bool = false):Program3D
 	{
 		var programName:UInt = getImageProgramName(isRGB, isAlpha, mipmap, smooth, globalColor);
 		
@@ -149,10 +176,7 @@ class ContextWrapper extends EventDispatcher
 	private function initPrograms():Void
 	{
 		// colored triangles
-		var vertexString:String = 	"m44 op, va0, vc0   \n" +	// 4x4 matrix transform to output clipspace
-											"mov v0, va1 		\n";	// move color transform to fragment shader
 		
-		var fragmentString = 		"mov oc, v0			\n";	// output color
 		
 		// TODO: upload to gpu
 	}
@@ -347,79 +371,17 @@ class ContextWrapper extends EventDispatcher
 		}
 	}
 	
-	public function setProgramNoGlobalColor(isRGB:Bool, isAlpha:Bool, smooth:Bool, mipmap:Bool = true, globalColor:Bool = false):Void
+	public function setImageProgram(isRGB:Bool, isAlpha:Bool, smooth:Bool, mipmap:Bool = true, globalColor:Bool = false):Void
 	{
-		var program:Program3D = getProgram(isRGB, isAlpha, smooth, mipmap, globalColor);
+		var program:Program3D = getImageProgram(isRGB, isAlpha, smooth, mipmap, globalColor);
 		doSetProgram(program);
 	}
 	
-	public function setProgramWithGlobalColor(isRGB:Bool, isAlpha:Bool, smooth:Bool, mipmap:Bool = true):Void
+	public function setNoImageProgram(globalColor:Bool = false):Void
 	{
-		
+		var program:Program3D = getNoImageProgram(globalColor);
+		doSetProgram(program);
 	}
-	
-	/*
-	private function getProgram(tinted:Bool):Program3D
-	{
-		var programName:String = QUAD_PROGRAM_NAME;
-		
-		if (mTexture != null) {
-			programName = getImageProgramName(tinted, mTexture.mipMapping, mTexture.repeat, mTexture.format, mSmoothing);
-		}
-		
-		var program:Program3D = target.getProgram(programName);
-		
-		if (program == null)
-		{
-			// this is the input data we'll pass to the shaders:
-			// 
-			// va0 -> position
-			// va1 -> color
-			// va2 -> texCoords
-			// vc0 -> alpha
-			// vc1 -> mvpMatrix
-			// fs0 -> texture
-			
-			var vertexShader:String;
-			var fragmentShader:String;
-
-			if (mTexture == null) // Quad-Shaders
-			{
-				vertexShader =
-					"m44 op, va0, vc1 \n" + // 4x4 matrix transform to output clipspace
-					"mul v0, va1, vc0 \n";  // multiply alpha (vc0) with color (va1)
-				
-				fragmentShader =
-					"mov oc, v0       \n";  // output color
-			}
-			else // Image-Shaders
-			{
-				vertexShader = tinted ?
-					"m44 op, va0, vc1 \n" + // 4x4 matrix transform to output clipspace
-					"mul v0, va1, vc0 \n" + // multiply alpha (vc0) with color (va1)
-					"mov v1, va2      \n"   // pass texture coordinates to fragment program
-					:
-					"m44 op, va0, vc1 \n" + // 4x4 matrix transform to output clipspace
-					"mov v1, va2      \n";  // pass texture coordinates to fragment program
-				
-				fragmentShader = tinted ?
-					"tex ft1,  v1, fs0 <???> \n" + // sample texture 0
-					"mul  oc, ft1,  v0       \n"   // multiply color with texel color
-					:
-					"tex  oc,  v1, fs0 <???> \n";  // sample texture 0
-				
-				fragmentShader = StringTools.replace(fragmentShader, "<???>",
-					RenderSupport.getTextureLookupFlags(
-						mTexture.format, mTexture.mipMapping, mTexture.repeat, smoothing));
-			}
-			
-			program = target.registerProgramFromSource(programName,
-				vertexShader, fragmentShader);
-		}
-		
-		return program;
-	}
-	*/
 	
 	/*
 	private static const VERTEX_SHADER:Array = [
@@ -480,7 +442,13 @@ class ContextWrapper extends EventDispatcher
 		return result;
 	}
 	
-	// TODO: rewrite this method
+	private function getNoImageProgramName(globalColor:Bool):UInt
+	{
+		var bitField:UInt = 0;
+		if (globalColor) bitField |= 0x0001;
+		return bitField;
+	}
+	
 	private function getImageProgramName(rgb:Bool, alpha:Bool, mipMap:Bool, smoothing:Bool, globalColor:Bool = false):UInt
 	{
 		var repeat:Bool = true;

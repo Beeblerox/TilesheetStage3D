@@ -229,7 +229,7 @@ class RenderJob
 			//blend mode
 			setBlending(context);
 			
-			context.setProgramNoGlobalColor(isRGB, isAlpha, isSmooth, tilesheet.mipmap); //assign appropriate shader
+			context.setImageProgram(isRGB, isAlpha, isSmooth, tilesheet.mipmap); //assign appropriate shader
 			
 			// context.context3D.setCulling();
 			
