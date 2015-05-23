@@ -343,6 +343,7 @@ class RenderJob
 		RenderJob.initBlendFactors();
 	}
 	
+	// TODO: move it to context wrapper...
 	private static function initBlendFactors():Void
 	{
 		if (RenderJob.premultipliedBlendFactors == null)

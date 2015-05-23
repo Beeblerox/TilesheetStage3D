@@ -47,31 +47,8 @@ class ContextWrapper extends EventDispatcher
 	private var antiAliasLevel:Int;
 	private var baseTransformMatrix:Matrix3D;
 	
-	public var programRGBASmooth:Program3D;
-	public var programRGBSmooth:Program3D;
-	public var programASmooth:Program3D;
-	public var programSmooth:Program3D;
-	public var programRGBA:Program3D;
-	public var programRGB:Program3D;
-	public var programA:Program3D;
-	public var program:Program3D;
-	public var programNoImage:Program3D;
-	
 	private var imagePrograms:IntMap<Program3D>;
-	
-	private var vertexDataRGBA:ByteArray;
-	private var vertexData:ByteArray;
-	private var vertexDataNoImage:ByteArray;
-	
-	private var fragmentDataRGBASmooth:ByteArray;
-	private var fragmentDataRGBSmooth:ByteArray;
-	private var fragmentDataASmooth:ByteArray;
-	private var fragmentDataSmooth:ByteArray;
-	private var fragmentDataRGBA:ByteArray;
-	private var fragmentDataRGB:ByteArray;
-	private var fragmentDataA:ByteArray;
-	private var fragmentData:ByteArray;
-	private var fragmentDataNoImage:ByteArray;
+	private var noImagePrograms:IntMap<Program3D>;
 	
 	private var _initCallback:Void->Void;
 	
@@ -92,85 +69,92 @@ class ContextWrapper extends EventDispatcher
 		this.depth = depth;
 		this.antiAliasLevel = antiAliasLevel;
 		
-		initPrograms();
+		imagePrograms = new IntMap<Program3D>();
+		noImagePrograms = new IntMap<Program3D>();
 		
 		currentRenderJobs = new Vector<RenderJob>();
 		quadRenderJobs = new Vector<QuadRenderJob>();
 		triangleRenderJobs = new Vector<TriangleRenderJob>();
 	}
 	
+	private function getProgram(isRGB:Bool, isAlpha:Bool, smooth:Bool, mipmap:Bool, globalColor:Bool = false):Program3D
+	{
+		var programName:UInt = getImageProgramName(isRGB, isAlpha, mipmap, smooth, globalColor);
+		
+		if (imagePrograms.exists(programName))
+		{
+			return imagePrograms.get(programName);
+		}
+		
+		var vertexString:String = null;
+		var fragmentString:String = null;
+		
+		if (isRGB || isAlpha)
+		{
+			vertexString =	"mov v0, va1      \n" +		// move uv to fragment shader
+							"mov v1, va2      \n" +		// move color transform to fragment shader
+							"m44 op, va0, vc0 \n";		// multiply position by transform matrix
+		}
+		else
+		{
+			vertexString =	"m44 op, va0, vc0 \n" + 	// 4x4 matrix transform to output clipspace
+							"mov v0, va1      \n";  	// pass texture coordinates to fragment program
+		}
+		
+		if (globalColor)
+		{
+			if (isRGB)
+			{
+				fragmentString =	"tex ft0, v0, fs0 <???> \n" +	// sample texture
+									"mul ft1, v1, fc0		\n" +	// multiple sprite color by global color
+									"mul oc, ft0, ft1		\n";	// multiply texture by color
+			}
+			else if (isAlpha)
+			{
+				fragmentString = 	"tex ft0, v0, fs0 <???>	\n" +	// sample texture
+									"mul ft1, fc0, v1.zzz	\n" +	// multiple sprite alpha by global color
+									"mul oc, ft0, ft1		\n";	// multiply texture by color
+			}
+			else
+			{
+				fragmentString =	"tex ft0, v0, fs0 <???>	\n" +	// sample texture
+									"mul oc, ft0, fc0		\n";	// multiply texture by color
+			}
+		}
+		else
+		{
+			if (isRGB)
+			{
+				fragmentString =	"tex ft0, v0, fs0 <???> \n" +	// sample texture
+									"mul oc, ft0, v1		\n";	// multiply texture by color
+			}
+			else if (isAlpha)
+			{
+				fragmentString = 	"tex ft0, v0, fs0 <???>	\n" +	// sample texture
+									"mul oc, ft0, v1.zzzz	\n";	// multiply texture by alpha
+			}
+			else
+			{
+				fragmentString = "tex oc, v0, fs0 <???> \n"; 		// sample texture 0
+			}
+		}
+		
+		fragmentString = StringTools.replace(fragmentString, "<???>", getTextureLookupFlags(mipmap, smooth));
+		
+		var program:Program3D = assembleAgal(vertexString, fragmentString);
+		imagePrograms.set(programName, program);
+		return program;
+	}
+	
 	private function initPrograms():Void
 	{
-		imagePrograms = new IntMap<Program3D>();
-		
 		// colored triangles
-		var vertexStringNoImage:String = 	"m44 op, va0, vc0   \n" +	// 4x4 matrix transform to output clipspace
+		var vertexString:String = 	"m44 op, va0, vc0   \n" +	// 4x4 matrix transform to output clipspace
 											"mov v0, va1 		\n";	// move color transform to fragment shader
 		
-		var fragmentStringNoImage = 		"mov oc, v0			\n";	// output color
+		var fragmentString = 		"mov oc, v0			\n";	// output color
 		
 		// TODO: upload to gpu
-		
-		// vertex shader data
-		var vertexStringRGBA:String =	"mov v0, va1      \n" +		// move uv to fragment shader
-										"mov v1, va2      \n" +		// move color transform to fragment shader
-										"m44 op, va0, vc0 \n";		// multiply position by transform matrix 
-		
-		var vertexString:String =		"m44 op, va0, vc0 \n" + 	// 4x4 matrix transform to output clipspace
-										"mov v0, va1      \n";  	// pass texture coordinates to fragment program
-		
-		vertexData = AGLSLShaderUtils.createShader(Context3DProgramType.VERTEX, vertexString);
-		vertexDataRGBA = AGLSLShaderUtils.createShader(Context3DProgramType.VERTEX, vertexStringRGBA);
-		
-		// fragment shaders data
-		
-		// programs without global color multiplier...
-		var mipmap:Bool = true;
-		var smoothing:Bool = false;
-		var fragmentStringA:String = 	"tex ft0, v0, fs0 <???>	\n"+
-										"mul oc, ft0, v1.zzzz	\n";
-		fragmentStringA = StringTools.replace(fragmentStringA, "<???>", getTextureLookupFlags(mipmap, smoothing));
-		
-		fragmentDataA = AGLSLShaderUtils.createShader(Context3DProgramType.FRAGMENT, fragmentStringA);				
-		
-		smoothing = true;
-		var fragmentStringASmooth:String = 	"tex ft0, v0, fs0 <???> \n"+
-											"mul oc, ft0, v1.zzzz	\n";
-		fragmentStringASmooth = StringTools.replace(fragmentStringASmooth, "<???>", getTextureLookupFlags(mipmap, smoothing));
-		
-		fragmentDataASmooth = AGLSLShaderUtils.createShader(Context3DProgramType.FRAGMENT, fragmentStringASmooth);
-		
-		smoothing = false;
-		var fragmentString:String = "tex oc, v0, fs0 <???> \n"; // sample texture 0
-		fragmentString = StringTools.replace(fragmentString, "<???>", getTextureLookupFlags(mipmap, smoothing));
-		
-		fragmentData = AGLSLShaderUtils.createShader(Context3DProgramType.FRAGMENT, fragmentString);
-		
-		smoothing = true;
-		var fragmentStringSmooth:String = "tex oc, v0, fs0 <???> \n"; // sample texture 0
-		fragmentStringSmooth = StringTools.replace(fragmentStringSmooth, "<???>", getTextureLookupFlags(mipmap, smoothing));
-		
-		fragmentDataSmooth = AGLSLShaderUtils.createShader(Context3DProgramType.FRAGMENT, fragmentStringSmooth);
-		
-		smoothing = false;
-		var fragmentStringRGBA:String = "tex ft0, v0, fs0 <???> \n"+
-										"mul oc, ft0, v1		\n";
-		fragmentStringRGBA = StringTools.replace(fragmentStringRGBA, "<???>", getTextureLookupFlags(mipmap, smoothing));
-		
-		fragmentDataRGBA = AGLSLShaderUtils.createShader(Context3DProgramType.FRAGMENT, fragmentStringRGBA);
-		fragmentDataRGB = fragmentDataRGBA;
-		
-		smoothing = true;
-		var fragmentStringRGBASmooth:String = 	"tex ft0, v0, fs0 <???> \n"+
-												"mul oc, ft0, v1		\n";
-		fragmentStringRGBASmooth = StringTools.replace(fragmentStringRGBASmooth, "<???>", getTextureLookupFlags(mipmap, smoothing));
-		
-		fragmentDataRGBASmooth = AGLSLShaderUtils.createShader(Context3DProgramType.FRAGMENT, fragmentStringRGBASmooth);
-		fragmentDataRGBSmooth = fragmentDataRGBASmooth;
-		
-		// programs with global color multiplier...
-		
-		
 	}
 	
 	public inline function setTexture(texture:Texture):Void
@@ -276,30 +260,8 @@ class ContextWrapper extends EventDispatcher
 				
 				stage.addEventListener(Event.RESIZE, onStageResize); //listen for future stage resize events
 				
-				//init programs
-				programRGBASmooth = context3D.createProgram();
-				programRGBASmooth.upload(vertexDataRGBA, fragmentDataRGBASmooth);
-				
-				programRGBSmooth = context3D.createProgram();
-				programRGBSmooth.upload(vertexDataRGBA, fragmentDataRGBSmooth);
-				
-				programASmooth = context3D.createProgram();
-				programASmooth.upload(vertexDataRGBA, fragmentDataASmooth);
-				
-				programSmooth = context3D.createProgram();
-				programSmooth.upload(vertexData, fragmentDataSmooth);
-				
-				programRGBA = context3D.createProgram();
-				programRGBA.upload(vertexDataRGBA, fragmentDataRGBA);
-				
-				programRGB = context3D.createProgram();
-				programRGB.upload(vertexDataRGBA, fragmentDataRGB);
-				
-				programA = context3D.createProgram();
-				programA.upload(vertexDataRGBA, fragmentDataA);
-				
-				program = context3D.createProgram();
-				program.upload(vertexData, fragmentData);
+				imagePrograms = new IntMap<Program3D>();
+				noImagePrograms = new IntMap<Program3D>();
 				
 				onStageResize(null); //init the base transform matrix
 				
@@ -385,46 +347,10 @@ class ContextWrapper extends EventDispatcher
 		}
 	}
 	
-	public function setProgramNoGlobalColor(isRGB:Bool, isAlpha:Bool, smooth:Bool, mipmap:Bool = true):Void
+	public function setProgramNoGlobalColor(isRGB:Bool, isAlpha:Bool, smooth:Bool, mipmap:Bool = true, globalColor:Bool = false):Void
 	{
-		if (smooth)
-		{
-			if (isRGB && isAlpha)
-			{
-				doSetProgram(programRGBASmooth);
-			}
-			else if (isRGB)
-			{
-				doSetProgram(programRGBSmooth);
-			}
-			else if (isAlpha)
-			{
-				doSetProgram(programASmooth);
-			}
-			else
-			{
-				doSetProgram(programSmooth);
-			}
-		}
-		else
-		{
-			if (isRGB && isAlpha)
-			{
-				doSetProgram(programRGBA);
-			}
-			else if (isRGB)
-			{
-				doSetProgram(programRGB);
-			}
-			else if (isAlpha)
-			{
-				doSetProgram(programA);
-			}
-			else
-			{
-				doSetProgram(program);
-			}
-		}
+		var program:Program3D = getProgram(isRGB, isAlpha, smooth, mipmap, globalColor);
+		doSetProgram(program);
 	}
 	
 	public function setProgramWithGlobalColor(isRGB:Bool, isAlpha:Bool, smooth:Bool, mipmap:Bool = true):Void
@@ -554,17 +480,18 @@ class ContextWrapper extends EventDispatcher
 		return result;
 	}
 	
+	// TODO: rewrite this method
 	private function getImageProgramName(rgb:Bool, alpha:Bool, mipMap:Bool, smoothing:Bool, globalColor:Bool = false):UInt
 	{
 		var repeat:Bool = true;
 		var bitField:UInt = 0;
 		
-		if (rgb) bitField |= 1;
-		if (alpha) bitField |= 1 << 1;
-		if (mipMap) bitField |= 1 << 2;
-		if (repeat) bitField |= 1 << 3;
-		if (smoothing) bitField |= 1 << 4;
-		if (globalColor) bitField |= 1 << 5;
+		if (rgb) bitField |= 0x0001;
+		if (alpha) bitField |= 0x0002;
+		if (mipMap) bitField |= 0x0004;
+		if (repeat) bitField |= 0x0008;
+		if (smoothing) bitField |= 0x0010;
+		if (globalColor) bitField |= 0x0020;
 		
 		return bitField;
 	}
