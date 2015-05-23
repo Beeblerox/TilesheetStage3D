@@ -57,7 +57,9 @@ class Viewport
 	 */
 	public var index:Int;
 	
-	// TODO: use this var...
+	/**
+	 * Whether to render this viewport or not
+	 */
 	public var visible:Bool = true;
 	
 	/**
@@ -83,12 +85,13 @@ class Viewport
 	private var isColored:Bool = false;
 	
 	public var bgColor(get, set):UInt;
-	public var bgRed(default, set):Float = 0.0;
-	public var bgGreen(default, set):Float = 0.0;
-	public var bgBlue(default, set):Float = 0.0;
-	public var bgAlpha(default, set):Float = 0.0;
+	public var bgRed:Float = 0.0;
+	public var bgGreen:Float = 0.0;
+	public var bgBlue:Float = 0.0;
+	public var bgAlpha:Float = 0.0;
 	
-	// TODO: add viewport tinting (this will require adding new shaders or some additional multiplications)...
+	// TODO: use this var...
+	public var useBgColor:Bool = false;
 	
 	/**
 	 * Viewport consctructor.
@@ -451,62 +454,63 @@ class Viewport
 	
 	private function get_bgColor():UInt
 	{
-		return 0;
+		return ((Std.int(bgAlpha * 255) << 24) | (Std.int(bgRed * 255) << 16) | (Std.int(bgGreen * 255) << 8) | Std.int(bgBlue * 255));
 	}
 	
 	private function set_bgColor(value:UInt):UInt
 	{
+		bgRed = ((value >> 16) & 0xff) / 255;
+		bgGreen = ((value >> 8) & 0xff) / 255;
+		bgBlue = (value & 0xff) / 255;
+		bgAlpha = ((value >> 24) & 0xff) / 255;
 		return value;
-	}
-	
-	private function set_bgRed(value:Float):Float
-	{
-		return bgRed = value;
-	}
-	
-	private function set_bgGreen(value:Float):Float
-	{
-		return bgGreen = value;
-	}
-	
-	private function set_bgBlue(value:Float):Float
-	{
-		return bgBlue = value;
-	}
-	
-	private function set_bgAlpha(value:Float):Float
-	{
-		return bgAlpha = value;
 	}
 	
 	private function get_color():UInt
 	{
-		return 0;
+		return ((Std.int(cAlpha * 255) << 24) | (Std.int(cRed * 255) << 16) | (Std.int(cGreen * 255) << 8) | Std.int(cBlue * 255));
 	}
 	
 	private function set_color(value:UInt):UInt
 	{
+		cRed = ((value >> 16) & 0xff) / 255;
+		cGreen = ((value >> 8) & 0xff) / 255;
+		cBlue = (value & 0xff) / 255;
+		cAlpha = ((value >> 24) & 0xff) / 255;
 		return value;
 	}
 	
 	private function set_cRed(value:Float):Float
 	{
-		return cRed = value;
+		cRed = value;
+		checkColor();
+		return value;
 	}
 	
 	private function set_cGreen(value:Float):Float
 	{
-		return cGreen = value;
+		cGreen = value;
+		checkColor();
+		return value;
 	}
 	
 	private function set_cBlue(value:Float):Float
 	{
-		return cBlue = value;
+		cBlue = value;
+		checkColor();
+		return value;
 	}
 	
 	private function set_cAlpha(value:Float):Float
 	{
-		return cAlpha = value;
+		cAlpha = value;
+		checkColor();
+		return value;
+	}
+	
+	private function checkColor():Void
+	{
+		isColored = (cRed != 1.0) || (cGreen != 1.0) || (cBlue != 1.0) || (cAlpha != 1.0);
 	}
 	
 	private function updateMatrix():Void
