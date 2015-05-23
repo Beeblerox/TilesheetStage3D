@@ -15,6 +15,7 @@ import flash.display3D.Context3DTextureFormat;
 import flash.display3D.Context3D;
 import flash.display3D.Program3D;
 import flash.display3D.textures.Texture;
+import flash.display.BlendMode;
 import flash.display.BitmapData;
 import flash.display.DisplayObject;
 import flash.display.DisplayObjectContainer;
@@ -205,6 +206,8 @@ class ContextWrapper extends EventDispatcher
 			{
 				renderMode = Context3DRenderMode.AUTO;
 			}
+			
+			BlendModeUtil.initBlendFactors();
 			
 			this.stage = stage;
 			this._initCallback = initCallback;
@@ -457,6 +460,10 @@ class ContextWrapper extends EventDispatcher
 		{
 			context3D.setScissorRectangle(rect);
 		}
+	}
+	
+	{
+		BlendModeUtil.applyToContext(blendMode, this, premultipliedAlpha);
 	}
 	
 	public function setColorMultiplier(r:Float, g:Float, b:Float, a:Float):Void

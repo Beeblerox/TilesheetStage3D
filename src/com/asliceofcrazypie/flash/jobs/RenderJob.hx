@@ -7,7 +7,6 @@ import com.asliceofcrazypie.flash.jobs.BaseRenderJob;
 import flash.display3D.IndexBuffer3D;
 import flash.display3D.textures.Texture;
 import flash.display3D.Context3DVertexBufferFormat;
-import flash.display3D.Context3DBlendFactor;
 import flash.display3D.VertexBuffer3D;
 import flash.display3D.Context3DTriangleFace;
 import flash.display.TriangleCulling;
@@ -29,11 +28,6 @@ class RenderJob extends BaseRenderJob
 {
 	public static inline var NUM_JOBS_TO_POOL:Int = 25;
 	
-	public static inline var BLEND_NORMAL:String = "normal";
-	public static inline var BLEND_ADD:String = "add";
-	public static inline var BLEND_MULTIPLY:String = "multiply";
-	public static inline var BLEND_SCREEN:String = "screen";
-	
 	public static inline var MAX_INDICES_PER_BUFFER:Int = 98298;
 	public static inline var MAX_VERTEX_PER_BUFFER:Int = 65532;		// (MAX_INDICES_PER_BUFFER * 4 / 6)
 	public static inline var MAX_QUADS_PER_BUFFER:Int = 16383;		// (MAX_VERTEX_PER_BUFFER / 4)
@@ -44,9 +38,6 @@ class RenderJob extends BaseRenderJob
 	public static var quadsPerBuffer(default, null):Int;
 	public static var trianglesPerBuffer(default, null):Int;
 	public static var indicesPerBuffer(default, null):Int;
-	
-	private static var premultipliedBlendFactors:StringMap<Array<Context3DBlendFactor>>;
-	private static var noPremultipliedBlendFactors:StringMap<Array<Context3DBlendFactor>>;
 	
 	public var tilesheet:TilesheetStage3D;
 	public var vertices(default, null):Vector<Float>;
@@ -230,7 +221,6 @@ class RenderJob extends BaseRenderJob
 		if (context != null && context.context3D.driverInfo != 'Disposed')
 		{
 			//blend mode
-			setBlending(context);
 			
 			context.setImageProgram(isRGB, isAlpha, isSmooth, tilesheet.mipmap, colored); //assign appropriate shader
 			
@@ -303,36 +293,6 @@ class RenderJob extends BaseRenderJob
 		return numVertices <= RenderJob.vertexPerBuffer;
 	}
 	
-	// TODO: move this into context wrapper...
-	private inline function setBlending(context:ContextWrapper):Void
-	{
-		var factors = RenderJob.premultipliedBlendFactors;
-		if (!premultipliedAlpha)
-		{
-			factors = RenderJob.noPremultipliedBlendFactors;
-		}
-		
-		var blendString:String = switch (blendMode)
-		{
-			case BlendMode.ADD:
-				RenderJob.BLEND_ADD;
-			case BlendMode.MULTIPLY:
-				RenderJob.BLEND_MULTIPLY;
-			case BlendMode.SCREEN:
-				RenderJob.BLEND_SCREEN;
-			default:
-				RenderJob.BLEND_NORMAL;
-		}
-		
-		var factor:Array<Context3DBlendFactor> = factors.get(blendString);
-		if (factor == null)
-		{
-			factor = factors.get(RenderJob.BLEND_NORMAL);
-		}
-		
-		context.context3D.setBlendFactors(factor[0], factor[1]);
-	}
-	
 	public function reset():Void
 	{
 		vertexPos = 0;
@@ -340,35 +300,10 @@ class RenderJob extends BaseRenderJob
 		numVertices = 0;
 		numIndices = 0;
 	}
-	
-	public static function __init__():Void
-	{
-	//	QuadRenderJob.__init__();
-	//	TriangleRenderJob.__init__();
-		RenderJob.initBlendFactors();
-	}
-	
-	// TODO: move it to context wrapper...
-	private static function initBlendFactors():Void
-	{
-		if (RenderJob.premultipliedBlendFactors == null)
-		{
-			RenderJob.premultipliedBlendFactors = new StringMap();
-			RenderJob.premultipliedBlendFactors.set(BLEND_NORMAL, [Context3DBlendFactor.ONE, Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA]);
-			RenderJob.premultipliedBlendFactors.set(BLEND_ADD, [Context3DBlendFactor.ONE, Context3DBlendFactor.ONE]);
-			RenderJob.premultipliedBlendFactors.set(BLEND_MULTIPLY, [Context3DBlendFactor.DESTINATION_COLOR, Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA]);
-			RenderJob.premultipliedBlendFactors.set(BLEND_SCREEN, [Context3DBlendFactor.ONE, Context3DBlendFactor.ONE_MINUS_SOURCE_COLOR]);
-			
-			RenderJob.noPremultipliedBlendFactors = new StringMap();
-			RenderJob.noPremultipliedBlendFactors.set(BLEND_NORMAL, [Context3DBlendFactor.SOURCE_ALPHA, Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA]);
-			RenderJob.noPremultipliedBlendFactors.set(BLEND_ADD, [Context3DBlendFactor.SOURCE_ALPHA, Context3DBlendFactor.DESTINATION_ALPHA]);
-			RenderJob.noPremultipliedBlendFactors.set(BLEND_MULTIPLY, [Context3DBlendFactor.DESTINATION_COLOR, Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA]);
-			RenderJob.noPremultipliedBlendFactors.set(BLEND_SCREEN, [Context3DBlendFactor.SOURCE_ALPHA, Context3DBlendFactor.ONE]);
-		}
-	}
 }
 #end
 
+// TODO: move to BaseRenderJob
 enum RenderJobType
 {
 	QUAD;
