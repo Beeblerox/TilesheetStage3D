@@ -1,6 +1,7 @@
 package com.asliceofcrazypie.flash.jobs;
 
 import com.asliceofcrazypie.flash.TilesheetStage3D;
+import com.asliceofcrazypie.flash.jobs.BaseRenderJob;
 
 #if flash11
 import flash.display3D.IndexBuffer3D;
@@ -24,7 +25,7 @@ import haxe.ds.StringMap;
  * ...
  * @author Paul M Pepper
  */
-class RenderJob 
+class RenderJob extends BaseRenderJob
 {
 	public static inline var NUM_JOBS_TO_POOL:Int = 25;
 	
@@ -85,6 +86,8 @@ class RenderJob
 	// TODO: use `useBytes` not only in constructor...
 	private function new(useBytes:Bool = false)
 	{
+		super();
+		
 		this.vertices = new Vector<Float>(RenderJob.vertexPerBuffer >> 2);
 		
 		if (useBytes)
@@ -300,6 +303,7 @@ class RenderJob
 		return numVertices <= RenderJob.vertexPerBuffer;
 	}
 	
+	// TODO: move this into context wrapper...
 	private inline function setBlending(context:ContextWrapper):Void
 	{
 		var factors = RenderJob.premultipliedBlendFactors;
