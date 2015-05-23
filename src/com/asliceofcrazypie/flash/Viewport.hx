@@ -59,8 +59,6 @@ class Viewport
 	
 	// TODO: use this var...
 	public var visible:Bool = true;
-	// TODO: use this var...
-	public var active:Bool = true;
 	
 	/**
 	 * Initial viewport scale.
@@ -76,11 +74,19 @@ class Viewport
 	private var quadRenderJobs:Vector<QuadRenderJob>;
 	private var triangleRenderJobs:Vector<TriangleRenderJob>;
 	
+	public var color(get, set):UInt;
+	public var cRed(default, set):Float = 1.0;
+	public var cGreen(default, set):Float = 1.0;
+	public var cBlue(default, set):Float = 1.0;
+	public var cAlpha(default, set):Float = 1.0;
+	
 	private var isColored:Bool = false;
-	private var r:Float = 1.0;
-	private var g:Float = 1.0;
-	private var b:Float = 1.0;
-	private var a:Float = 1.0;
+	
+	public var bgColor(get, set):UInt;
+	public var bgRed(default, set):Float = 0.0;
+	public var bgGreen(default, set):Float = 0.0;
+	public var bgBlue(default, set):Float = 0.0;
+	public var bgAlpha(default, set):Float = 0.0;
 	
 	// TODO: add viewport tinting (this will require adding new shaders or some additional multiplications)...
 	
@@ -172,10 +178,12 @@ class Viewport
 	#if flash11
 	public inline function render(context:ContextWrapper):Void
 	{
+		if (!visible)	return;
+		
 		context.setMatrix(matrix);
 		context.setScissor(scissor);
 		
-		if (isColored) context.setColorMultiplier(r, g, b, a);
+		if (isColored) context.setColorMultiplier(cRed, cGreen, cBlue, cAlpha);
 		
 		for (job in renderJobs)
 		{
@@ -439,6 +447,66 @@ class Viewport
 		scaleY = value;
 		update();
 		return value;
+	}
+	
+	private function get_bgColor():UInt
+	{
+		return 0;
+	}
+	
+	private function set_bgColor(value:UInt):UInt
+	{
+		return value;
+	}
+	
+	private function set_bgRed(value:Float):Float
+	{
+		return bgRed = value;
+	}
+	
+	private function set_bgGreen(value:Float):Float
+	{
+		return bgGreen = value;
+	}
+	
+	private function set_bgBlue(value:Float):Float
+	{
+		return bgBlue = value;
+	}
+	
+	private function set_bgAlpha(value:Float):Float
+	{
+		return bgAlpha = value;
+	}
+	
+	private function get_color():UInt
+	{
+		return 0;
+	}
+	
+	private function set_color(value:UInt):UInt
+	{
+		return value;
+	}
+	
+	private function set_cRed(value:Float):Float
+	{
+		return cRed = value;
+	}
+	
+	private function set_cGreen(value:Float):Float
+	{
+		return cGreen = value;
+	}
+	
+	private function set_cBlue(value:Float):Float
+	{
+		return cBlue = value;
+	}
+	
+	private function set_cAlpha(value:Float):Float
+	{
+		return cAlpha = value;
 	}
 	
 	private function updateMatrix():Void
