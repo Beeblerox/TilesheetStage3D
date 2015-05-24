@@ -2,9 +2,10 @@ package com.asliceofcrazypie.flash.jobs;
 import com.asliceofcrazypie.flash.TilesheetStage3D;
 
 #if flash11
+import flash.display3D.textures.Texture;
+#end
 import com.asliceofcrazypie.flash.jobs.BaseRenderJob.RenderJobType;
 import flash.display.BlendMode;
-import flash.display3D.textures.Texture;
 import flash.geom.Matrix;
 import flash.geom.Point;
 import flash.geom.Rectangle;
@@ -24,6 +25,7 @@ class TriangleRenderJob extends RenderJob
 		type = RenderJobType.TRIANGLE;
 	}
 	
+	#if flash11
 	override public function addQuad(rect:Rectangle, normalizedOrigin:Point, uv:Rectangle, matrix:Matrix, r:Float = 1, g:Float = 1, b:Float = 1, a:Float = 1):Void
 	{
 		var prevVerticesNumber:Int = Std.int(vertexPos / dataPerVertice);
@@ -87,6 +89,17 @@ class TriangleRenderJob extends RenderJob
 		this.numVertices += numVertices;
 		this.numIndices += numIndices;
 	}
+	#else
+	override public function addQuad(rect:Rectangle, normalizedOrigin:Point, uv:Rectangle, matrix:Matrix, r:Float = 1, g:Float = 1, b:Float = 1, a:Float = 1):Void
+	{
+		
+	}
+	
+	public function addTriangles(vertices:Vector<Float>, indices:Vector<Int> = null, uvtData:Vector<Float> = null, colors:Vector<Int> = null, position:Point = null):Void
+	{
+		
+	}
+	#end
 	
 	public static inline function getJob(tilesheet:TilesheetStage3D, isRGB:Bool, isAlpha:Bool, isSmooth:Bool, blend:BlendMode, premultiplied:Bool):TriangleRenderJob
 	{
@@ -126,4 +139,3 @@ class TriangleRenderJob extends RenderJob
 		}
 	}
 }
-#end

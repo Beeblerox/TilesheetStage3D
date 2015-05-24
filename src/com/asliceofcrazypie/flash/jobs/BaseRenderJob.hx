@@ -3,8 +3,10 @@ package com.asliceofcrazypie.flash.jobs;
 import flash.display.BlendMode;
 import flash.Vector;
 
+#if flash11
 import flash.utils.ByteArray;
 import flash.utils.Endian;
+#end
 
 /**
  * ...
@@ -25,8 +27,6 @@ class BaseRenderJob
 	public static var trianglesPerBuffer(default, null):Int;
 	public static var indicesPerBuffer(default, null):Int;
 	
-	public var vertices(default, null):Vector<Float>;
-	
 	public var tilesheet:TilesheetStage3D;
 	
 	public var isRGB:Bool;
@@ -43,8 +43,13 @@ class BaseRenderJob
 	public var numVertices:Int;
 	public var numIndices:Int;
 	
+	#if flash11
+	public var vertices(default, null):Vector<Float>;
 	public var indicesBytes(default, null):ByteArray;
 	public var indicesVector(default, null):Vector<UInt>;
+	#else
+	public var tileData(default, null):Array<Float>;
+	#end
 	
 	public var vertexPos:Int = 0;
 	public var indexPos:Int = 0;
@@ -66,6 +71,7 @@ class BaseRenderJob
 	// TODO: use `useBytes` not only in constructor...
 	private function new(useBytes:Bool = false) 
 	{
+		#if flash11
 		this.vertices = new Vector<Float>(BaseRenderJob.vertexPerBuffer >> 2);
 		
 		if (useBytes)
@@ -87,6 +93,9 @@ class BaseRenderJob
 		{
 			indicesVector = new Vector<UInt>();
 		}
+		#else
+		tileData = new Array<Float>();
+		#end
 	}
 	
 	public function render(context:ContextWrapper = null, colored:Bool = false):Void
@@ -111,6 +120,7 @@ class BaseRenderJob
 	
 	public function reset():Void
 	{
+		blendMode = null;
 		tilesheet = null;
 		vertexPos = 0;
 		indexPos = 0;

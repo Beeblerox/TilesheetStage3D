@@ -68,4 +68,15 @@ class QuadRenderJob extends RenderJob
 		}
 	}
 }
+#else
+class QuadRenderJob extends RenderJob
+{
+	private static var renderJobPool:Array<QuadRenderJob>;
+	
+	public function new() 
+	{
+		super(true);
+		type = RenderJobType.QUAD;
+	}
+}
 #end

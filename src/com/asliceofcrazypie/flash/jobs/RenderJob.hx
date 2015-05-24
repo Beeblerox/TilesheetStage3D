@@ -3,6 +3,13 @@ package com.asliceofcrazypie.flash.jobs;
 import com.asliceofcrazypie.flash.TilesheetStage3D;
 import com.asliceofcrazypie.flash.jobs.BaseRenderJob;
 
+import flash.display.BlendMode;
+import flash.geom.Matrix;
+import flash.geom.Point;
+import flash.geom.Rectangle;
+
+import openfl.display.Tilesheet;
+
 #if flash11
 import flash.display3D.IndexBuffer3D;
 import flash.display3D.textures.Texture;
@@ -10,10 +17,6 @@ import flash.display3D.Context3DVertexBufferFormat;
 import flash.display3D.VertexBuffer3D;
 import flash.display3D.Context3DTriangleFace;
 import flash.display.TriangleCulling;
-import flash.display.BlendMode;
-import flash.geom.Matrix;
-import flash.geom.Point;
-import flash.geom.Rectangle;
 import flash.Vector;
 import flash.errors.Error;
 import flash.utils.ByteArray;
@@ -206,6 +209,71 @@ class RenderJob extends BaseRenderJob
 			
 			context.context3D.drawTriangles(indexbuffer);
 		}
+	}
+}
+#else
+class RenderJob extends BaseRenderJob
+{
+	private function new(useBytes:Bool)
+	{
+		super(useBytes);
+	}
+	
+	public function addQuad(rect:Rectangle, normalizedOrigin:Point, uv:Rectangle, matrix:Matrix, r:Float = 1, g:Float = 1, b:Float = 1, a:Float = 1):Void
+	{
+		var imgWidth:Int = Std.int(rect.width);
+		var imgHeight:Int = Std.int(rect.height);
+		
+		var centerX:Float = normalizedOrigin.x * imgWidth;
+		var centerY:Float = normalizedOrigin.y * imgHeight;
+		
+		tileData[vertexPos++] = matrix.tx;
+		tileData[vertexPos++] = matrix.ty;
+		
+		tileData[vertexPos++] = rect.x;
+		tileData[vertexPos++] = rect.y;
+		tileData[vertexPos++] = rect.width;
+		tileData[vertexPos++] = rect.height;
+		
+		tileData[vertexPos++] = centerX;
+		tileData[vertexPos++] = centerY;
+		
+		if (isRGB)
+		{
+			vertices[vertexPos++] = r;
+			vertices[vertexPos++] = g;
+			vertices[vertexPos++] = b;
+		}
+		
+		if (isAlpha)
+		{
+			vertices[vertexPos++] = a;
+		}
+		
+		numVertices += 4;
+	}
+	
+	override public function render(context:ContextWrapper = null, colored:Bool = false):Void
+	{
+		var flags:Int = Tilesheet.TILE_RECT | Tilesheet.TILE_ORIGIN | Tilesheet.TILE_TRANS_2x2;
+		
+		if (isRGB) flags |= Tilesheet.TILE_RGB;
+		if (isAlpha) flags |= Tilesheet.TILE_ALPHA;
+		
+		if (blendMode == BlendMode.ADD)
+		{
+			flags |= Tilesheet.TILE_BLEND_ADD;
+		}
+		else if (blendMode == BlendMode.MULTIPLY)
+		{
+			flags |= Tilesheet.TILE_BLEND_MULTIPLY;
+		}
+		else if (blendMode == BlendMode.SCREEN)
+		{
+			flags |= Tilesheet.TILE_BLEND_SCREEN;
+		}
+		
+		// TODO: continue from here...
 	}
 }
 #end
