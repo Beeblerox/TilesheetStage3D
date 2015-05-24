@@ -43,10 +43,11 @@ class BaseRenderJob
 	public var numVertices:Int;
 	public var numIndices:Int;
 	
-	#if flash11
 	public var vertices(default, null):Vector<Float>;
-	public var indicesBytes(default, null):ByteArray;
 	public var indicesVector(default, null):Vector<UInt>;
+	
+	#if flash11
+	public var indicesBytes(default, null):ByteArray;
 	#else
 	public var tileData(default, null):Array<Float>;
 	#end
@@ -98,10 +99,17 @@ class BaseRenderJob
 		#end
 	}
 	
+	#if flash11
 	public function render(context:ContextWrapper = null, colored:Bool = false):Void
 	{
 		
 	}
+	#else
+	public function render(context:Dynamic = null, colored:Bool = false):Void
+	{
+		
+	}
+	#end
 	
 	public inline function canAddQuad():Bool
 	{

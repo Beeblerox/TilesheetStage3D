@@ -186,6 +186,7 @@ class ColorRenderJob extends BaseRenderJob
 		this.numIndices += numIndices;
 	}
 	
+	#if flash11
 	override public function render(context:ContextWrapper = null, colored:Bool = false):Void 
 	{
 		if (context != null && context.context3D.driverInfo != 'Disposed')
@@ -225,6 +226,12 @@ class ColorRenderJob extends BaseRenderJob
 			context.context3D.drawTriangles(indexbuffer);
 		}
 	}
+	#else
+	override public function render(context:Dynamic = null, colored:Bool = false):Void
+	{
+		
+	}
+	#end
 	
 	public static inline function getJob(blend:BlendMode = null):ColorRenderJob
 	{

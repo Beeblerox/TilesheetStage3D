@@ -209,16 +209,24 @@ class Batcher
 	
 	public static inline function render():Void
 	{
+		#if flash11
 		var context = TilesheetStage3D.context;
 		for (viewport in viewports)
 		{
 			viewport.render(context);
 		}
+		#else
+		
+		#end
 	}
 	
 	public static inline function clear():Void
 	{
+		#if flash11
 		TilesheetStage3D.clear();
+		#else
+		
+		#end
 		reset();
 	}
 }

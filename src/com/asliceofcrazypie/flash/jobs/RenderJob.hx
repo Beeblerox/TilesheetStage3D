@@ -240,20 +240,20 @@ class RenderJob extends BaseRenderJob
 		
 		if (isRGB)
 		{
-			vertices[vertexPos++] = r;
-			vertices[vertexPos++] = g;
-			vertices[vertexPos++] = b;
+			tileData[vertexPos++] = r;
+			tileData[vertexPos++] = g;
+			tileData[vertexPos++] = b;
 		}
 		
 		if (isAlpha)
 		{
-			vertices[vertexPos++] = a;
+			tileData[vertexPos++] = a;
 		}
 		
 		numVertices += 4;
 	}
 	
-	override public function render(context:ContextWrapper = null, colored:Bool = false):Void
+	override public function render(context:Dynamic = null, colored:Bool = false):Void
 	{
 		var flags:Int = Tilesheet.TILE_RECT | Tilesheet.TILE_ORIGIN | Tilesheet.TILE_TRANS_2x2;
 		
