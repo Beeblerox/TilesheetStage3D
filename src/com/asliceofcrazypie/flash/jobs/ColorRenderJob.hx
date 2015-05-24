@@ -226,7 +226,7 @@ class ColorRenderJob extends BaseRenderJob
 		}
 	}
 	
-	public static inline function getJob(blend:BlendMode):ColorRenderJob
+	public static inline function getJob(blend:BlendMode = null):ColorRenderJob
 	{
 		var job:ColorRenderJob = (renderJobPool.length > 0) ? renderJobPool.pop() : new ColorRenderJob();
 		job.blendMode = blend;

@@ -94,8 +94,9 @@ class Viewport
 	public var bgBlue:Float = 0.0;
 	public var bgAlpha:Float = 0.0;
 	
-	// TODO: use this var...
 	public var useBgColor:Bool = false;
+	
+	private var bgRenderJob:ColorRenderJob;
 	
 	/**
 	 * Viewport consctructor.
@@ -116,6 +117,8 @@ class Viewport
 		quadRenderJobs = new Vector<QuadRenderJob>();
 		triangleRenderJobs = new Vector<TriangleRenderJob>();
 		colorRenderJobs = new Vector<ColorRenderJob>();
+		
+		bgRenderJob = ColorRenderJob.getJob();
 		
 		initialScaleX = scaleX;
 		initialScaleY = scaleY;
@@ -138,6 +141,9 @@ class Viewport
 		quadRenderJobs = null;
 		triangleRenderJobs = null;
 		colorRenderJobs = null;
+		
+		ColorRenderJob.returnJob(bgRenderJob);
+		bgRenderJob = null;
 		
 		scissor = null;
 		matrix = null;
@@ -186,6 +192,8 @@ class Viewport
 			ColorRenderJob.returnJob(renderJob);
 		}
 		
+		bgRenderJob.reset();
+		
 		untyped renderJobs.length = 0;
 		untyped quadRenderJobs.length = 0;
 		untyped triangleRenderJobs.length = 0;
@@ -206,6 +214,13 @@ class Viewport
 		context.setScissor(scissor);
 		
 		if (isColored) context.setColorMultiplier(cRed, cGreen, cBlue, cAlpha);
+		
+		if (useBgColor)
+		{
+			helperRect.setTo(0, 0, width + 1, height + 1);
+			bgRenderJob.addAAQuad(helperRect, bgRed, bgGreen, bgBlue, bgAlpha);
+			context.renderJob(bgRenderJob, isColored);
+		}
 		
 		for (job in renderJobs)
 		{
