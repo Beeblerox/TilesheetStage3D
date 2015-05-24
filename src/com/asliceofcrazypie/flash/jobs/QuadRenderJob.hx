@@ -1,9 +1,9 @@
 package com.asliceofcrazypie.flash.jobs;
 
 import com.asliceofcrazypie.flash.TilesheetStage3D;
+import com.asliceofcrazypie.flash.jobs.BaseRenderJob.RenderJobType;
 
 #if flash11
-import com.asliceofcrazypie.flash.jobs.BaseRenderJob.RenderJobType;
 import flash.display.BlendMode;
 import flash.geom.Matrix;
 import flash.geom.Point;
