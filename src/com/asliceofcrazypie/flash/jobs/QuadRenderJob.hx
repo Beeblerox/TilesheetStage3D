@@ -3,7 +3,7 @@ package com.asliceofcrazypie.flash.jobs;
 import com.asliceofcrazypie.flash.TilesheetStage3D;
 
 #if flash11
-import com.asliceofcrazypie.flash.jobs.RenderJob.RenderJobType;
+import com.asliceofcrazypie.flash.jobs.BaseRenderJob.RenderJobType;
 import flash.display.BlendMode;
 import flash.geom.Matrix;
 import flash.geom.Point;
@@ -62,7 +62,7 @@ class QuadRenderJob extends RenderJob
 	public static function __init__():Void
 	{
 		renderJobPool = [];
-		for (i in 0...RenderJob.NUM_JOBS_TO_POOL)
+		for (i in 0...BaseRenderJob.NUM_JOBS_TO_POOL)
 		{
 			renderJobPool.push(new QuadRenderJob());
 		}

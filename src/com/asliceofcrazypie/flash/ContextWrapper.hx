@@ -462,6 +462,7 @@ class ContextWrapper extends EventDispatcher
 		}
 	}
 	
+	public inline function setBlendMode(blendMode:BlendMode, premultipliedAlpha:Bool):Void
 	{
 		BlendModeUtil.applyToContext(blendMode, this, premultipliedAlpha);
 	}

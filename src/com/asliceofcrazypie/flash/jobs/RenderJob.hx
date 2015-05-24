@@ -26,80 +26,17 @@ import haxe.ds.StringMap;
  */
 class RenderJob extends BaseRenderJob
 {
-	public static inline var NUM_JOBS_TO_POOL:Int = 25;
-	
-	public static inline var MAX_INDICES_PER_BUFFER:Int = 98298;
-	public static inline var MAX_VERTEX_PER_BUFFER:Int = 65532;		// (MAX_INDICES_PER_BUFFER * 4 / 6)
-	public static inline var MAX_QUADS_PER_BUFFER:Int = 16383;		// (MAX_VERTEX_PER_BUFFER / 4)
-	public static inline var MAX_TRIANGLES_PER_BUFFER:Int = 21844;	// (MAX_VERTEX_PER_BUFFER / 3)
-	
-	// TODO: use these static vars (and document them)...
-	public static var vertexPerBuffer(default, null):Int;
-	public static var quadsPerBuffer(default, null):Int;
-	public static var trianglesPerBuffer(default, null):Int;
-	public static var indicesPerBuffer(default, null):Int;
-	
 	public var tilesheet:TilesheetStage3D;
-	public var vertices(default, null):Vector<Float>;
+	
 	public var isRGB:Bool;
 	public var isAlpha:Bool;
 	public var isSmooth:Bool;
 	
-	public var blendMode:BlendMode;
 	public var premultipliedAlpha:Bool;
 	
-	public var type(default, null):RenderJobType;
-	
-	public var dataPerVertice:Int;
-	public var numVertices:Int;
-	public var numIndices:Int;
-	
-	public var indicesBytes(default, null):ByteArray;
-	public var indicesVector(default, null):Vector<UInt>;
-	
-	public var vertexPos:Int = 0;
-	public var indexPos:Int = 0;
-	
-	@:allow(com.asliceofcrazypie.flash)
-	private static function init(batchSize:Int = 0):Void
+	private function new(useBytes:Bool)
 	{
-		if (batchSize <= 0 || batchSize > MAX_QUADS_PER_BUFFER)
-		{
-			batchSize = MAX_QUADS_PER_BUFFER;
-		}
-		
-		quadsPerBuffer = batchSize;
-		vertexPerBuffer = batchSize * 4;
-		trianglesPerBuffer = Std.int(vertexPerBuffer / 3);
-		indicesPerBuffer = Std.int(vertexPerBuffer * 6 / 4);
-	}
-	
-	// TODO: use `useBytes` not only in constructor...
-	private function new(useBytes:Bool = false)
-	{
-		super();
-		
-		this.vertices = new Vector<Float>(RenderJob.vertexPerBuffer >> 2);
-		
-		if (useBytes)
-		{
-			indicesBytes = new ByteArray();
-			indicesBytes.endian = Endian.LITTLE_ENDIAN;
-			
-			for (i in 0...Std.int(RenderJob.vertexPerBuffer / 4))
-			{
-				indicesBytes.writeShort((i * 4) + 2);
-				indicesBytes.writeShort((i * 4) + 1);
-				indicesBytes.writeShort((i * 4) + 0);
-				indicesBytes.writeShort((i * 4) + 3);
-				indicesBytes.writeShort((i * 4) + 2);
-				indicesBytes.writeShort((i * 4) + 0);
-			}
-		}
-		else
-		{
-			indicesVector = new Vector<UInt>();
-		}
+		super(useBytes);
 	}
 	
 	public function addQuad(rect:Rectangle, normalizedOrigin:Point, uv:Rectangle, matrix:Matrix, r:Float = 1, g:Float = 1, b:Float = 1, a:Float = 1):Void
@@ -216,11 +153,12 @@ class RenderJob extends BaseRenderJob
 		*/
 	}
 	
-	public function render(context:ContextWrapper = null, colored:Bool = false):Void
+	override public function render(context:ContextWrapper = null, colored:Bool = false):Void
 	{
 		if (context != null && context.context3D.driverInfo != 'Disposed')
 		{
 			//blend mode
+			context.setBlendMode(blendMode, premultipliedAlpha);
 			
 			context.setImageProgram(isRGB, isAlpha, isSmooth, tilesheet.mipmap, colored); //assign appropriate shader
 			
@@ -277,36 +215,5 @@ class RenderJob extends BaseRenderJob
 			context.context3D.drawTriangles(indexbuffer);
 		}
 	}
-	
-	public inline function canAddQuad():Bool
-	{
-		return (numVertices + 4) <= RenderJob.vertexPerBuffer;
-	}
-	
-	public inline function canAddTriangles(numVertices:Int):Bool
-	{
-		return (numVertices + this.numVertices) <= RenderJob.vertexPerBuffer;
-	}
-	
-	public inline function checkMaxTrianglesCapacity(numVertices:Int):Bool
-	{
-		return numVertices <= RenderJob.vertexPerBuffer;
-	}
-	
-	public function reset():Void
-	{
-		vertexPos = 0;
-		indexPos = 0;
-		numVertices = 0;
-		numIndices = 0;
-	}
 }
 #end
-
-// TODO: move to BaseRenderJob
-enum RenderJobType
-{
-	QUAD;
-	TRIANGLE;
-	NO_IMAGE;
-}

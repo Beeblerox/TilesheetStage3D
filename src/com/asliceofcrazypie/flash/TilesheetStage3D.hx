@@ -1,5 +1,6 @@
 package com.asliceofcrazypie.flash;
 
+import com.asliceofcrazypie.flash.jobs.BaseRenderJob;
 import openfl.display.BitmapData;
 import openfl.display.Tilesheet;
 import openfl.events.Event;
@@ -111,7 +112,7 @@ class TilesheetStage3D extends Tilesheet
 	{
 		if (!_isInited)
 		{
-			RenderJob.init(batchSize);
+			BaseRenderJob.init(batchSize);
 			
 			if (stage3DLevel < 0 || stage3DLevel >= Std.int(stage.stage3Ds.length))
 			{
@@ -177,14 +178,14 @@ class TilesheetStage3D extends Tilesheet
 			
 			var renderJob:TriangleRenderJob = TriangleRenderJob.getJob(this, isColored, isColored, smooth, blending, premultipliedAlpha);
 			
-			if (numIndices + renderJob.numIndices > RenderJob.MAX_INDICES_PER_BUFFER)
+			if (numIndices + renderJob.numIndices > BaseRenderJob.MAX_INDICES_PER_BUFFER)
 			{
-				throw ("Number of indices shouldn't be more than " + RenderJob.MAX_INDICES_PER_BUFFER);
+				throw ("Number of indices shouldn't be more than " + BaseRenderJob.MAX_INDICES_PER_BUFFER);
 			}
 			
-			if (numVertices + renderJob.numIndices > RenderJob.MAX_VERTEX_PER_BUFFER)
+			if (numVertices + renderJob.numIndices > BaseRenderJob.MAX_VERTEX_PER_BUFFER)
 			{
-				throw ("Number of vertices shouldn't be more than " + RenderJob.MAX_VERTEX_PER_BUFFER);
+				throw ("Number of vertices shouldn't be more than " + BaseRenderJob.MAX_VERTEX_PER_BUFFER);
 			}
 			
 			renderJob.addTriangles(vertices, indices, uvtData, colors);
@@ -298,7 +299,7 @@ class TilesheetStage3D extends Tilesheet
 			///////////////////
 			// for each item //
 			///////////////////
-			var maxNumItems:Int = RenderJob.quadsPerBuffer;
+			var maxNumItems:Int = BaseRenderJob.quadsPerBuffer;
 			var startItemPos:Int = 0;
 			var numItemsThisLoop:Int = 0;
 			
@@ -422,6 +423,8 @@ class TilesheetStage3D extends Tilesheet
 			super.drawTiles(graphics, tileData, smooth, flags, count);
 		}
 	}
+	
+	// TODO: add methods to draw colored polygons and quads as well???
 	
 	public static var antiAliasing(default, set):Int;
 	

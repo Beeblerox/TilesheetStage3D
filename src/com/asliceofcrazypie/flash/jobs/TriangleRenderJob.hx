@@ -2,7 +2,7 @@ package com.asliceofcrazypie.flash.jobs;
 import com.asliceofcrazypie.flash.TilesheetStage3D;
 
 #if flash11
-import com.asliceofcrazypie.flash.jobs.RenderJob.RenderJobType;
+import com.asliceofcrazypie.flash.jobs.BaseRenderJob.RenderJobType;
 import flash.display.BlendMode;
 import flash.display3D.textures.Texture;
 import flash.geom.Matrix;
@@ -120,7 +120,7 @@ class TriangleRenderJob extends RenderJob
 	public static function __init__():Void
 	{
 		renderJobPool = [];
-		for (i in 0...RenderJob.NUM_JOBS_TO_POOL)
+		for (i in 0...BaseRenderJob.NUM_JOBS_TO_POOL)
 		{
 			renderJobPool.push(new TriangleRenderJob());
 		}
