@@ -39,20 +39,20 @@ class Viewport
 	/**
 	 * Viewport position. Actual position on the screen is affected by Batcher's gameX/gameY and gameScaleX/gameScaleY values.
 	 */
-	public var x(default, set):Float;
-	public var y(default, set):Float;
+	public var x(default, set):Float = 0;
+	public var y(default, set):Float = 0;
 	
 	/**
 	 * Viewport dimensions. Actual size on the screen is affected by Batcher's gameScaleX/gameScaleY values.
 	 */
-	public var width(default, set):Float;
-	public var height(default, set):Float;
+	public var width(default, set):Float = 0;
+	public var height(default, set):Float = 0;
 	
 	/**
 	 * Viewport scale. Result scale on the screen equals to the product of viewport scale and Batcher's gameScale.
 	 */
-	public var scaleX(default, set):Float;
-	public var scaleY(default, set):Float;
+	public var scaleX(default, set):Float = 1;
+	public var scaleY(default, set):Float = 1;
 	
 	/**
 	 * Draw order of the viewport. Don't change it manually.
@@ -67,8 +67,8 @@ class Viewport
 	/**
 	 * Initial viewport scale.
 	 */
-	private var initialScaleX:Float;
-	private var initialScaleY:Float;
+	private var initialScaleX:Float = 1;
+	private var initialScaleY:Float = 1;
 	
 	private var numRenderJobs:Int = 0;
 	private var numQuadRenderJobs:Int = 0;
@@ -123,12 +123,13 @@ class Viewport
 		initialScaleX = scaleX;
 		initialScaleY = scaleY;
 		
+		this.scaleX = scaleX;
+		this.scaleY = scaleY;
+		
 		this.x = x;
 		this.y = y;
 		this.width = width;
 		this.height = height;
-		this.scaleX = scaleX;
-		this.scaleY = scaleY;
 	}
 	
 	/**

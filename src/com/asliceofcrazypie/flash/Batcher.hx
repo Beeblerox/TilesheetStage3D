@@ -38,7 +38,7 @@ class Batcher
 	
 	public static var game(default, null):Sprite;
 	
-	private static var viewports:Array<Viewport> = [];
+	private static var viewports:Array<Viewport>;
 	
 	public static var numViewports(default, null):Int;
 	
@@ -189,6 +189,8 @@ class Batcher
 	{
 		if (!_isInited)
 		{
+			viewports = new Array<Viewport>();
+			
 			#if flash11
 			TilesheetStage3D.init(stage, stage3DLevel, antiAliasLevel, initCallback, renderMode, batchSize);
 			TilesheetStage3D.context.renderCallback = render;

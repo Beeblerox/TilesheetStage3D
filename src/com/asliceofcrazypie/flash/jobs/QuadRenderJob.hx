@@ -3,12 +3,14 @@ package com.asliceofcrazypie.flash.jobs;
 import com.asliceofcrazypie.flash.TilesheetStage3D;
 import com.asliceofcrazypie.flash.jobs.BaseRenderJob.RenderJobType;
 
-#if flash11
 import flash.display.BlendMode;
 import flash.geom.Matrix;
 import flash.geom.Point;
 import flash.geom.Rectangle;
+
+#if flash11
 import flash.display3D.textures.Texture;
+#end
 
 /**
  * ...
@@ -24,11 +26,13 @@ class QuadRenderJob extends RenderJob
 		type = RenderJobType.QUAD;
 	}
 	
+	#if flash11
 	override public function addQuad(rect:Rectangle, normalizedOrigin:Point, uv:Rectangle, matrix:Matrix, r:Float = 1, g:Float = 1, b:Float = 1, a:Float = 1):Void
 	{
 		super.addQuad(rect, normalizedOrigin, uv, matrix, r, g, b, a);
 		indexPos += 6;
 	}
+	#end
 	
 	public static inline function getJob(tilesheet:TilesheetStage3D, isRGB:Bool, isAlpha:Bool, isSmooth:Bool, blend:BlendMode):QuadRenderJob
 	{
@@ -67,15 +71,3 @@ class QuadRenderJob extends RenderJob
 		}
 	}
 }
-#else
-class QuadRenderJob extends RenderJob
-{
-	private static var renderJobPool:Array<QuadRenderJob>;
-	
-	public function new() 
-	{
-		super(true);
-		type = RenderJobType.QUAD;
-	}
-}
-#end

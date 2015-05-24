@@ -137,6 +137,8 @@ class TilesheetStage3D extends Tilesheet
 	{
 		if (_initCallback != null)
 		{
+			// TODO: remove Timer dependency...
+			
 			//really not sure why this delay is needed
 			Timer.delay(function() {
 				_initCallback(context.context3D == null ? 'failure' : 'success');
