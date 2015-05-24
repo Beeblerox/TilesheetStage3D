@@ -179,14 +179,6 @@ class ContextWrapper extends EventDispatcher
 		return program;
 	}
 	
-	private function initPrograms():Void
-	{
-		// colored triangles
-		
-		
-		// TODO: upload to gpu
-	}
-	
 	public inline function setTexture(texture:Texture):Void
 	{
 		if (context3D != null)
