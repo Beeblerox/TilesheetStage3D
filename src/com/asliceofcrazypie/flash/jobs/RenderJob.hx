@@ -153,7 +153,7 @@ class RenderJob extends BaseRenderJob
 		if (context != null && context.context3D.driverInfo != 'Disposed')
 		{
 			//blend mode
-			context.setBlendMode(blendMode, premultipliedAlpha);
+			context.setBlendMode(blendMode, tilesheet.premultipliedAlpha);
 			
 			context.setImageProgram(isRGB, isAlpha, isSmooth, tilesheet.mipmap, colored); //assign appropriate shader
 			

@@ -33,8 +33,6 @@ class BaseRenderJob
 	public var isAlpha:Bool;
 	public var isSmooth:Bool;
 	
-	public var premultipliedAlpha:Bool;
-	
 	public var blendMode:BlendMode;
 	
 	public var type(default, null):RenderJobType;

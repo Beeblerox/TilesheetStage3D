@@ -177,7 +177,7 @@ class TilesheetStage3D extends Tilesheet
 			var numIndices:Int = indices.length;
 			var numVertices:Int = Std.int(vertices.length / 2);
 			
-			var renderJob:TriangleRenderJob = TriangleRenderJob.getJob(this, isColored, isColored, smooth, blending, premultipliedAlpha);
+			var renderJob:TriangleRenderJob = TriangleRenderJob.getJob(this, isColored, isColored, smooth, blending);
 			
 			if (numIndices + renderJob.numIndices > BaseRenderJob.MAX_INDICES_PER_BUFFER)
 			{
@@ -323,7 +323,7 @@ class TilesheetStage3D extends Tilesheet
 				numItemsThisLoop = numItems > maxNumItems ? maxNumItems : numItems;
 				numItems -= numItemsThisLoop;
 				
-				renderJob = QuadRenderJob.getJob(this, isRGB, isAlpha, smooth, blend, premultipliedAlpha);
+				renderJob = QuadRenderJob.getJob(this, isRGB, isAlpha, smooth, blend);
 				
 				for (i in 0...numItemsThisLoop)
 				{

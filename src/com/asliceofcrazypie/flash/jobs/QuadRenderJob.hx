@@ -30,7 +30,7 @@ class QuadRenderJob extends RenderJob
 		indexPos += 6;
 	}
 	
-	public static inline function getJob(tilesheet:TilesheetStage3D, isRGB:Bool, isAlpha:Bool, isSmooth:Bool, blend:BlendMode, premultiplied:Bool):QuadRenderJob
+	public static inline function getJob(tilesheet:TilesheetStage3D, isRGB:Bool, isAlpha:Bool, isSmooth:Bool, blend:BlendMode):QuadRenderJob
 	{
 		var job:QuadRenderJob = (renderJobPool.length > 0) ? renderJobPool.pop() : new QuadRenderJob();
 		
@@ -39,7 +39,6 @@ class QuadRenderJob extends RenderJob
 		job.isAlpha = isAlpha;
 		job.isSmooth = isSmooth;
 		job.blendMode = blend;
-		job.premultipliedAlpha = premultiplied;
 		
 		job.dataPerVertice = 4;
 		if (isRGB)

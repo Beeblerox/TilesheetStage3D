@@ -174,6 +174,7 @@ class Viewport
 	 */
 	public inline function reset():Void
 	{
+		#if flash11
 		for (renderJob in quadRenderJobs)
 		{
 			renderJob.reset();
@@ -203,6 +204,7 @@ class Viewport
 		numQuadRenderJobs = 0;
 		numTriangleRenderJobs = 0;
 		numColorRenderJobs = 0;
+		#end
 	}
 	
 	#if flash11
@@ -245,8 +247,7 @@ class Viewport
 			&& tinted == lastRenderJob.isRGB
 			&& alpha == lastRenderJob.isAlpha
 			&& smooth == lastRenderJob.isSmooth
-			&& blend == lastRenderJob.blendMode
-			&& tilesheet.premultipliedAlpha == lastRenderJob.premultipliedAlpha)
+			&& blend == lastRenderJob.blendMode)
 		{
 			return lastQuadRenderJob;
 		}
@@ -256,7 +257,7 @@ class Viewport
 	
 	public inline function startNewQuadBatch(tilesheet:TilesheetStage3D, tinted:Bool, alpha:Bool, blend:BlendMode = null, smooth:Bool = false):QuadRenderJob
 	{
-		var job:QuadRenderJob = QuadRenderJob.getJob(tilesheet, tinted, alpha, smooth, blend, tilesheet.premultipliedAlpha);
+		var job:QuadRenderJob = QuadRenderJob.getJob(tilesheet, tinted, alpha, smooth, blend);
 		renderJobs[numRenderJobs++] = job;
 		quadRenderJobs[numQuadRenderJobs++] = job;
 		return job;
@@ -273,8 +274,7 @@ class Viewport
 			&& colored == lastRenderJob.isRGB
 			&& colored == lastRenderJob.isAlpha
 			&& smoothing == lastRenderJob.isSmooth
-			&& blend == lastRenderJob.blendMode
-			&& tilesheet.premultipliedAlpha == lastRenderJob.premultipliedAlpha) 
+			&& blend == lastRenderJob.blendMode) 
 		{
 			return lastTriangleRenderJob;
 		}
@@ -284,7 +284,7 @@ class Viewport
 	
 	public inline function startNewTrianglesBatch(tilesheet:TilesheetStage3D, colored:Bool = false, blend:BlendMode = null, smoothing:Bool = false):TriangleRenderJob
 	{
-		var job:TriangleRenderJob = TriangleRenderJob.getJob(tilesheet, colored, colored, smoothing, blend, tilesheet.premultipliedAlpha);
+		var job:TriangleRenderJob = TriangleRenderJob.getJob(tilesheet, colored, colored, smoothing, blend);
 		renderJobs[numRenderJobs++] = job;
 		triangleRenderJobs[numTriangleRenderJobs++] = job;
 		return job;

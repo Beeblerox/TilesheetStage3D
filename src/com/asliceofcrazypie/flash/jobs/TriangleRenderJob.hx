@@ -101,7 +101,7 @@ class TriangleRenderJob extends RenderJob
 	}
 	#end
 	
-	public static inline function getJob(tilesheet:TilesheetStage3D, isRGB:Bool, isAlpha:Bool, isSmooth:Bool, blend:BlendMode, premultiplied:Bool):TriangleRenderJob
+	public static inline function getJob(tilesheet:TilesheetStage3D, isRGB:Bool, isAlpha:Bool, isSmooth:Bool, blend:BlendMode):TriangleRenderJob
 	{
 		var job:TriangleRenderJob = (renderJobPool.length > 0) ? renderJobPool.pop() : new TriangleRenderJob();
 		
@@ -110,7 +110,6 @@ class TriangleRenderJob extends RenderJob
 		job.isAlpha = isAlpha;
 		job.isSmooth = isSmooth;
 		job.blendMode = blend;
-		job.premultipliedAlpha = premultiplied;
 		
 		job.dataPerVertice = 4;
 		if (isRGB)
