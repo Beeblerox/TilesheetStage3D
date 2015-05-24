@@ -27,6 +27,14 @@ class BaseRenderJob
 	
 	public var vertices(default, null):Vector<Float>;
 	
+	public var tilesheet:TilesheetStage3D;
+	
+	public var isRGB:Bool;
+	public var isAlpha:Bool;
+	public var isSmooth:Bool;
+	
+	public var premultipliedAlpha:Bool;
+	
 	public var blendMode:BlendMode;
 	
 	public var type(default, null):RenderJobType;
@@ -103,6 +111,7 @@ class BaseRenderJob
 	
 	public function reset():Void
 	{
+		tilesheet = null;
 		vertexPos = 0;
 		indexPos = 0;
 		numVertices = 0;

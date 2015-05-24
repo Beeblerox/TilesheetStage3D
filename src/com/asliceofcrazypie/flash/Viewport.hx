@@ -2,6 +2,8 @@ package com.asliceofcrazypie.flash;
 
 import com.asliceofcrazypie.flash.jobs.QuadRenderJob;
 import com.asliceofcrazypie.flash.jobs.RenderJob;
+import com.asliceofcrazypie.flash.jobs.BaseRenderJob;
+import com.asliceofcrazypie.flash.jobs.ColorRenderJob;
 import com.asliceofcrazypie.flash.jobs.TriangleRenderJob;
 import flash.display.BlendMode;
 import flash.display.Stage;
@@ -71,10 +73,12 @@ class Viewport
 	private var numRenderJobs:Int = 0;
 	private var numQuadRenderJobs:Int = 0;
 	private var numTriangleRenderJobs:Int = 0;
+	private var numColorRenderJobs:Int = 0;
 	
-	private var renderJobs:Vector<RenderJob>;
+	private var renderJobs:Vector<BaseRenderJob>;
 	private var quadRenderJobs:Vector<QuadRenderJob>;
 	private var triangleRenderJobs:Vector<TriangleRenderJob>;
+	private var colorRenderJobs:Vector<ColorRenderJob>;
 	
 	public var color(get, set):UInt;
 	public var cRed(default, set):Float = 1.0;
@@ -108,9 +112,10 @@ class Viewport
 		scissor = new Rectangle();
 		matrix = new Matrix3D();
 		
-		renderJobs = new Vector<RenderJob>();
+		renderJobs = new Vector<BaseRenderJob>();
 		quadRenderJobs = new Vector<QuadRenderJob>();
 		triangleRenderJobs = new Vector<TriangleRenderJob>();
+		colorRenderJobs = new Vector<ColorRenderJob>();
 		
 		initialScaleX = scaleX;
 		initialScaleY = scaleY;
@@ -132,12 +137,13 @@ class Viewport
 		renderJobs = null;
 		quadRenderJobs = null;
 		triangleRenderJobs = null;
+		colorRenderJobs = null;
 		
 		scissor = null;
 		matrix = null;
 	}
 	
-	private inline function getLastRenderJob():RenderJob
+	private inline function getLastRenderJob():BaseRenderJob
 	{
 		return (numRenderJobs > 0) ? renderJobs[numRenderJobs - 1] : null;
 	}
@@ -150,6 +156,11 @@ class Viewport
 	private inline function getLastTrianglesRenderJob():TriangleRenderJob
 	{
 		return (numTriangleRenderJobs > 0) ? triangleRenderJobs[numTriangleRenderJobs - 1] : null;
+	}
+	
+	private inline function getLastColorRenderJob():ColorRenderJob
+	{
+		return (numColorRenderJobs > 0) ? colorRenderJobs[numColorRenderJobs - 1] : null;
 	}
 	
 	/**
@@ -169,13 +180,21 @@ class Viewport
 			TriangleRenderJob.returnJob(renderJob);
 		}
 		
+		for (renderJob in colorRenderJobs)
+		{
+			renderJob.reset();
+			ColorRenderJob.returnJob(renderJob);
+		}
+		
 		untyped renderJobs.length = 0;
 		untyped quadRenderJobs.length = 0;
 		untyped triangleRenderJobs.length = 0;
+		untyped colorRenderJobs.length = 0;
 		
 		numRenderJobs = 0;
 		numQuadRenderJobs = 0;
 		numTriangleRenderJobs = 0;
+		numColorRenderJobs = 0;
 	}
 	
 	#if flash11
@@ -202,7 +221,7 @@ class Viewport
 	
 	public function startQuadBatch(tilesheet:TilesheetStage3D, tinted:Bool, alpha:Bool, blend:BlendMode = null, smooth:Bool = false):QuadRenderJob
 	{
-		var lastRenderJob:RenderJob = getLastRenderJob();
+		var lastRenderJob:BaseRenderJob = getLastRenderJob();
 		var lastQuadRenderJob:QuadRenderJob = getLastQuadRenderJob();
 		
 		if (lastRenderJob != null && lastQuadRenderJob != null
@@ -230,7 +249,7 @@ class Viewport
 	
 	public function startTrianglesBatch(tilesheet:TilesheetStage3D, colored:Bool = false, blend:BlendMode = null, smoothing:Bool = false):TriangleRenderJob
 	{
-		var lastRenderJob:RenderJob = getLastRenderJob();
+		var lastRenderJob:BaseRenderJob = getLastRenderJob();
 		var lastTriangleRenderJob:TriangleRenderJob = getLastTrianglesRenderJob();
 		
 		if (lastRenderJob != null && lastTriangleRenderJob != null
@@ -253,6 +272,29 @@ class Viewport
 		var job:TriangleRenderJob = TriangleRenderJob.getJob(tilesheet, colored, colored, smoothing, blend, tilesheet.premultipliedAlpha);
 		renderJobs[numRenderJobs++] = job;
 		triangleRenderJobs[numTriangleRenderJobs++] = job;
+		return job;
+	}
+	
+	public function startColorBatch(blend:BlendMode = null):ColorRenderJob
+	{
+		var lastRenderJob:BaseRenderJob = getLastRenderJob();
+		var lastColorRenderJob:ColorRenderJob = getLastColorRenderJob();
+		
+		if (lastRenderJob != null && lastColorRenderJob != null
+			&& lastRenderJob == lastColorRenderJob 
+			&& blend == lastRenderJob.blendMode)
+		{
+			return lastColorRenderJob;
+		}
+		
+		return startNewColorBatch(blend);
+	}
+	
+	public inline function startNewColorBatch(blend:BlendMode = null):ColorRenderJob
+	{
+		var job:ColorRenderJob = ColorRenderJob.getJob(blend);
+		renderJobs[numRenderJobs++] = job;
+		colorRenderJobs[numColorRenderJobs++] = job;
 		return job;
 	}
 	
@@ -408,6 +450,51 @@ class Viewport
 		}
 		
 		job.addTriangles(vertices, indices, uv, colors, position);
+	}
+	
+	public function drawColorTriangles(vertices:Vector<Float>, indices:Vector<Int>, colors:Vector<Int>, blend:BlendMode = null, position:Point = null):Void
+	{
+		var job:ColorRenderJob = startColorBatch(blend);
+		var numVertices:Int = vertices.length;
+		
+		if (!job.canAddTriangles(numVertices))
+		{
+			if (job.checkMaxTrianglesCapacity(numVertices))
+			{
+				job = startNewColorBatch(blend);
+			}
+			else
+			{
+				return; // too much triangles, even for the new batch
+			}
+		}
+		
+		job.addTriangles(vertices, indices, colors, position);
+	}
+	
+	public inline function drawAAColorRect(rect:Rectangle, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null):Void
+	{
+		var job:ColorRenderJob = startColorBatch(blend);
+		
+		if (!job.canAddQuad())
+		{
+			job = startNewColorBatch(blend);
+		}
+		
+		job.addAAQuad(rect, cr, cg, cb, ca);
+	}
+	
+	public inline function drawColorRect(sourceRect:Rectangle, origin:Point, matrix:Matrix, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null):Void
+	{
+		var job:ColorRenderJob = startColorBatch(blend);
+		
+		if (!job.canAddQuad())
+		{
+			job = startNewColorBatch(blend);
+		}
+		
+		helperPoint2.setTo(origin.x / sourceRect.width, origin.y / sourceRect.height); // normalize origin
+		job.addQuad(sourceRect, helperPoint2, matrix, cr, cg, cb, ca);
 	}
 	
 	private function set_x(value:Float):Float

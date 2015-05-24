@@ -1,4 +1,5 @@
 package com.asliceofcrazypie.flash;
+import com.asliceofcrazypie.flash.jobs.BaseRenderJob;
 import haxe.ds.IntMap;
 
 #if flash11
@@ -252,7 +253,7 @@ class ContextWrapper extends EventDispatcher
 		}
 	}
 	
-	public inline function renderJob(job:RenderJob, colored:Bool = false):Void
+	public inline function renderJob(job:BaseRenderJob, colored:Bool = false):Void
 	{
 		if (context3D != null && !presented)
 		{

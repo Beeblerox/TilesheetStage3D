@@ -188,8 +188,6 @@ class ColorRenderJob extends BaseRenderJob
 	
 	override public function render(context:ContextWrapper = null, colored:Bool = false):Void 
 	{
-		// TODO: implement it...
-		
 		if (context != null && context.context3D.driverInfo != 'Disposed')
 		{
 			//blend mode
@@ -200,7 +198,7 @@ class ColorRenderJob extends BaseRenderJob
 			// TODO: culling support...
 			// context.context3D.setCulling();
 			
-		//	context.setTexture(null);
+			context.setTexture(null);
 			
 			//actually create the buffers
 			var vertexbuffer:VertexBuffer3D = null;
@@ -228,7 +226,7 @@ class ColorRenderJob extends BaseRenderJob
 		}
 	}
 	
-	public static inline function getJob(tilesheet:TilesheetStage3D, blend:BlendMode):ColorRenderJob
+	public static inline function getJob(blend:BlendMode):ColorRenderJob
 	{
 		var job:ColorRenderJob = (renderJobPool.length > 0) ? renderJobPool.pop() : new ColorRenderJob();
 		job.blendMode = blend;

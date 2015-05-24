@@ -26,14 +26,6 @@ import haxe.ds.StringMap;
  */
 class RenderJob extends BaseRenderJob
 {
-	public var tilesheet:TilesheetStage3D;
-	
-	public var isRGB:Bool;
-	public var isAlpha:Bool;
-	public var isSmooth:Bool;
-	
-	public var premultipliedAlpha:Bool;
-	
 	private function new(useBytes:Bool)
 	{
 		super(useBytes);
