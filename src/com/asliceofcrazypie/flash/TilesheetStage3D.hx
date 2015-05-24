@@ -28,7 +28,6 @@ import flash.geom.Rectangle;
 import flash.utils.ByteArray;
 import flash.utils.Endian;
 import flash.Vector;
-import haxe.Timer;
 #end
 
 /**
@@ -112,8 +111,15 @@ class TilesheetStage3D extends Tilesheet
 	{
 		if (!_isInited)
 		{
+			_isInited = true;
+			
+			_stage = stage;
+			_stage3DLevel = stage3DLevel;
+			_initCallback = initCallback;
+			
 			#if flash11
 			BaseRenderJob.init(batchSize);
+			antiAliasing = antiAliasLevel;
 			
 			if (stage3DLevel < 0 || stage3DLevel >= Std.int(stage.stage3Ds.length))
 			{
@@ -122,14 +128,9 @@ class TilesheetStage3D extends Tilesheet
 			
 			context = new ContextWrapper(stage3DLevel);
 			context.init(stage, onContextInit, renderMode);
+			#else
+			onContextInit();
 			#end
-			
-			antiAliasing = antiAliasLevel;
-			_isInited = true;
-			
-			_stage = stage;
-			_stage3DLevel = stage3DLevel;
-			_initCallback = initCallback;
 		}
 	}
 	
@@ -137,14 +138,12 @@ class TilesheetStage3D extends Tilesheet
 	{
 		if (_initCallback != null)
 		{
-			// TODO: remove Timer dependency...
-			
-			//really not sure why this delay is needed
-			Timer.delay(function() {
-				_initCallback(context.context3D == null ? 'failure' : 'success');
-				_initCallback = null;
-			},
-			50);
+			#if flash11
+			_initCallback(context.context3D == null ? 'failure' : 'success');
+			#else
+			_initCallback('success');
+			#end
+			_initCallback = null;
 		}
 	}
 	
