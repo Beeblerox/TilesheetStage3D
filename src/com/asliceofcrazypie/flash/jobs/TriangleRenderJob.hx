@@ -101,26 +101,30 @@ class TriangleRenderJob extends RenderJob
 	}
 	#end
 	
+	public function set(tilesheet:TilesheetStage3D, isRGB:Bool, isAlpha:Bool, isSmooth:Bool, blend:BlendMode, dataPerVertice:Int):Void
+	{
+		this.tilesheet = tilesheet;
+		this.isRGB = isRGB;
+		this.isAlpha = isAlpha;
+		this.isSmooth = isSmooth;
+		this.blendMode = blend;
+		this.dataPerVertice = dataPerVertice;
+	}
+	
 	public static inline function getJob(tilesheet:TilesheetStage3D, isRGB:Bool, isAlpha:Bool, isSmooth:Bool, blend:BlendMode):TriangleRenderJob
 	{
 		var job:TriangleRenderJob = (renderJobPool.length > 0) ? renderJobPool.pop() : new TriangleRenderJob();
-		
-		job.tilesheet = tilesheet;
-		job.isRGB = isRGB;
-		job.isAlpha = isAlpha;
-		job.isSmooth = isSmooth;
-		job.blendMode = blend;
-		
-		job.dataPerVertice = 4;
+		var dataPerVertice:Int = 4;
 		if (isRGB)
 		{
-			job.dataPerVertice += 3;
+			dataPerVertice += 3;
 		}
 		if (isAlpha)
 		{
-			job.dataPerVertice++;
+			dataPerVertice++;
 		}
 		
+		job.set(tilesheet, isRGB, isAlpha, isSmooth, blend, dataPerVertice);
 		return job;
 	}
 	

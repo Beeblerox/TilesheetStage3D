@@ -40,7 +40,7 @@ class Batcher
 	
 	private static var viewports:Array<Viewport>;
 	
-	public static var numViewports(default, null):Int;
+	public static var numViewports(default, null):Int = 0;
 	
 	/**
 	 * The first viewport.
@@ -197,7 +197,10 @@ class Batcher
 			#else
 			game = new Sprite();
 			stage.addChild(game);
+			initCallback('success');
 			#end
+			
+			_isInited = true;
 		}
 	}
 	

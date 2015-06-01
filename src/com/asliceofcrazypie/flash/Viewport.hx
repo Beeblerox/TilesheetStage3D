@@ -12,6 +12,7 @@ import flash.geom.Matrix3D;
 import flash.geom.Point;
 import flash.geom.Rectangle;
 import flash.Vector;
+import openfl.display.Sprite;
 
 import openfl.Lib;
 
@@ -57,12 +58,13 @@ class Viewport
 	/**
 	 * Draw order of the viewport. Don't change it manually.
 	 */
-	public var index:Int;
+	// TODO: convert it to property...
+	public var index(default, set):Int;
 	
 	/**
 	 * Whether to render this viewport or not
 	 */
-	public var visible:Bool = true;
+	public var visible(default, set):Bool = true;
 	
 	/**
 	 * Initial viewport scale.
@@ -70,6 +72,7 @@ class Viewport
 	private var initialScaleX:Float = 1;
 	private var initialScaleY:Float = 1;
 	
+	#if flash11
 	private var numRenderJobs:Int = 0;
 	private var numQuadRenderJobs:Int = 0;
 	private var numTriangleRenderJobs:Int = 0;
@@ -79,6 +82,14 @@ class Viewport
 	private var quadRenderJobs:Vector<QuadRenderJob>;
 	private var triangleRenderJobs:Vector<TriangleRenderJob>;
 	private var colorRenderJobs:Vector<ColorRenderJob>;
+	
+	private var bgRenderJob:ColorRenderJob;
+	#else
+	private var currentRenderJob:BaseRenderJob;
+	private var quadRenderJob:QuadRenderJob;
+	private var triangleRenderJob:TriangleRenderJob;
+	private var colorRenderJob:ColorRenderJob;
+	#end
 	
 	public var color(get, set):UInt;
 	public var cRed(default, set):Float = 1.0;
@@ -96,7 +107,7 @@ class Viewport
 	
 	public var useBgColor:Bool = false;
 	
-	private var bgRenderJob:ColorRenderJob;
+	private var view:Sprite;
 	
 	/**
 	 * Viewport consctructor.
@@ -110,15 +121,22 @@ class Viewport
 	 */
 	public function new(x:Float, y:Float, width:Float, height:Float, scaleX:Float = 1, scaleY:Float = 1) 
 	{
+		view = new Sprite();
+		
 		scissor = new Rectangle();
 		matrix = new Matrix3D();
 		
+		#if flash11
 		renderJobs = new Vector<BaseRenderJob>();
 		quadRenderJobs = new Vector<QuadRenderJob>();
 		triangleRenderJobs = new Vector<TriangleRenderJob>();
 		colorRenderJobs = new Vector<ColorRenderJob>();
-		
 		bgRenderJob = ColorRenderJob.getJob();
+		#else
+		quadRenderJob = new QuadRenderJob();
+		triangleRenderJob = new TriangleRenderJob();
+		colorRenderJob = new ColorRenderJob();
+		#end
 		
 		initialScaleX = scaleX;
 		initialScaleY = scaleY;
@@ -138,6 +156,8 @@ class Viewport
 	public function dispose():Void
 	{
 		reset();
+		
+		#if flash11
 		renderJobs = null;
 		quadRenderJobs = null;
 		triangleRenderJobs = null;
@@ -145,11 +165,19 @@ class Viewport
 		
 		ColorRenderJob.returnJob(bgRenderJob);
 		bgRenderJob = null;
+		#else
+		quadRenderJob = null;
+		triangleRenderJob = null;
+		colorRenderJob = null;
+		#end
 		
 		scissor = null;
 		matrix = null;
+		
+		view = null;
 	}
 	
+	#if flash11
 	private inline function getLastRenderJob():BaseRenderJob
 	{
 		return (numRenderJobs > 0) ? renderJobs[numRenderJobs - 1] : null;
@@ -169,6 +197,7 @@ class Viewport
 	{
 		return (numColorRenderJobs > 0) ? colorRenderJobs[numColorRenderJobs - 1] : null;
 	}
+	#end
 	
 	/**
 	 * Reseting Viewport before next rendering.
@@ -205,6 +234,11 @@ class Viewport
 		numQuadRenderJobs = 0;
 		numTriangleRenderJobs = 0;
 		numColorRenderJobs = 0;
+		#else
+		quadRenderJob.reset();
+		triangleRenderJob.reset();
+		colorRenderJob.reset();
+		currentRenderJob = null;
 		#end
 	}
 	
@@ -555,6 +589,26 @@ class Viewport
 		return value;
 	}
 	
+	private function set_index(value:Int):Int
+	{
+		#if !flash11
+		Batcher.game.addChildAt(view, value);
+		index = Batcher.game.getChildIndex(view);
+		#else
+		index = value;
+		#end
+		
+		return value;
+	}
+	
+	private function set_visible(value:Bool):Bool
+	{
+		#if !flash11
+		view.visible = value;
+		#end
+		return visible = value;
+	}
+	
 	private function get_bgColor():UInt
 	{
 		return ((Std.int(bgAlpha * 255) << 24) | (Std.int(bgRed * 255) << 16) | (Std.int(bgGreen * 255) << 8) | Std.int(bgBlue * 255));
@@ -618,6 +672,7 @@ class Viewport
 	
 	private function updateMatrix():Void
 	{
+		#if flash11
 		if (matrix == null)	return;
 		
 		var stage:Stage = Lib.current.stage;
@@ -642,16 +697,23 @@ class Viewport
 		
 		matrix.appendScale(2 / stage.stageWidth, -2 / stage.stageHeight, 1);
 		matrix.appendScale(totalScaleX, totalScaleY, 1); // total viewport scale
+		#else
+		
+		#end
 	}
 	
 	private function updateScissor():Void
 	{
+		#if flash11
 		if (scissor == null)	return;
 		
 		scissor.setTo(	Batcher.gameX + x * Batcher.gameScaleX, 
 						Batcher.gameY + y * Batcher.gameScaleY, 
 						width * Batcher.gameScaleX, 
 						height * Batcher.gameScaleY);
+		#else
+		
+		#end
 	}
 	
 	/**
