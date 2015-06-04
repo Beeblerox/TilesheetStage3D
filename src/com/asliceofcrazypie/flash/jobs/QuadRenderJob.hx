@@ -34,26 +34,31 @@ class QuadRenderJob extends RenderJob
 	}
 	#end
 	
-	public static inline function getJob(tilesheet:TilesheetStage3D, isRGB:Bool, isAlpha:Bool, isSmooth:Bool, blend:BlendMode):QuadRenderJob
+	public function set(tilesheet:TilesheetStage3D, isRGB:Bool, isAlpha:Bool, isSmooth:Bool, blend:BlendMode):Void
 	{
-		var job:QuadRenderJob = (renderJobPool.length > 0) ? renderJobPool.pop() : new QuadRenderJob();
+		this.tilesheet = tilesheet;
+		this.isRGB = isRGB;
+		this.isAlpha = isAlpha;
+		this.isSmooth = isSmooth;
+		this.blendMode = blend;
 		
-		job.tilesheet = tilesheet;
-		job.isRGB = isRGB;
-		job.isAlpha = isAlpha;
-		job.isSmooth = isSmooth;
-		job.blendMode = blend;
-		
-		job.dataPerVertice = 4;
+		var dataPerVertice:Int = 4;
 		if (isRGB)
 		{
-			job.dataPerVertice += 3;
+			dataPerVertice += 3;
 		}
 		if (isAlpha)
 		{
-			job.dataPerVertice++;
+			dataPerVertice++;
 		}
 		
+		this.dataPerVertice = dataPerVertice;
+	}
+	
+	public static inline function getJob(tilesheet:TilesheetStage3D, isRGB:Bool, isAlpha:Bool, isSmooth:Bool, blend:BlendMode):QuadRenderJob
+	{
+		var job:QuadRenderJob = (renderJobPool.length > 0) ? renderJobPool.pop() : new QuadRenderJob();
+		job.set(tilesheet, isRGB, isAlpha, isSmooth, blend);
 		return job;
 	}
 	

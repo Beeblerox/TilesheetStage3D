@@ -233,11 +233,16 @@ class ColorRenderJob extends BaseRenderJob
 	}
 	#end
 	
+	public function set(blend:BlendMode):Void
+	{
+		this.blendMode = blend;
+		this.dataPerVertice = 6;
+	}
+	
 	public static inline function getJob(blend:BlendMode = null):ColorRenderJob
 	{
 		var job:ColorRenderJob = (renderJobPool.length > 0) ? renderJobPool.pop() : new ColorRenderJob();
-		job.blendMode = blend;
-		job.dataPerVertice = 6;
+		job.set(blend);
 		return job;
 	}
 	

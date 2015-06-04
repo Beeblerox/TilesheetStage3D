@@ -119,7 +119,7 @@ class BaseRenderJob
 		return (numVertices + this.numVertices) <= BaseRenderJob.vertexPerBuffer;
 	}
 	
-	public inline function checkMaxTrianglesCapacity(numVertices:Int):Bool
+	public static inline function checkMaxTrianglesCapacity(numVertices:Int):Bool
 	{
 		return numVertices <= BaseRenderJob.vertexPerBuffer;
 	}
