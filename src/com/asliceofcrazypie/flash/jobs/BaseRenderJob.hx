@@ -2,6 +2,7 @@ package com.asliceofcrazypie.flash.jobs;
 
 import flash.display.BlendMode;
 import flash.Vector;
+import openfl.display.Sprite;
 
 #if flash11
 import flash.utils.ByteArray;
@@ -103,7 +104,7 @@ class BaseRenderJob
 		
 	}
 	#else
-	public function render(context:Dynamic = null, colored:Bool = false):Void
+	public function render(context:Sprite = null, colored:Bool = false):Void
 	{
 		
 	}

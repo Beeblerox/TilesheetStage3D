@@ -139,6 +139,7 @@ class Viewport
 		quadRenderJob = new QuadRenderJob();
 		triangleRenderJob = new TriangleRenderJob();
 		colorRenderJob = new ColorRenderJob();
+		colorRenderJob.set(null);
 		#end
 		
 		initialScaleX = scaleX;
