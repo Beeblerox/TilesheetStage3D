@@ -384,7 +384,7 @@ class Viewport
 	#end
 	
 	#if flash11
-	public function startColorBatch(blend:BlendMode = null, numVerices:Int = 4):ColorRenderJob
+	public function startColorBatch(blend:BlendMode = null, numVertices:Int = 4):ColorRenderJob
 	{
 		var lastRenderJob:BaseRenderJob = getLastRenderJob();
 		var lastColorRenderJob:ColorRenderJob = getLastColorRenderJob();
@@ -397,10 +397,10 @@ class Viewport
 			return lastColorRenderJob;
 		}
 		
-		return startNewColorBatch(blend, numVerices);
+		return startNewColorBatch(blend, numVertices);
 	}
 	
-	public inline function startNewColorBatch(blend:BlendMode = null, numVerices:Int = 4):ColorRenderJob
+	public inline function startNewColorBatch(blend:BlendMode = null, numVertices:Int = 4):ColorRenderJob
 	{
 		if (BaseRenderJob.checkMaxTrianglesCapacity(numVertices))
 		{
