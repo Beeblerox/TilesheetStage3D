@@ -38,12 +38,17 @@ class BaseRenderJob
 	
 	public var type(default, null):RenderJobType;
 	
-	public var dataPerVertice:Int;
-	public var numVertices:Int;
-	public var numIndices:Int;
+	public var dataPerVertice:Int = 0;
+	public var numVertices:Int = 0;
+	public var numIndices:Int = 0;
 	
+	#if flash
 	public var vertices(default, null):Vector<Float>;
 	public var indicesVector(default, null):Vector<UInt>;
+	#else
+	public var vertices(default, null):Array<Float>;
+	public var indicesVector(default, null):Array<Int>;
+	#end
 	
 	#if flash11
 	public var indicesBytes(default, null):ByteArray;
@@ -95,6 +100,8 @@ class BaseRenderJob
 		}
 		#else
 		tileData = new Array<Float>();
+		vertices = new Array<Float>();
+		indicesVector = new Array<Int>();
 		#end
 	}
 	
