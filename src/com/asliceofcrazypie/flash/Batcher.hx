@@ -51,6 +51,9 @@ class Batcher
 	public static var defaultViewport(get, null):Viewport;
 	
 	#if !flash11
+	/**
+	 * Helper tilesheet for rendering axis-aligned colored rectangles on native targets.
+	 */
 	public static var colorsheet:TilesheetStage3D;
 	#end
 	
@@ -102,6 +105,9 @@ class Batcher
 		if (index >= 0 || index < numViewports)
 		{
 			var viewport:Viewport = viewports[index];
+			#if !flash11
+			game.removeChild(viewport.view);
+			#end
 			if (dispose)	viewport.dispose();
 			viewports.splice(index, 1);
 			numViewports--;
@@ -128,6 +134,10 @@ class Batcher
 		
 		view1.index = index2;
 		view2.index = index1;
+		
+		#if !flash11
+		game.swapChildren(view1.view, view2.view);
+		#end
 	}
 	
 	public static function setViewportIndex(viewport:Viewport, index:Int):Void
@@ -145,6 +155,9 @@ class Batcher
 		
 		viewports.insert(index, viewport);
 		numViewports = viewports.length;
+		#if !flash11
+		game.addChildAt(viewport.view, index);
+		#end
 		updateViewportIndices();
 	}
 	
@@ -246,8 +259,6 @@ class Batcher
 	{
 		#if flash11
 		TilesheetStage3D.clear();
-		#else
-		
 		#end
 		reset();
 	}
