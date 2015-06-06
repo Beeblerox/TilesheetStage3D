@@ -1,5 +1,6 @@
 package com.asliceofcrazypie.flash;
 
+#if flash11
 import haxe.ds.StringMap;
 import flash.display3D.Context3DBlendFactor;
 import flash.display.BlendMode;
@@ -20,7 +21,6 @@ class BlendModeUtil
 	private static var premultipliedBlendFactors:StringMap<Array<Context3DBlendFactor>>;
 	private static var noPremultipliedBlendFactors:StringMap<Array<Context3DBlendFactor>>;
 	
-	// TODO: move it to context wrapper...
 	@:allow(com.asliceofcrazypie.flash)
 	private static function initBlendFactors():Void
 	{
@@ -69,3 +69,4 @@ class BlendModeUtil
 		context.context3D.setBlendFactors(factor[0], factor[1]);
 	}
 }
+#end

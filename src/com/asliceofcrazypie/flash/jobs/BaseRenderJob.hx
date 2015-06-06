@@ -42,7 +42,6 @@ class BaseRenderJob
 	public var numVertices:Int = 0;
 	public var numIndices:Int = 0;
 	
-	// TODO: start refactoring from here...
 	#if flash11
 	public var vertices(default, null):Vector<Float>;
 	public var indicesVector(default, null):Vector<UInt>;
