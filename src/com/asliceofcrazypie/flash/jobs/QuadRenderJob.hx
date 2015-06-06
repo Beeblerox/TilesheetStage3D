@@ -34,7 +34,7 @@ class QuadRenderJob extends BaseRenderJob
 		renderJobPool.push(renderJob);
 	}
 	
-	public static function __init__():Void
+	public static function init():Void
 	{
 		renderJobPool = [];
 		for (i in 0...BaseRenderJob.NUM_JOBS_TO_POOL)
@@ -124,15 +124,6 @@ class QuadRenderJob extends BaseRenderJob
 		else if (blendMode == BlendMode.SCREEN)
 		{
 			flags |= Tilesheet.TILE_BLEND_SCREEN;
-		}
-		
-		trace(isRGB);
-		trace(isAlpha);
-		trace(tileData.length);
-		
-		if (tileData.length < 100)
-		{
-			trace(tileData);
 		}
 		
 		tilesheet.drawTiles(context.graphics, tileData, isSmooth, flags);

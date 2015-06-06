@@ -65,6 +65,10 @@ class BaseRenderJob
 		vertexPerBuffer = batchSize * 4;
 		trianglesPerBuffer = Std.int(vertexPerBuffer / 3);
 		indicesPerBuffer = Std.int(vertexPerBuffer * 6 / 4);
+		
+		QuadRenderJob.init();
+		TriangleRenderJob.init();
+		ColorRenderJob.init();
 	}
 	
 	// TODO: use `useBytes` not only in constructor...

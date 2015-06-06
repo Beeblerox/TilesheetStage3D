@@ -37,7 +37,7 @@ class ColorRenderJob extends BaseRenderJob
 		renderJobPool.push(renderJob);
 	}
 	
-	public static function __init__():Void
+	public static function init():Void
 	{
 		renderJobPool = [];
 		for (i in 0...BaseRenderJob.NUM_JOBS_TO_POOL)

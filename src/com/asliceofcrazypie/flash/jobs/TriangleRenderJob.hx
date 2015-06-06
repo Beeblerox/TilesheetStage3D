@@ -39,7 +39,7 @@ class TriangleRenderJob extends BaseRenderJob
 		renderJobPool.push(renderJob);
 	}
 	
-	public static function __init__():Void
+	public static function init():Void
 	{
 		renderJobPool = [];
 		for (i in 0...BaseRenderJob.NUM_JOBS_TO_POOL)
@@ -269,8 +269,6 @@ class TriangleRenderJob extends BaseRenderJob
 		context.graphics.drawTriangles(vertices, indicesVector, uvtData, TriangleCulling.NONE, (colors.length > 0) ? colors : null, blendInt);
 		#end
 		context.graphics.endFill();
-		
-		trace("render triangles");
 	}
 	
 	override function initData(useBytes:Bool = false):Void 
