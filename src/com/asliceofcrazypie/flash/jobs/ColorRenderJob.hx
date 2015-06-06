@@ -262,7 +262,7 @@ class ColorRenderJob extends BaseRenderJob
 			context.context3D.setVertexBufferAt(0, vertexbuffer, 0, Context3DVertexBufferFormat.FLOAT_2);
 			// color to attribute register 1
 			context.context3D.setVertexBufferAt(1, vertexbuffer, 2, Context3DVertexBufferFormat.FLOAT_4);
-		//	context.context3D.setVertexBufferAt(2, null, 6);
+			context.context3D.setVertexBufferAt(2, null);
 			
 			context.context3D.drawTriangles(indexbuffer);
 		}

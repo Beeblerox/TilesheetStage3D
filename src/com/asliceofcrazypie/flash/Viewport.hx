@@ -13,6 +13,7 @@ import flash.geom.Point;
 import flash.geom.Rectangle;
 import flash.Vector;
 import openfl.display.Sprite;
+import openfl.geom.ColorTransform;
 
 import openfl.Lib;
 
@@ -87,6 +88,8 @@ class Viewport
 	
 	#if flash11
 	private var bgRenderJob:ColorRenderJob;
+	#else
+	private var colorTransform:ColorTransform;
 	#end
 	
 	public var color(get, set):UInt;
@@ -126,6 +129,8 @@ class Viewport
 		#if flash11
 		matrix = new Matrix3D();
 		bgRenderJob = ColorRenderJob.getJob();
+		#else
+		colorTransform = new ColorTransform();
 		#end
 		
 		renderJobs = new Vector<BaseRenderJob>();
@@ -156,6 +161,8 @@ class Viewport
 		ColorRenderJob.returnJob(bgRenderJob);
 		bgRenderJob = null;
 		matrix = null;
+		#else
+		colorTransform = null;
 		#end
 		
 		renderJobs = null;
@@ -668,6 +675,15 @@ class Viewport
 	private function checkColor():Void
 	{
 		isColored = (cRed != 1.0) || (cGreen != 1.0) || (cBlue != 1.0) || (cAlpha != 1.0);
+		
+		#if !flash11
+		colorTransform.redMultiplier = cRed;
+		colorTransform.greenMultiplier = cGreen;
+		colorTransform.blueMultiplier = cBlue;
+		colorTransform.alphaMultiplier = cAlpha;
+		
+		view.transform.colorTransform = colorTransform;
+		#end
 	}
 	
 	private function updateMatrix():Void
