@@ -108,7 +108,10 @@ class Viewport
 	
 	public var useBgColor:Bool = false;
 	
+	#if !flash11
+	public var canvas(default, null):Sprite;
 	public var view(default, null):Sprite;
+	#end
 	
 	/**
 	 * Viewport consctructor.
@@ -122,8 +125,6 @@ class Viewport
 	 */
 	public function new(x:Float, y:Float, width:Float, height:Float, scaleX:Float = 1, scaleY:Float = 1) 
 	{
-		view = new Sprite();
-		
 		scissor = new Rectangle();
 		
 		#if flash11
@@ -131,6 +132,9 @@ class Viewport
 		bgRenderJob = ColorRenderJob.getJob();
 		#else
 		colorTransform = new ColorTransform();
+		view = new Sprite();
+		canvas = new Sprite();
+		view.addChild(canvas);
 		#end
 		
 		renderJobs = new Vector<BaseRenderJob>();
@@ -163,6 +167,10 @@ class Viewport
 		matrix = null;
 		#else
 		colorTransform = null;
+		
+		view.removeChild(canvas);
+		view = null;
+		canvas = null;
 		#end
 		
 		renderJobs = null;
@@ -171,8 +179,6 @@ class Viewport
 		colorRenderJobs = null;
 		
 		scissor = null;
-		
-		view = null;
 	}
 	
 	private inline function getLastRenderJob():BaseRenderJob
@@ -221,7 +227,7 @@ class Viewport
 		#if flash11
 		bgRenderJob.reset();
 		#else
-		view.graphics.clear();
+		canvas.graphics.clear();
 		#end
 		
 		untyped renderJobs.length = 0;
@@ -271,7 +277,7 @@ class Viewport
 		
 		for (job in renderJobs)
 		{
-			job.render(view, false);
+			job.render(canvas, false);
 		}
 	}
 	#end
@@ -728,7 +734,8 @@ class Viewport
 						width * Batcher.gameScaleX, 
 						height * Batcher.gameScaleY);
 		#else
-		
+		scissor.setTo(0, 0, width * Batcher.gameScaleX, height * Batcher.gameScaleY);
+		view.scrollRect = scissor;
 		#end
 	}
 	
