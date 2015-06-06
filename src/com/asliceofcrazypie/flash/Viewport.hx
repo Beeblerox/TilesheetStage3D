@@ -253,7 +253,10 @@ class Viewport
 		
 		if (useBgColor)
 		{
-			helperRect.setTo(0, 0, width + 1, height + 1);
+			helperRect.setTo(	-0.5 * width * (initialScaleX - scaleX) / scaleX - 1, 
+								-0.5 * height * (initialScaleY - scaleY) / scaleY - 1, 
+								width / scaleX + 2, 
+								height / scaleY + 2);
 			bgRenderJob.addAAQuad(helperRect, bgRed, bgGreen, bgBlue, bgAlpha);
 			context.renderJob(bgRenderJob, isColored);
 		}
@@ -271,7 +274,10 @@ class Viewport
 		if (useBgColor)
 		{
 			canvas.graphics.beginFill((Std.int(bgRed * 255) << 16) | (Std.int(bgGreen * 255) << 8) | Std.int(bgBlue * 255), bgAlpha);
-			canvas.graphics.drawRect(0, 0, width, height);
+			canvas.graphics.drawRect( 	-0.5 * width * (initialScaleX - scaleX) / scaleX - 1, 
+										-0.5 * height * (initialScaleY - scaleY) / scaleY - 1, 
+										width / scaleX + 2, 
+										height / scaleY + 2);
 			canvas.graphics.endFill();
 		}
 		
