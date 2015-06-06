@@ -270,9 +270,9 @@ class Viewport
 		
 		if (useBgColor)
 		{
-			view.graphics.beginFill((Std.int(bgRed * 255) << 16) | (Std.int(bgGreen * 255) << 8) | Std.int(bgBlue * 255), bgAlpha);
-			view.graphics.drawRect(0, 0, width, height);
-			view.graphics.endFill();
+			canvas.graphics.beginFill((Std.int(bgRed * 255) << 16) | (Std.int(bgGreen * 255) << 8) | Std.int(bgBlue * 255), bgAlpha);
+			canvas.graphics.drawRect(0, 0, width, height);
+			canvas.graphics.endFill();
 		}
 		
 		for (job in renderJobs)
@@ -720,7 +720,11 @@ class Viewport
 		matrix.appendScale(2 / stage.stageWidth, -2 / stage.stageHeight, 1);
 		matrix.appendScale(totalScaleX, totalScaleY, 1); // total viewport scale
 		#else
+		canvas.scaleX = scaleX;
+		canvas.scaleY = scaleY;
 		
+		canvas.x = 0.5 * width * (initialScaleX - scaleX);
+		canvas.y = 0.5 * height * (initialScaleY - scaleY);
 		#end
 	}
 	
