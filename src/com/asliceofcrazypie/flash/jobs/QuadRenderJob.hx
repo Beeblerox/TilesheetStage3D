@@ -126,14 +126,7 @@ class QuadRenderJob extends BaseRenderJob
 			flags |= Tilesheet.TILE_BLEND_SCREEN;
 		}
 		
-		tilesheet.drawTiles(context.graphics, tileData, isSmooth, flags);
-	}
-	
-	override public function reset():Void 
-	{
-		super.reset();
-		
-		tileData.splice(0, tileData.length);
+		tilesheet.drawTiles(context.graphics, tileData, isSmooth, flags, vertexPos);
 	}
 	#end
 	
