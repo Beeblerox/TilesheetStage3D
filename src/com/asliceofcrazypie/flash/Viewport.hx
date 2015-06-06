@@ -109,7 +109,7 @@ class Viewport
 	
 	public var useBgColor:Bool = false;
 	
-	private var view:Sprite;
+	public var view(default, null):Sprite;
 	
 	/**
 	 * Viewport consctructor.
@@ -240,10 +240,14 @@ class Viewport
 		numTriangleRenderJobs = 0;
 		numColorRenderJobs = 0;
 		#else
+		view.graphics.clear();
+		
 		quadRenderJob.reset();
 		triangleRenderJob.reset();
 		colorRenderJob.reset();
 		currentRenderJob = null;
+		
+		trace("clear");
 		#end
 	}
 	
@@ -272,7 +276,17 @@ class Viewport
 	#else
 	public inline function render(context:Dynamic = null):Void
 	{
+		if (useBgColor)
+		{
+			view.graphics.beginFill((Std.int(bgRed * 255) << 16) | (Std.int(bgGreen * 255) << 8) | Std.int(bgBlue * 255), bgAlpha);
+			view.graphics.drawRect(0, 0, width, height);
+			view.graphics.endFill();
+		}
 		
+		if (currentRenderJob != null)
+		{
+			currentRenderJob.render(view, false);
+		}
 	}
 	#end
 	
@@ -320,10 +334,16 @@ class Viewport
 		else if (currentRenderJob != null)
 		{
 			currentRenderJob.render(this.view, false);
-			currentRenderJob = quadRenderJob;
+			currentRenderJob.reset();
+			currentRenderJob = null;
+		}
+		
+		if (currentRenderJob == null)
+		{
 			quadRenderJob.set(tilesheet, tinted, alpha, smooth, blend);
 		}
 		
+		currentRenderJob = quadRenderJob;
 		return quadRenderJob;
 	}
 	#end
@@ -364,22 +384,33 @@ class Viewport
 	#else
 	public function startTrianglesBatch(tilesheet:TilesheetStage3D, colored:Bool = false, blend:BlendMode = null, smoothing:Bool = false, numVertices:Int = 3):TriangleRenderJob
 	{
-		if (currentRenderJob == triangleRenderJob 
+		if (currentRenderJob != null
+			&& currentRenderJob == triangleRenderJob 
 			&& triangleRenderJob.tilesheet == tilesheet
 			&& triangleRenderJob.isRGB == colored
 			&& triangleRenderJob.isSmooth == smoothing
 			&& triangleRenderJob.blendMode == blend
 			&& triangleRenderJob.canAddTriangles(numVertices))
 		{
+			trace("1");
 			return triangleRenderJob;
 		}
 		else if (currentRenderJob != null)
 		{
+			trace("render prev render job");
 			currentRenderJob.render(this.view, false);
-			currentRenderJob = triangleRenderJob;
+			currentRenderJob.reset();
+			currentRenderJob = null;
+		}
+		
+		if (currentRenderJob == null)
+		{
+			trace("set triangle job");
 			triangleRenderJob.set(tilesheet, colored, colored, smoothing, blend);
 		}
 		
+		trace("2");
+		currentRenderJob = triangleRenderJob;
 		return triangleRenderJob;
 	}
 	#end
@@ -425,10 +456,16 @@ class Viewport
 		else if (currentRenderJob != null)
 		{
 			currentRenderJob.render(this.view, false);
-			currentRenderJob = colorRenderJob;
+			currentRenderJob.reset();
+			currentRenderJob = null;
+		}
+		
+		if (currentRenderJob == null)
+		{
 			colorRenderJob.set(blend);
 		}
 		
+		currentRenderJob = colorRenderJob;
 		return colorRenderJob;
 	}
 	#end
@@ -501,7 +538,6 @@ class Viewport
 	{
 		var colored:Bool = (cr != 1.0) || (cg != 1.0) || (cb != 1.0) || (ca != 1.0);
 		var job:QuadRenderJob = startQuadBatch(tilesheet, colored, colored, blend, smoothing);
-		
 		helperPoint2.setTo(origin.x / sourceRect.width, origin.y / sourceRect.height); // normalize origin
 		job.addQuad(sourceRect, helperPoint2, uv, matrix, cr, cg, cb, ca);
 	}

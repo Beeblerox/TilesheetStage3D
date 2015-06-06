@@ -42,22 +42,16 @@ class BaseRenderJob
 	public var numVertices:Int = 0;
 	public var numIndices:Int = 0;
 	
-	#if flash
+	// TODO: start refactoring from here...
+	#if flash11
 	public var vertices(default, null):Vector<Float>;
 	public var indicesVector(default, null):Vector<UInt>;
-	#else
-	public var vertices(default, null):Array<Float>;
-	public var indicesVector(default, null):Array<Int>;
-	#end
-	
-	#if flash11
 	public var indicesBytes(default, null):ByteArray;
-	#else
-	public var tileData(default, null):Array<Float>;
 	#end
 	
 	public var vertexPos:Int = 0;
 	public var indexPos:Int = 0;
+	public var colorPos:Int = 0;
 	
 	@:allow(com.asliceofcrazypie.flash)
 	private static function init(batchSize:Int = 0):Void
@@ -75,6 +69,11 @@ class BaseRenderJob
 	
 	// TODO: use `useBytes` not only in constructor...
 	private function new(useBytes:Bool = false) 
+	{
+		initData(useBytes);
+	}
+	
+	private function initData(useBytes:Bool = false):Void
 	{
 		#if flash11
 		this.vertices = new Vector<Float>(BaseRenderJob.vertexPerBuffer >> 2);
@@ -98,10 +97,6 @@ class BaseRenderJob
 		{
 			indicesVector = new Vector<UInt>();
 		}
-		#else
-		tileData = new Array<Float>();
-		vertices = new Array<Float>();
-		indicesVector = new Array<Int>();
 		#end
 	}
 	
@@ -138,6 +133,7 @@ class BaseRenderJob
 		tilesheet = null;
 		vertexPos = 0;
 		indexPos = 0;
+		colorPos = 0;
 		numVertices = 0;
 		numIndices = 0;
 	}

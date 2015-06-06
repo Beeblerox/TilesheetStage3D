@@ -117,8 +117,9 @@ class TilesheetStage3D extends Tilesheet
 			_stage3DLevel = stage3DLevel;
 			_initCallback = initCallback;
 			
-			#if flash11
 			BaseRenderJob.init(batchSize);
+			
+			#if flash11
 			antiAliasing = antiAliasLevel;
 			
 			if (stage3DLevel < 0 || stage3DLevel >= Std.int(stage.stage3Ds.length))

@@ -4,6 +4,7 @@ package com.asliceofcrazypie.flash;
 import flash.display3D.Context3DRenderMode;
 #end
 
+import com.asliceofcrazypie.flash.jobs.BaseRenderJob;
 import com.asliceofcrazypie.flash.jobs.QuadRenderJob;
 import com.asliceofcrazypie.flash.jobs.RenderJob;
 import com.asliceofcrazypie.flash.jobs.TriangleRenderJob;
@@ -70,6 +71,9 @@ class Batcher
 		var index:Int = numViewports;
 		viewports[index] = viewport;
 		viewport.index = index;
+		#if !flash11
+		game.addChild(viewport.view);
+		#end
 		numViewports++;
 		return viewport;
 	}
@@ -195,6 +199,8 @@ class Batcher
 			TilesheetStage3D.init(stage, stage3DLevel, antiAliasLevel, initCallback, renderMode, batchSize);
 			TilesheetStage3D.context.renderCallback = render;
 			#else
+			BaseRenderJob.init(batchSize);
+			
 			game = new Sprite();
 			stage.addChild(game);
 			initCallback('success');
@@ -216,13 +222,14 @@ class Batcher
 	{
 		#if flash11
 		var context = TilesheetStage3D.context;
+		#else 
+		var context = null;
+		#end
+		
 		for (viewport in viewports)
 		{
 			viewport.render(context);
 		}
-		#else
-		
-		#end
 	}
 	
 	public static inline function clear():Void
