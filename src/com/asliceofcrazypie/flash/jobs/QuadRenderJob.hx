@@ -20,7 +20,6 @@ class QuadRenderJob extends RenderJob
 class QuadRenderJob extends BaseRenderJob
 #end
 {
-	#if flash11
 	private static var renderJobPool:Array<QuadRenderJob>;
 	
 	public static inline function getJob(tilesheet:TilesheetStage3D, isRGB:Bool, isAlpha:Bool, isSmooth:Bool, blend:BlendMode):QuadRenderJob
@@ -43,7 +42,8 @@ class QuadRenderJob extends BaseRenderJob
 			renderJobPool.push(new QuadRenderJob());
 		}
 	}
-	#else
+	
+	#if !flash11
 	public var tileData(default, null):Array<Float>;
 	#end
 	
@@ -129,6 +129,11 @@ class QuadRenderJob extends BaseRenderJob
 		trace(isRGB);
 		trace(isAlpha);
 		trace(tileData.length);
+		
+		if (tileData.length < 100)
+		{
+			trace(tileData);
+		}
 		
 		tilesheet.drawTiles(context.graphics, tileData, isSmooth, flags);
 	}

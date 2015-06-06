@@ -74,7 +74,6 @@ class Viewport
 	private var initialScaleX:Float = 1;
 	private var initialScaleY:Float = 1;
 	
-	#if flash11
 	private var numRenderJobs:Int = 0;
 	private var numQuadRenderJobs:Int = 0;
 	private var numTriangleRenderJobs:Int = 0;
@@ -85,12 +84,8 @@ class Viewport
 	private var triangleRenderJobs:Vector<TriangleRenderJob>;
 	private var colorRenderJobs:Vector<ColorRenderJob>;
 	
+	#if flash11
 	private var bgRenderJob:ColorRenderJob;
-	#else
-	private var currentRenderJob:BaseRenderJob;
-	private var quadRenderJob:QuadRenderJob;
-	private var triangleRenderJob:TriangleRenderJob;
-	private var colorRenderJob:ColorRenderJob;
 	#end
 	
 	public var color(get, set):UInt;
@@ -129,18 +124,13 @@ class Viewport
 		
 		#if flash11
 		matrix = new Matrix3D();
+		bgRenderJob = ColorRenderJob.getJob();
+		#end
 		
 		renderJobs = new Vector<BaseRenderJob>();
 		quadRenderJobs = new Vector<QuadRenderJob>();
 		triangleRenderJobs = new Vector<TriangleRenderJob>();
 		colorRenderJobs = new Vector<ColorRenderJob>();
-		bgRenderJob = ColorRenderJob.getJob();
-		#else
-		quadRenderJob = new QuadRenderJob();
-		triangleRenderJob = new TriangleRenderJob();
-		colorRenderJob = new ColorRenderJob();
-		colorRenderJob.set(null);
-		#end
 		
 		initialScaleX = scaleX;
 		initialScaleY = scaleY;
@@ -162,27 +152,21 @@ class Viewport
 		reset();
 		
 		#if flash11
+		ColorRenderJob.returnJob(bgRenderJob);
+		bgRenderJob = null;
+		matrix = null;
+		#end
+		
 		renderJobs = null;
 		quadRenderJobs = null;
 		triangleRenderJobs = null;
 		colorRenderJobs = null;
-		
-		ColorRenderJob.returnJob(bgRenderJob);
-		bgRenderJob = null;
-		
-		matrix = null;
-		#else
-		quadRenderJob = null;
-		triangleRenderJob = null;
-		colorRenderJob = null;
-		#end
 		
 		scissor = null;
 		
 		view = null;
 	}
 	
-	#if flash11
 	private inline function getLastRenderJob():BaseRenderJob
 	{
 		return (numRenderJobs > 0) ? renderJobs[numRenderJobs - 1] : null;
@@ -202,14 +186,12 @@ class Viewport
 	{
 		return (numColorRenderJobs > 0) ? colorRenderJobs[numColorRenderJobs - 1] : null;
 	}
-	#end
 	
 	/**
 	 * Reseting Viewport before next rendering.
 	 */
 	public inline function reset():Void
 	{
-		#if flash11
 		for (renderJob in quadRenderJobs)
 		{
 			renderJob.reset();
@@ -228,7 +210,11 @@ class Viewport
 			ColorRenderJob.returnJob(renderJob);
 		}
 		
+		#if flash11
 		bgRenderJob.reset();
+		#else
+		view.graphics.clear();
+		#end
 		
 		untyped renderJobs.length = 0;
 		untyped quadRenderJobs.length = 0;
@@ -239,16 +225,6 @@ class Viewport
 		numQuadRenderJobs = 0;
 		numTriangleRenderJobs = 0;
 		numColorRenderJobs = 0;
-		#else
-		view.graphics.clear();
-		
-		quadRenderJob.reset();
-		triangleRenderJob.reset();
-		colorRenderJob.reset();
-		currentRenderJob = null;
-		
-		trace("clear");
-		#end
 	}
 	
 	#if flash11
@@ -276,6 +252,8 @@ class Viewport
 	#else
 	public inline function render(context:Dynamic = null):Void
 	{
+		if (!visible)	return;
+		
 		if (useBgColor)
 		{
 			view.graphics.beginFill((Std.int(bgRed * 255) << 16) | (Std.int(bgGreen * 255) << 8) | Std.int(bgBlue * 255), bgAlpha);
@@ -283,14 +261,13 @@ class Viewport
 			view.graphics.endFill();
 		}
 		
-		if (currentRenderJob != null)
+		for (job in renderJobs)
 		{
-			currentRenderJob.render(view, false);
+			job.render(view, false);
 		}
 	}
 	#end
 	
-	#if flash11
 	public function startQuadBatch(tilesheet:TilesheetStage3D, tinted:Bool, alpha:Bool, blend:BlendMode = null, smooth:Bool = false):QuadRenderJob
 	{
 		var lastRenderJob:BaseRenderJob = getLastRenderJob();
@@ -318,37 +295,7 @@ class Viewport
 		quadRenderJobs[numQuadRenderJobs++] = job;
 		return job;
 	}
-	#else
-	public function startQuadBatch(tilesheet:TilesheetStage3D, tinted:Bool, alpha:Bool, blend:BlendMode = null, smooth:Bool = false):QuadRenderJob
-	{
-		if (currentRenderJob == quadRenderJob 
-			&& quadRenderJob.tilesheet == tilesheet
-			&& quadRenderJob.isRGB == tinted
-			&& quadRenderJob.isAlpha == alpha
-			&& quadRenderJob.isSmooth == smooth
-			&& quadRenderJob.blendMode == blend
-			&& quadRenderJob.canAddQuad())
-		{
-			return quadRenderJob;
-		}
-		else if (currentRenderJob != null)
-		{
-			currentRenderJob.render(this.view, false);
-			currentRenderJob.reset();
-			currentRenderJob = null;
-		}
-		
-		if (currentRenderJob == null)
-		{
-			quadRenderJob.set(tilesheet, tinted, alpha, smooth, blend);
-		}
-		
-		currentRenderJob = quadRenderJob;
-		return quadRenderJob;
-	}
-	#end
 	
-	#if flash11
 	public function startTrianglesBatch(tilesheet:TilesheetStage3D, colored:Bool = false, blend:BlendMode = null, smoothing:Bool = false, numVertices:Int = 3):TriangleRenderJob
 	{
 		var lastRenderJob:BaseRenderJob = getLastRenderJob();
@@ -371,51 +318,21 @@ class Viewport
 	
 	public function startNewTrianglesBatch(tilesheet:TilesheetStage3D, colored:Bool = false, blend:BlendMode = null, smoothing:Bool = false, numVertices:Int = 3):TriangleRenderJob
 	{
+		#if flash11
 		if (BaseRenderJob.checkMaxTrianglesCapacity(numVertices))
 		{
+		#end
 			var job:TriangleRenderJob = TriangleRenderJob.getJob(tilesheet, colored, colored, smoothing, blend);
 			renderJobs[numRenderJobs++] = job;
 			triangleRenderJobs[numTriangleRenderJobs++] = job;
 			return job;
+		#if flash11
 		}
+		#end
 		
 		return null; // too much triangles, even for the new batch
 	}
-	#else
-	public function startTrianglesBatch(tilesheet:TilesheetStage3D, colored:Bool = false, blend:BlendMode = null, smoothing:Bool = false, numVertices:Int = 3):TriangleRenderJob
-	{
-		if (currentRenderJob != null
-			&& currentRenderJob == triangleRenderJob 
-			&& triangleRenderJob.tilesheet == tilesheet
-			&& triangleRenderJob.isRGB == colored
-			&& triangleRenderJob.isSmooth == smoothing
-			&& triangleRenderJob.blendMode == blend
-			&& triangleRenderJob.canAddTriangles(numVertices))
-		{
-			trace("1");
-			return triangleRenderJob;
-		}
-		else if (currentRenderJob != null)
-		{
-			trace("render prev render job");
-			currentRenderJob.render(this.view, false);
-			currentRenderJob.reset();
-			currentRenderJob = null;
-		}
-		
-		if (currentRenderJob == null)
-		{
-			trace("set triangle job");
-			triangleRenderJob.set(tilesheet, colored, colored, smoothing, blend);
-		}
-		
-		trace("2");
-		currentRenderJob = triangleRenderJob;
-		return triangleRenderJob;
-	}
-	#end
 	
-	#if flash11
 	public function startColorBatch(blend:BlendMode = null, numVertices:Int = 4):ColorRenderJob
 	{
 		var lastRenderJob:BaseRenderJob = getLastRenderJob();
@@ -432,43 +349,22 @@ class Viewport
 		return startNewColorBatch(blend, numVertices);
 	}
 	
-	public inline function startNewColorBatch(blend:BlendMode = null, numVertices:Int = 4):ColorRenderJob
+	public function startNewColorBatch(blend:BlendMode = null, numVertices:Int = 4):ColorRenderJob
 	{
+		#if flash11
 		if (BaseRenderJob.checkMaxTrianglesCapacity(numVertices))
 		{
+		#end
 			var job:ColorRenderJob = ColorRenderJob.getJob(blend);
 			renderJobs[numRenderJobs++] = job;
 			colorRenderJobs[numColorRenderJobs++] = job;
 			return job;
+		#if flash11
 		}
+		#end
 		
 		return null;
 	}
-	#else
-	public function startColorBatch(blend:BlendMode = null, numVertices:Int = 4):ColorRenderJob
-	{
-		if (currentRenderJob == colorRenderJob 
-			&& colorRenderJob.blendMode == blend
-			&& colorRenderJob.canAddTriangles(numVertices))
-		{
-			return colorRenderJob;
-		}
-		else if (currentRenderJob != null)
-		{
-			currentRenderJob.render(this.view, false);
-			currentRenderJob.reset();
-			currentRenderJob = null;
-		}
-		
-		if (currentRenderJob == null)
-		{
-			colorRenderJob.set(blend);
-		}
-		
-		currentRenderJob = colorRenderJob;
-		return colorRenderJob;
-	}
-	#end
 	
 	/**
 	 * Drawing a transformed image region.

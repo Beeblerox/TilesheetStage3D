@@ -25,7 +25,6 @@ class TriangleRenderJob extends RenderJob
 class TriangleRenderJob extends BaseRenderJob
 #end
 {
-#if flash11
 	private static var renderJobPool:Array<TriangleRenderJob>;
 	
 	public static inline function getJob(tilesheet:TilesheetStage3D, isRGB:Bool, isAlpha:Bool, isSmooth:Bool, blend:BlendMode):TriangleRenderJob
@@ -48,7 +47,8 @@ class TriangleRenderJob extends BaseRenderJob
 			renderJobPool.push(new TriangleRenderJob());
 		}
 	}
-#else
+	
+#if !flash11
 	#if flash
 	public var vertices(default, null):Vector<Float>;
 	public var indicesVector(default, null):Vector<UInt>;

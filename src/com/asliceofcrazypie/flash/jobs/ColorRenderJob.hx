@@ -23,7 +23,6 @@ import openfl.Vector;
  */
 class ColorRenderJob extends BaseRenderJob
 {
-#if flash11
 	private static var renderJobPool:Array<ColorRenderJob>;
 	
 	public static inline function getJob(blend:BlendMode = null):ColorRenderJob
@@ -46,7 +45,8 @@ class ColorRenderJob extends BaseRenderJob
 			renderJobPool.push(new ColorRenderJob());
 		}
 	}
-#else
+	
+#if !flash11
 	private var color:Int = 0xFFFFFF;
 	private var alpha:Float = 1.0;
 	
