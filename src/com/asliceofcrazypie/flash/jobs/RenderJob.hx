@@ -1,5 +1,6 @@
 package com.asliceofcrazypie.flash.jobs;
 
+#if flash11
 import com.asliceofcrazypie.flash.TilesheetStage3D;
 import com.asliceofcrazypie.flash.jobs.BaseRenderJob;
 
@@ -8,9 +9,6 @@ import flash.geom.Matrix;
 import flash.geom.Point;
 import flash.geom.Rectangle;
 
-import openfl.display.Tilesheet;
-
-#if flash11
 import flash.display3D.IndexBuffer3D;
 import flash.display3D.textures.Texture;
 import flash.display3D.Context3DVertexBufferFormat;

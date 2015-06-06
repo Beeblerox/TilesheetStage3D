@@ -24,6 +24,7 @@ class Viewport
 {
 	private static var helperMatrix:Matrix = new Matrix();
 	private static var helperRect:Rectangle = new Rectangle();
+	private static var helperRect2:Rectangle = new Rectangle();
 	private static var helperPoint:Point = new Point();
 	private static var helperPoint2:Point = new Point();
 	
@@ -505,23 +506,35 @@ class Viewport
 	
 	public function drawColorTriangles(vertices:Vector<Float>, indices:Vector<Int>, colors:Vector<Int>, blend:BlendMode = null, position:Point = null):Void
 	{
+		#if flash11
 		var numVertices:Int = vertices.length;
 		var job:ColorRenderJob = startColorBatch(blend, numVertices);
 		
 		if (job != null)
 			job.addTriangles(vertices, indices, colors, position);
+		#else
+		trace("drawColorTriangles isn't implemented on native targets");
+		#end
 	}
 	
 	public inline function drawAAColorRect(rect:Rectangle, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null):Void
 	{
+		#if flash11
 		var job:ColorRenderJob = startColorBatch(blend);
 		
 		if (job != null)
 			job.addAAQuad(rect, cr, cg, cb, ca);
+		#else
+		helperRect2.setTo(0, 0, 10, 10);
+		helperPoint.setTo(0, 0);
+		
+		drawPixels(Batcher.colorsheet, helperRect2, helperPoint, rect.x, rect.y, 0.1 * rect.width, 0.1 * rect.height, 0, cr, cg, cb, ca, blend);
+		#end
 	}
 	
 	public inline function drawColorRect(sourceRect:Rectangle, origin:Point, matrix:Matrix, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null):Void
 	{
+		#if flash11
 		var job:ColorRenderJob = startColorBatch(blend);
 		
 		if (job == null)
@@ -529,6 +542,9 @@ class Viewport
 		
 		helperPoint2.setTo(origin.x / sourceRect.width, origin.y / sourceRect.height); // normalize origin
 		job.addQuad(sourceRect, helperPoint2, matrix, cr, cg, cb, ca);
+		#else
+		trace("drawColorRect isn't implemented on native targets");
+		#end
 	}
 	
 	private function set_x(value:Float):Float

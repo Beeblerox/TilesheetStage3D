@@ -16,6 +16,7 @@ import flash.geom.Matrix;
 import flash.geom.Point;
 import flash.geom.Rectangle;
 import flash.Vector;
+import openfl.display.BitmapData;
 
 import openfl.display.Sprite;
 import openfl.Lib;
@@ -48,6 +49,10 @@ class Batcher
 	 * The first viewport.
 	 */
 	public static var defaultViewport(get, null):Viewport;
+	
+	#if !flash11
+	public static var colorsheet:TilesheetStage3D;
+	#end
 	
 	private static var _isInited:Bool = false;
 	
@@ -204,6 +209,10 @@ class Batcher
 			
 			game = new Sprite();
 			stage.addChild(game);
+			
+			var canvas:BitmapData = new BitmapData(128, 128);
+			colorsheet = new TilesheetStage3D(canvas);
+			
 			initCallback('success');
 			#end
 			
