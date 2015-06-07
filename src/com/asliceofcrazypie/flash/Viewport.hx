@@ -526,15 +526,11 @@ class Viewport
 	
 	public function drawColorTriangles(vertices:Vector<Float>, indices:Vector<Int>, colors:Vector<Int>, blend:BlendMode = null, position:Point = null):Void
 	{
-		#if flash11
 		var numVertices:Int = vertices.length;
 		var job:ColorRenderJob = startColorBatch(blend, numVertices);
 		
 		if (job != null)
 			job.addTriangles(vertices, indices, colors, position);
-		#else
-		trace("drawColorTriangles isn't implemented on native targets");
-		#end
 	}
 	
 	public inline function drawAAColorRect(rect:Rectangle, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null):Void
@@ -554,7 +550,6 @@ class Viewport
 	
 	public inline function drawColorRect(sourceRect:Rectangle, origin:Point, matrix:Matrix, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null):Void
 	{
-		#if flash11
 		var job:ColorRenderJob = startColorBatch(blend);
 		
 		if (job == null)
@@ -562,9 +557,6 @@ class Viewport
 		
 		helperPoint2.setTo(origin.x / sourceRect.width, origin.y / sourceRect.height); // normalize origin
 		job.addQuad(sourceRect, helperPoint2, matrix, cr, cg, cb, ca);
-		#else
-		trace("drawColorRect isn't implemented on native targets");
-		#end
 	}
 	
 	private function set_x(value:Float):Float

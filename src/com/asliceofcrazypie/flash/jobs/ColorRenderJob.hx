@@ -410,10 +410,11 @@ class ColorRenderJob extends BaseRenderJob
 	
 	override public function render(context:Sprite = null, colored:Bool = false):Void 
 	{
-		context.graphics.beginFill(color, alpha);
 		#if flash
+		context.graphics.beginFill(color, alpha);
 		context.graphics.drawTriangles(vertices, indicesVector);
 		#else
+		context.graphics.beginBitmapFill(Batcher.colorsheet.bitmap);
 		var blendInt:Int = 0;
 		
 		if (blendMode == BlendMode.ADD)
