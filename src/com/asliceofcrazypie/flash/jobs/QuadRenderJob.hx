@@ -66,6 +66,7 @@ class QuadRenderJob extends BaseRenderJob
 		super.addQuad(rect, normalizedOrigin, uv, matrix, r, g, b, a);
 		indexPos += 6;
 	}
+	
 	#else
 	public function addQuad(rect:Rectangle, normalizedOrigin:Point, uv:Rectangle, matrix:Matrix, r:Float = 1, g:Float = 1, b:Float = 1, a:Float = 1):Void
 	{

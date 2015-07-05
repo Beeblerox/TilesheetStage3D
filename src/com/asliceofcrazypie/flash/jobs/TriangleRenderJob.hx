@@ -118,10 +118,11 @@ class TriangleRenderJob extends BaseRenderJob
 			if (colored)
 			{
 				vColor = colors[i];
+				
 				this.vertices[vertexPos++] = ((vColor >> 16) & 0xff) / 255;
 				this.vertices[vertexPos++] = ((vColor >> 8) & 0xff) / 255;
 				this.vertices[vertexPos++] = (vColor & 0xff) / 255;
-				this.vertices[vertexPos++] = ((vColor >> 24) & 0xff) / 255;	
+				this.vertices[vertexPos++] = ((vColor >> 24) & 0xff) / 255;
 			}
 		}
 		
@@ -136,7 +137,6 @@ class TriangleRenderJob extends BaseRenderJob
 	#else
 	public function addQuad(rect:Rectangle, normalizedOrigin:Point, uv:Rectangle, matrix:Matrix, r:Float = 1, g:Float = 1, b:Float = 1, a:Float = 1):Void
 	{
-		/*
 		var prevVerticesNumber:Int = Std.int(vertexPos / dataPerVertice);
 		
 		var imgWidth:Int = Std.int(rect.width);
@@ -176,8 +176,17 @@ class TriangleRenderJob extends BaseRenderJob
 		vertices[vertexPos++] = px * matrix.a + py * matrix.c + matrix.tx; //bottom left x
 		vertices[vertexPos++] = px * matrix.b + py * matrix.d + matrix.ty; //bottom left y
 		
-		numVertices += 4;
-		numIndices += 6;
+		this.uvtData[uvtPos++] = uv.x;
+		this.uvtData[uvtPos++] = uv.y;
+		
+		this.uvtData[uvtPos++] = uv.width;
+		this.uvtData[uvtPos++] = uv.y;
+		
+		this.uvtData[uvtPos++] = uv.width;
+		this.uvtData[uvtPos++] = uv.height;
+		
+		this.uvtData[uvtPos++] = uv.x;
+		this.uvtData[uvtPos++] = uv.height;
 		
 		indicesVector[indexPos++] = prevVerticesNumber + 2;
 		indicesVector[indexPos++] = prevVerticesNumber + 1;
@@ -186,17 +195,19 @@ class TriangleRenderJob extends BaseRenderJob
 		indicesVector[indexPos++] = prevVerticesNumber + 2;
 		indicesVector[indexPos++] = prevVerticesNumber + 0;
 		
-		#if flash
-		color = ((Std.int(r * 255) << 16) | (Std.int(g * 255) << 8) | Std.int(b * 255));
-		alpha = a;
-		#else
-		var color = ((Std.int(a * 255) << 24) | (Std.int(r * 255) << 16) | (Std.int(g * 255) << 8) | Std.int(b * 255));
-		colors[colorPos++] = color;
-		colors[colorPos++] = color;
-		colors[colorPos++] = color;
-		colors[colorPos++] = color;
+		#if !flash
+		if (isRGB || isAlpha)
+		{
+			var color = ((Std.int(a * 255) << 24) | (Std.int(r * 255) << 16) | (Std.int(g * 255) << 8) | Std.int(b * 255));
+			colors[colorPos++] = color;
+			colors[colorPos++] = color;
+			colors[colorPos++] = color;
+			colors[colorPos++] = color;
+		}		
 		#end
-		*/
+		
+		this.numVertices += 4;
+		this.numIndices += 6;
 	}
 	
 	public function addTriangles(vertices:Vector<Float>, indices:Vector<Int> = null, uvtData:Vector<Float> = null, colors:Vector<Int> = null, position:Point = null):Void

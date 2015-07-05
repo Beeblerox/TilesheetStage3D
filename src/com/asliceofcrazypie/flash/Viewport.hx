@@ -108,10 +108,8 @@ class Viewport
 	
 	public var useBgColor:Bool = false;
 	
-	#if !flash11
 	public var canvas(default, null):Sprite;
 	public var view(default, null):Sprite;
-	#end
 	
 	/**
 	 * Viewport consctructor.
@@ -132,10 +130,10 @@ class Viewport
 		bgRenderJob = ColorRenderJob.getJob();
 		#else
 		colorTransform = new ColorTransform();
+		#end
 		view = new Sprite();
 		canvas = new Sprite();
 		view.addChild(canvas);
-		#end
 		
 		renderJobs = new Vector<BaseRenderJob>();
 		quadRenderJobs = new Vector<QuadRenderJob>();
@@ -167,11 +165,10 @@ class Viewport
 		matrix = null;
 		#else
 		colorTransform = null;
-		
+		#end
 		view.removeChild(canvas);
 		view = null;
 		canvas = null;
-		#end
 		
 		renderJobs = null;
 		quadRenderJobs = null;
@@ -452,7 +449,7 @@ class Viewport
 	 */
 	public inline function drawMatrix2(tilesheet:TilesheetStage3D, sourceRect:Rectangle, origin:Point, uv:Rectangle, matrix:Matrix, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null, smoothing:Bool = false):Void
 	{
-		var tinted:Bool = (cr != 1.0) || (cg != 1.0) || (cb != 1.0);
+		var tinted:Bool = ((cr != 1.0) || (cg != 1.0) || (cb != 1.0));
 		var alpha:Bool = (ca != 1.0);
 		var job:QuadRenderJob = startQuadBatch(tilesheet, tinted, alpha, blend, smoothing);
 		helperPoint2.setTo(origin.x / sourceRect.width, origin.y / sourceRect.height); // normalize origin

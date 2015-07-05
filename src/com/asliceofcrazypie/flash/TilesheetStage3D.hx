@@ -5,6 +5,8 @@ import openfl.display.BitmapData;
 import openfl.display.Tilesheet;
 import openfl.events.Event;
 import openfl.geom.Matrix;
+import openfl.Lib;
+import openfl.text.TextField;
 
 #if flash11
 import com.asliceofcrazypie.flash.jobs.RenderJob;
@@ -67,6 +69,18 @@ class TilesheetStage3D extends Tilesheet
 			onResetTexture(null);
 			context.addEventListener(ContextWrapper.RESET_TEXTURE, onResetTexture);
 		}
+		#end
+	}
+	
+	public function updateTexture():Void
+	{
+		#if flash11
+		if (texture != null)
+		{
+			texture.dispose();
+		}
+		
+		onResetTexture(null);
 		#end
 	}
 	
