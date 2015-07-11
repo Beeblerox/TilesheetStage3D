@@ -4,6 +4,9 @@ import com.asliceofcrazypie.flash.jobs.VeryBasicRenderJob.RenderJobType;
 import com.asliceofcrazypie.flash.TilesheetStage3D;
 import openfl.display.BlendMode;
 import openfl.display.Sprite;
+import openfl.display3D.Context3D;
+import openfl.display3D.Context3DProgramType;
+import openfl.display3D.Context3DVertexBufferFormat;
 import openfl.display3D.IndexBuffer3D;
 import openfl.display3D.Program3D;
 import openfl.display3D.VertexBuffer3D;
@@ -43,6 +46,7 @@ class SAPNoImageRenderJob extends VeryBasicRenderJob
 	static private var indexBuffer:IndexBuffer3D;
 	
 	private var constants:Vector<Float>;
+	private var numConstants:Int = 0;
 	private var numQuads:Int = 0;
 	
 	private function new() 
@@ -64,7 +68,7 @@ class SAPNoImageRenderJob extends VeryBasicRenderJob
 		renderJobPool = [];
 		for (i in 0...VeryBasicRenderJob.NUM_JOBS_TO_POOL)
 		{
-			renderJobPool.push(new SAPRenderJob());
+			renderJobPool.push(new SAPNoImageRenderJob());
 		}
 	}
 	
@@ -109,7 +113,23 @@ class SAPNoImageRenderJob extends VeryBasicRenderJob
 	#if flash11
 	override public function render(context:ContextWrapper = null, colored:Bool = false):Void
 	{
-		// var vertexConstantsCount:Int = 0;
+		var context3D:Context3D = context.context3D;
+		
+		context.setBlendMode(blendMode, tilesheet.premultipliedAlpha);
+		context.setQuadImageProgram(isSmooth, tilesheet.mipmap, colored);
+		
+		// Set streams
+		context3D.setVertexBufferAt(0, vertexBuffer, 0, Context3DVertexBufferFormat.FLOAT_3);
+		context.context3D.setVertexBufferAt(1, null);
+		context.context3D.setVertexBufferAt(2, null);
+		context3D.setProgramConstantsFromVector(Context3DProgramType.VERTEX, 0, constants, numConstants);
+		
+		// Set constants
+	//	mvp.copyFrom(support.mvpMatrix3D);
+	//	context.context3D.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 124, context.baseTransformMatrix, true);
+		
+		context.setTexture(null);
+		context.context3D.drawTriangles(indexBuffer, 0, numQuads << 1); // numQuads * 2
 	}
 	#else
 	override public function render(context:Sprite = null, colored:Bool = false):Void
@@ -120,24 +140,20 @@ class SAPNoImageRenderJob extends VeryBasicRenderJob
 	
 	public function addQuad(rect:Rectangle, normalizedOrigin:Point, uv:Rectangle, matrix:Matrix, r:Float = 1, g:Float = 1, b:Float = 1, a:Float = 1):Void
 	{
-		var offset:Int = numQuads << 2; // numQuads * 4
-		setVertexConstantsFromNumbers(offset++, normalizedOrigin.x, normalizedOrigin.y, rect.width, rect.height);
-		setVertexConstantsFromNumbers(offset++, matrix.a, matrix.b, matrix.c, matrix.d);
-		setVertexConstantsFromNumbers(offset++, matrix.tx, matrix.ty, 0, 0);
-		setVertexConstantsFromNumbers(offset++, r, g, b, a);
+		setVertexConstantsFromNumbers(numConstants++, normalizedOrigin.x, normalizedOrigin.y, rect.width, rect.height);
+		setVertexConstantsFromNumbers(numConstants++, matrix.a, matrix.b, matrix.c, matrix.d);
+		setVertexConstantsFromNumbers(numConstants++, matrix.tx, matrix.ty, 0, 0);
+		setVertexConstantsFromNumbers(numConstants++, r, g, b, a);
 		numQuads++;
 	}
 	
 	private function setVertexConstantsFromNumbers(firstRegister:Int, x:Float, y:Float, z:Float = 0, w:Float = 0):Void 
 	{
 		var offset:Int = firstRegister << 2; // firstRegister * 4
-		constants[offset] = x;
-		offset++;
-		constants[offset] = y;
-		offset++;
-		constants[offset] = z;
-		offset++;
-		constants[offset] = w;
+		constants[offset++] = x;
+		constants[offset++] = y;
+		constants[offset++] = z;
+		constants[offset++] = w;
 	}
 	
 	override public function canAddQuad():Bool
@@ -149,6 +165,7 @@ class SAPNoImageRenderJob extends VeryBasicRenderJob
 	{
 		super.reset();
 		numQuads = 0;
+		numConstants = 0;
 	}
 	
 	public function set(tilesheet:TilesheetStage3D, blend:BlendMode):Void 

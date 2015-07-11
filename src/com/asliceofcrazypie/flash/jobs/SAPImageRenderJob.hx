@@ -137,9 +137,6 @@ class SAPImageRenderJob extends VeryBasicRenderJob
 		
 		context.setTexture(tilesheet.texture);
 		context.context3D.drawTriangles(indexBuffer, 0, numQuads << 1); // numQuads * 2
-		
-	//	trace(constants.length);
-	//	trace(constants);
 	}
 	#else
 	override public function render(context:Sprite = null, colored:Bool = false):Void
