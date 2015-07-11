@@ -50,6 +50,7 @@ class BaseRenderJob extends VeryBasicRenderJob
 		QuadRenderJob.init();
 		TriangleRenderJob.init();
 		ColorRenderJob.init();
+		SAPImageRenderJob.init();
 	}
 	
 	private function new() 

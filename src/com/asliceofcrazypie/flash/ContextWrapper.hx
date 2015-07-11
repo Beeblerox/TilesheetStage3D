@@ -1,6 +1,9 @@
 package com.asliceofcrazypie.flash;
 import com.asliceofcrazypie.flash.jobs.BaseRenderJob;
+import com.asliceofcrazypie.flash.jobs.SAPImageRenderJob;
+import com.asliceofcrazypie.flash.jobs.VeryBasicRenderJob;
 import haxe.ds.IntMap;
+import com.adobe.utils.extended.AGALMiniAssembler;
 
 #if flash11
 import com.asliceofcrazypie.flash.jobs.RenderJob;
@@ -47,10 +50,13 @@ class ContextWrapper extends EventDispatcher
 	
 	private var stage:Stage;
 	private var antiAliasLevel:Int;
-	private var baseTransformMatrix:Matrix3D;
+	public var baseTransformMatrix:Matrix3D;
 	
-	private var imagePrograms:IntMap<Program3D>;
-	private var noImagePrograms:IntMap<Program3D>;
+	private var triangleImagePrograms:IntMap<Program3D>;
+	private var triangleNoImagePrograms:IntMap<Program3D>;
+	
+	private var quadImagePrograms:IntMap<Program3D>;
+	private var quadNoImagePrograms:IntMap<Program3D>;
 	
 	private var _initCallback:Void->Void;
 	
@@ -75,21 +81,24 @@ class ContextWrapper extends EventDispatcher
 		this.depth = depth;
 		this.antiAliasLevel = antiAliasLevel;
 		
-		imagePrograms = new IntMap<Program3D>();
-		noImagePrograms = new IntMap<Program3D>();
+		triangleImagePrograms = new IntMap<Program3D>();
+		triangleNoImagePrograms = new IntMap<Program3D>();
+		
+		quadImagePrograms = new IntMap<Program3D>();
+		quadNoImagePrograms = new IntMap<Program3D>();
 		
 		currentRenderJobs = new Vector<RenderJob>();
 		quadRenderJobs = new Vector<QuadRenderJob>();
 		triangleRenderJobs = new Vector<TriangleRenderJob>();
 	}
 	
-	private function getNoImageProgram(globalColor:Bool = false):Program3D
+	private function getTriangleNoImageProgram(globalColor:Bool = false):Program3D
 	{
 		var programName:UInt = getNoImageProgramName(globalColor);
 		
-		if (noImagePrograms.exists(programName))
+		if (triangleNoImagePrograms.exists(programName))
 		{
-			return noImagePrograms.get(programName);
+			return triangleNoImagePrograms.get(programName);
 		}
 		
 		var vertexString:String =	"m44 op, va0, vc124   \n" +		// 4x4 matrix transform to output clipspace
@@ -106,17 +115,17 @@ class ContextWrapper extends EventDispatcher
 		}
 		
 		var program:Program3D = assembleAgal(vertexString, fragmentString);
-		noImagePrograms.set(programName, program);
+		triangleNoImagePrograms.set(programName, program);
 		return program;
 	}
 	
-	private function getImageProgram(isRGB:Bool, isAlpha:Bool, smooth:Bool, mipmap:Bool, globalColor:Bool = false):Program3D
+	private function getTriangleImageProgram(isRGB:Bool, isAlpha:Bool, smooth:Bool, mipmap:Bool, globalColor:Bool = false):Program3D
 	{
 		var programName:UInt = getImageProgramName(isRGB, isAlpha, mipmap, smooth, globalColor);
 		
-		if (imagePrograms.exists(programName))
+		if (triangleImagePrograms.exists(programName))
 		{
-			return imagePrograms.get(programName);
+			return triangleImagePrograms.get(programName);
 		}
 		
 		var vertexString:String = null;
@@ -177,7 +186,136 @@ class ContextWrapper extends EventDispatcher
 		fragmentString = StringTools.replace(fragmentString, "<???>", getTextureLookupFlags(mipmap, smooth));
 		
 		var program:Program3D = assembleAgal(vertexString, fragmentString);
-		imagePrograms.set(programName, program);
+		triangleImagePrograms.set(programName, program);
+		return program;
+	}
+	
+	private function getQuadNoImageProgram(globalColor:Bool = false):Program3D
+	{
+		var programName:UInt = getNoImageProgramName(globalColor);
+		
+		if (quadNoImagePrograms.exists(programName))
+		{
+			return quadNoImagePrograms.get(programName);
+		}
+		
+		var vertexString:String =	"m44 op, va0, vc124   \n" +		// 4x4 matrix transform to output clipspace
+									"mov v0, va1 		\n";		// move color transform to fragment shader
+		
+		var vertexString:String =
+			// Pivot
+				"mov vt2, vc[va0.z]\n" + // originX, originY, width, height
+				"sub vt0.z, va0.x, vt2.x\n" +
+				"sub vt0.w, va0.y, vt2.y\n" +
+			// Width and height
+				"mul vt0.z, vt0.z, vt2.z\n" +
+				"mul vt0.w, vt0.w, vt2.w\n" +
+			// Tranformation
+				"mov vt2, vc[va0.z+1]\n" + // a, b, c, d
+				"mul vt1.z, vt0.z, vt2.x\n" + // pos.x * a
+				"mul vt1.w, vt0.w, vt2.z\n" + // pos.y * c
+				"add vt0.x, vt1.z, vt1.w\n" + // X
+				"mul vt1.z, vt0.z, vt2.y\n" + // pos.x * b
+				"mul vt1.w, vt0.w, vt2.w\n" + // pos.y * d
+				"add vt0.y, vt1.z, vt1.w\n" + // Y			
+			// Translation
+				"mov vt2, vc[va0.z+2]" + // x, y, 0, 0
+				"add vt0.x, vt0.x, vt2.x\n" +
+				"add vt0.y, vt0.y, vt2.y\n" +
+				"mov vt0.zw, va0.ww\n" +
+			// Projection
+//				"m44 op, vt0, vc124\n" +
+				"dp4 op.x, vt0, vc124\n" +
+				"dp4 op.y, vt0, vc125\n" +
+				"dp4 op.z, vt0, vc126\n" +
+				"dp4 op.w, vt0, vc127\n" +
+			// Passing color
+				"mov v0, vc[va0.z+3]\n";// red, green, blue, alpha	
+		
+		var fragmentString:String = null;
+		if (globalColor)
+		{
+			fragmentString =	"mul oc, v0, fc0	\n";	// multiply global color by quad color and put result in output color
+		}
+		else
+		{
+			fragmentString =	"mov oc, v0			\n";	// output color
+		}
+		
+		var program:Program3D = assembleAgal(vertexString, fragmentString);
+		quadNoImagePrograms.set(programName, program);
+		return program;
+	}
+	
+	private function getQuadImageProgram(smooth:Bool, mipmap:Bool, globalColor:Bool = false):Program3D
+	{
+		var programName:UInt = getImageProgramName(true, true, mipmap, smooth, globalColor);
+		
+		if (quadImagePrograms.exists(programName))
+		{
+			return quadImagePrograms.get(programName);
+		}
+		
+		var vertexString:String =
+			// Pivot
+				"mov vt2, vc[va0.z]\n" + // originX, originY, width, height
+				"sub vt0.z, va0.x, vt2.x\n" +
+				"sub vt0.w, va0.y, vt2.y\n" +
+			// Width and height
+				"mul vt0.z, vt0.z, vt2.z\n" +
+				"mul vt0.w, vt0.w, vt2.w\n" +
+			// Tranformation
+				"mov vt2, vc[va0.z+1]\n" + // a, b, c, d
+				"mul vt1.z, vt0.z, vt2.x\n" + // pos.x * a
+				"mul vt1.w, vt0.w, vt2.z\n" + // pos.y * c
+				"add vt0.x, vt1.z, vt1.w\n" + // X
+				"mul vt1.z, vt0.z, vt2.y\n" + // pos.x * b
+				"mul vt1.w, vt0.w, vt2.w\n" + // pos.y * d
+				"add vt0.y, vt1.z, vt1.w\n" + // Y			
+			// Translation
+				"mov vt2, vc[va0.z+2]\n" + // x, y, 0, 0
+				"add vt0.x, vt0.x, vt2.x\n" +
+				"add vt0.y, vt0.y, vt2.y\n" +
+				"mov vt0.zw, va0.ww\n" +
+			// Projection
+//				"m44 op, vt0, vc124\n" +
+				"dp4 op.x, vt0, vc124\n" +
+				"dp4 op.y, vt0, vc125\n" +
+				"dp4 op.z, vt0, vc126\n" +
+				"dp4 op.w, vt0, vc127\n" +
+			// UV correction and passing out
+				"mov vt2, vc[va0.z+3]\n" + // uvScaleX, uvScaleY, uvOffsetX, uvOffsetY
+				"mul vt1.x, va0.x, vt2.x\n" +
+				"mul vt1.y, va0.y, vt2.y\n" +
+				"add vt1.x, vt1.x, vt2.z\n" +
+				"add vt1.y, vt1.y, vt2.w\n" +
+				"mov v0, vt1.xy\n" +
+			// Passing color
+				"mov v1, vc[va0.z+4]\n";// red, green, blue, alpha
+		
+		var fragmentString:String = null;
+		
+		if (globalColor)
+		{
+			fragmentString =
+				"tex ft0, v0, fs0 <???>\n" +
+				"mul ft0, ft0, v1\n" +
+				"mul oc, ft0, fc0\n";
+		}
+		else
+		{
+			fragmentString =
+				"tex ft0, v0, fs0 <???>\n" +
+				"mul oc, ft0, v1\n";
+		}
+		
+		fragmentString = StringTools.replace(fragmentString, "<???>", getTextureLookupFlags(mipmap, smooth));
+		
+		trace(vertexString);
+		trace(fragmentString);
+		
+		var program:Program3D = assembleAgal(vertexString, fragmentString);
+		quadImagePrograms.set(programName, program);
 		return program;
 	}
 	
@@ -247,7 +385,7 @@ class ContextWrapper extends EventDispatcher
 		}
 	}
 	
-	public inline function renderJob(job:BaseRenderJob, colored:Bool = false):Void
+	public inline function renderJob(job:VeryBasicRenderJob, colored:Bool = false):Void
 	{
 		if (context3D != null && !presented)
 		{
@@ -276,20 +414,25 @@ class ContextWrapper extends EventDispatcher
 		
 		if (context3D == null)
 		{
-			context3D = stage.stage3Ds[depth].context3D;			
+			context3D = stage.stage3Ds[depth].context3D;		
 			
 			if (context3D != null)
 			{
+				SAPImageRenderJob.initContextData(this);
+				
 				context3D.setBlendFactors(Context3DBlendFactor.ONE, Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA);
 				
 				baseTransformMatrix = new Matrix3D();
 				
 				stage.addEventListener(Event.RESIZE, onStageResize); //listen for future stage resize events
 				
-				imagePrograms = new IntMap<Program3D>();
-				noImagePrograms = new IntMap<Program3D>();
+				triangleImagePrograms = new IntMap<Program3D>();
+				triangleNoImagePrograms = new IntMap<Program3D>();
 				
-				onStageResize(null); //init the base transform matrix
+				quadImagePrograms = new IntMap<Program3D>();
+				quadNoImagePrograms = new IntMap<Program3D>();
+				
+				onStageResize(null); // init the base transform matrix
 				
 				clear();
 				
@@ -373,15 +516,27 @@ class ContextWrapper extends EventDispatcher
 		}
 	}
 	
-	public function setImageProgram(isRGB:Bool, isAlpha:Bool, smooth:Bool, mipmap:Bool = true, globalColor:Bool = false):Void
+	public function setTriangleImageProgram(isRGB:Bool, isAlpha:Bool, smooth:Bool, mipmap:Bool = true, globalColor:Bool = false):Void
 	{
-		var program:Program3D = getImageProgram(isRGB, isAlpha, smooth, mipmap, globalColor);
+		var program:Program3D = getTriangleImageProgram(isRGB, isAlpha, smooth, mipmap, globalColor);
 		doSetProgram(program);
 	}
 	
-	public function setNoImageProgram(globalColor:Bool = false):Void
+	public function setTriangleNoImageProgram(globalColor:Bool = false):Void
 	{
-		var program:Program3D = getNoImageProgram(globalColor);
+		var program:Program3D = getTriangleNoImageProgram(globalColor);
+		doSetProgram(program);
+	}
+	
+	public function setQuadImageProgram(smooth:Bool, mipmap:Bool = true, globalColor:Bool = false):Void
+	{
+		var program:Program3D = getQuadImageProgram(smooth, mipmap, globalColor);
+		doSetProgram(program);
+	}
+	
+	public function setQuadNoImageProgram(globalColor:Bool = false):Void
+	{
+		var program:Program3D = getQuadNoImageProgram(globalColor);
 		doSetProgram(program);
 	}
 	
@@ -394,8 +549,12 @@ class ContextWrapper extends EventDispatcher
 			result = context3D.createProgram();
 		}
 		
-		var vertexByteCode = AGLSLShaderUtils.createShader(Context3DProgramType.VERTEX, vertexString);
-		var fragmentByteCode = AGLSLShaderUtils.createShader(Context3DProgramType.FRAGMENT, fragmentString);
+		var assembler = new AGALMiniAssembler();
+		var vertexByteCode = assembler.assemble(cast Context3DProgramType.VERTEX, vertexString);
+		var fragmentByteCode = assembler.assemble(cast Context3DProgramType.FRAGMENT, fragmentString);
+		
+	//	var vertexByteCode = AGLSLShaderUtils.createShader(Context3DProgramType.VERTEX, vertexString);
+	//	var fragmentByteCode = AGLSLShaderUtils.createShader(Context3DProgramType.FRAGMENT, fragmentString);
 		
 		result.upload(vertexByteCode, fragmentByteCode);
 		return result;
@@ -438,7 +597,7 @@ class ContextWrapper extends EventDispatcher
 			options.push(mipMapping ? "miplinear" : "mipnone");
 		}
 		
-		return "<" + options.join("") + ">";
+		return "<" + options.join(",") + ">";
 	}
 	
 	public function setMatrix(matrix:Matrix3D):Void

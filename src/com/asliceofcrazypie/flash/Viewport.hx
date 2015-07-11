@@ -4,7 +4,9 @@ import com.asliceofcrazypie.flash.jobs.QuadRenderJob;
 import com.asliceofcrazypie.flash.jobs.RenderJob;
 import com.asliceofcrazypie.flash.jobs.BaseRenderJob;
 import com.asliceofcrazypie.flash.jobs.ColorRenderJob;
+import com.asliceofcrazypie.flash.jobs.SAPImageRenderJob;
 import com.asliceofcrazypie.flash.jobs.TriangleRenderJob;
+import com.asliceofcrazypie.flash.jobs.VeryBasicRenderJob;
 import flash.display.BlendMode;
 import flash.display.Stage;
 import flash.geom.Matrix;
@@ -81,8 +83,8 @@ class Viewport
 	private var numTriangleRenderJobs:Int = 0;
 	private var numColorRenderJobs:Int = 0;
 	
-	private var renderJobs:Vector<BaseRenderJob>;
-	private var quadRenderJobs:Vector<QuadRenderJob>;
+	private var renderJobs:Vector<VeryBasicRenderJob>;
+	private var quadRenderJobs:Vector<SAPImageRenderJob>;
 	private var triangleRenderJobs:Vector<TriangleRenderJob>;
 	private var colorRenderJobs:Vector<ColorRenderJob>;
 	
@@ -135,8 +137,8 @@ class Viewport
 		canvas = new Sprite();
 		view.addChild(canvas);
 		
-		renderJobs = new Vector<BaseRenderJob>();
-		quadRenderJobs = new Vector<QuadRenderJob>();
+		renderJobs = new Vector<VeryBasicRenderJob>();
+		quadRenderJobs = new Vector<SAPImageRenderJob>();
 		triangleRenderJobs = new Vector<TriangleRenderJob>();
 		colorRenderJobs = new Vector<ColorRenderJob>();
 		
@@ -178,12 +180,12 @@ class Viewport
 		scissor = null;
 	}
 	
-	private inline function getLastRenderJob():BaseRenderJob
+	private inline function getLastRenderJob():VeryBasicRenderJob
 	{
 		return (numRenderJobs > 0) ? renderJobs[numRenderJobs - 1] : null;
 	}
 	
-	private inline function getLastQuadRenderJob():QuadRenderJob
+	private inline function getLastQuadRenderJob():SAPImageRenderJob
 	{
 		return (numQuadRenderJobs > 0) ? quadRenderJobs[numQuadRenderJobs - 1] : null;
 	}
@@ -206,7 +208,7 @@ class Viewport
 		for (renderJob in quadRenderJobs)
 		{
 			renderJob.reset();
-			QuadRenderJob.returnJob(renderJob);
+			SAPImageRenderJob.returnJob(renderJob);
 		}
 		
 		for (renderJob in triangleRenderJobs)
@@ -285,18 +287,14 @@ class Viewport
 	}
 	#end
 	
-	public function startQuadBatch(tilesheet:TilesheetStage3D, tinted:Bool, alpha:Bool, blend:BlendMode = null, smooth:Bool = false):QuadRenderJob
+	public function startQuadBatch(tilesheet:TilesheetStage3D, tinted:Bool, alpha:Bool, blend:BlendMode = null, smooth:Bool = false):SAPImageRenderJob
 	{
-		var lastRenderJob:BaseRenderJob = getLastRenderJob();
-		var lastQuadRenderJob:QuadRenderJob = getLastQuadRenderJob();
+		var lastRenderJob:VeryBasicRenderJob = getLastRenderJob();
+		var lastQuadRenderJob:SAPImageRenderJob = getLastQuadRenderJob();
 		
 		if (lastRenderJob != null && lastQuadRenderJob != null
 			&& lastRenderJob == lastQuadRenderJob 
-			&& tilesheet == lastRenderJob.tilesheet
-			&& tinted == lastRenderJob.isRGB
-			&& alpha == lastRenderJob.isAlpha
-			&& smooth == lastRenderJob.isSmooth
-			&& blend == lastRenderJob.blendMode
+			&& !lastQuadRenderJob.stateChanged(tilesheet, tinted, alpha, smooth, blend)
 			&& lastRenderJob.canAddQuad())
 		{
 			return lastQuadRenderJob;
@@ -305,9 +303,9 @@ class Viewport
 		return startNewQuadBatch(tilesheet, tinted, alpha, blend, smooth);
 	}
 	
-	public inline function startNewQuadBatch(tilesheet:TilesheetStage3D, tinted:Bool, alpha:Bool, blend:BlendMode = null, smooth:Bool = false):QuadRenderJob
+	public inline function startNewQuadBatch(tilesheet:TilesheetStage3D, tinted:Bool, alpha:Bool, blend:BlendMode = null, smooth:Bool = false):SAPImageRenderJob
 	{
-		var job:QuadRenderJob = QuadRenderJob.getJob(tilesheet, tinted, alpha, smooth, blend);
+		var job:SAPImageRenderJob = SAPImageRenderJob.getJob(tilesheet, smooth, blend);
 		renderJobs[numRenderJobs++] = job;
 		quadRenderJobs[numQuadRenderJobs++] = job;
 		return job;
@@ -315,7 +313,7 @@ class Viewport
 	
 	public function startTrianglesBatch(tilesheet:TilesheetStage3D, tinted:Bool = false, blend:BlendMode = null, smoothing:Bool = false, numVertices:Int = 3):TriangleRenderJob
 	{
-		var lastRenderJob:BaseRenderJob = getLastRenderJob();
+		var lastRenderJob:VeryBasicRenderJob = getLastRenderJob();
 		var lastTriangleRenderJob:TriangleRenderJob = getLastTrianglesRenderJob();
 		
 		if (lastRenderJob != null && lastTriangleRenderJob != null
@@ -352,13 +350,13 @@ class Viewport
 	
 	public function startColorBatch(blend:BlendMode = null, numVertices:Int = 4):ColorRenderJob
 	{
-		var lastRenderJob:BaseRenderJob = getLastRenderJob();
+		var lastRenderJob:VeryBasicRenderJob = getLastRenderJob();
 		var lastColorRenderJob:ColorRenderJob = getLastColorRenderJob();
 		
 		if (lastRenderJob != null && lastColorRenderJob != null
 			&& lastRenderJob == lastColorRenderJob 
 			&& blend == lastRenderJob.blendMode
-			&& lastRenderJob.canAddTriangles(numVertices))
+			&& lastColorRenderJob.canAddTriangles(numVertices))
 		{
 			return lastColorRenderJob;
 		}
@@ -451,7 +449,7 @@ class Viewport
 	{
 		var tinted:Bool = ((cr != 1.0) || (cg != 1.0) || (cb != 1.0));
 		var alpha:Bool = (ca != 1.0);
-		var job:QuadRenderJob = startQuadBatch(tilesheet, tinted, alpha, blend, smoothing);
+		var job:SAPImageRenderJob = startQuadBatch(tilesheet, tinted, alpha, blend, smoothing);
 		helperPoint2.setTo(origin.x / sourceRect.width, origin.y / sourceRect.height); // normalize origin
 		job.addQuad(sourceRect, helperPoint2, uv, matrix, cr, cg, cb, ca);
 	}

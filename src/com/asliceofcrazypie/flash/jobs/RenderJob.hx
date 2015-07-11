@@ -142,7 +142,7 @@ class RenderJob extends BaseRenderJob
 			//blend mode
 			context.setBlendMode(blendMode, tilesheet.premultipliedAlpha);
 			
-			context.setImageProgram(isRGB, isAlpha, isSmooth, tilesheet.mipmap, colored); //assign appropriate shader
+			context.setTriangleImageProgram(isRGB, isAlpha, isSmooth, tilesheet.mipmap, colored); //assign appropriate shader
 			
 			// TODO: culling support...
 			// context.context3D.setCulling();

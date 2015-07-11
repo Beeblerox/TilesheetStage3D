@@ -235,7 +235,7 @@ class ColorRenderJob extends BaseRenderJob
 			//blend mode
 			context.setBlendMode(blendMode, false);
 			
-			context.setNoImageProgram(colored); //assign appropriate shader
+			context.setTriangleNoImageProgram(colored); //assign appropriate shader
 			
 			// TODO: culling support...
 			// context.context3D.setCulling();

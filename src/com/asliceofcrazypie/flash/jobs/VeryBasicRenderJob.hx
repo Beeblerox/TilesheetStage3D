@@ -49,7 +49,7 @@ class VeryBasicRenderJob
 		return false;
 	}
 	
-	public function stateChanged(tilesheet:TilesheetStage3D, tint:Bool, alpha:Bool, blend:BlendMode):Bool
+	public function stateChanged(tilesheet:TilesheetStage3D, tint:Bool, alpha:Bool, smooth:Bool, blend:BlendMode):Bool
 	{
 		// TODO: override in subclasses...
 		return false;
