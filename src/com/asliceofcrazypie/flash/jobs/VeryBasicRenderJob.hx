@@ -1,5 +1,6 @@
 package com.asliceofcrazypie.flash.jobs;
 
+import com.asliceofcrazypie.flash.TilesheetStage3D;
 import flash.display.BlendMode;
 import openfl.display.Sprite;
 
@@ -45,6 +46,12 @@ class VeryBasicRenderJob
 	
 	public function canAddQuad():Bool
 	{
+		return false;
+	}
+	
+	public function stateChanged(tilesheet:TilesheetStage3D, tint:Bool, alpha:Bool, blend:BlendMode):Bool
+	{
+		// TODO: override in subclasses...
 		return false;
 	}
 	

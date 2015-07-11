@@ -1,5 +1,8 @@
 package com.asliceofcrazypie.flash.jobs;
+import com.asliceofcrazypie.flash.ContextWrapper;
 import com.asliceofcrazypie.flash.jobs.VeryBasicRenderJob.RenderJobType;
+import com.asliceofcrazypie.flash.TilesheetStage3D;
+import openfl.display.BlendMode;
 import openfl.display.Sprite;
 import openfl.display3D.IndexBuffer3D;
 import openfl.display3D.Program3D;
@@ -15,6 +18,20 @@ import openfl.Vector;
  */
 class SAPRenderJob extends VeryBasicRenderJob
 {
+	static private var renderJobPool:Array<SAPRenderJob>;
+	
+	public static inline function getJob(tilesheet:TilesheetStage3D, blend:BlendMode):SAPRenderJob
+	{
+		var job:SAPRenderJob = (renderJobPool.length > 0) ? renderJobPool.pop() : new SAPRenderJob();
+		job.set(tilesheet, blend);
+		return job;
+	}
+	
+	public static inline function returnJob(renderJob:SAPRenderJob):Void
+	{
+		renderJobPool.push(renderJob);
+	}
+	
 	/**
 	 * Max number of quads per draw call for this type of render job
 	 */
@@ -29,6 +46,9 @@ class SAPRenderJob extends VeryBasicRenderJob
 	static private var program:Program3D;
 	static private var colorProgram:Program3D;
 	
+	private var constants:Vector<Float>;
+	private var numQuads:Int = 0;
+	
 	private function new() 
 	{
 		super();
@@ -36,6 +56,23 @@ class SAPRenderJob extends VeryBasicRenderJob
 	}
 	
 	override function initData():Void 
+	{
+		constants = new Vector<Float>();
+		
+		// TODO: init other data...
+		
+	}
+	
+	public static function init(context:ContextWrapper):Void
+	{
+		renderJobPool = [];
+		for (i in 0...VeryBasicRenderJob.NUM_JOBS_TO_POOL)
+		{
+			renderJobPool.push(new SAPRenderJob());
+		}
+	}
+	
+	public static function initContextData(context:ContextWrapper):Void
 	{
 		var vertices:Vector<Float> = new Vector<Float>();
 		var indices:Vector<UInt> = new Vector<UInt>();
@@ -131,20 +168,12 @@ class SAPRenderJob extends VeryBasicRenderJob
 		opacityProgram.upload(
 				sAssembler.assemble(Context3DProgramType.VERTEX, vertexProgram),
 				sAssembler.assemble(Context3DProgramType.FRAGMENT, fragmentOpacityProgram));
-
-		diffuseBlendProgram.upload(
-				sAssembler.assemble(Context3DProgramType.VERTEX, vertexProgram),
-				sAssembler.assemble(Context3DProgramType.FRAGMENT, fragmentDiffuseBlendProgram));
-
-		opacityBlendProgram.upload(
-				sAssembler.assemble(Context3DProgramType.VERTEX, vertexProgram),
-				sAssembler.assemble(Context3DProgramType.FRAGMENT, fragmentOpacityBlendProgram));
 	}
 	
 	#if flash11
 	override public function render(context:ContextWrapper = null, colored:Bool = false):Void
 	{
-		
+		// var vertexConstantsCount:Int = 0;
 	}
 	#else
 	override public function render(context:Sprite = null, colored:Bool = false):Void
@@ -160,7 +189,19 @@ class SAPRenderJob extends VeryBasicRenderJob
 	
 	override public function canAddQuad():Bool
 	{
-		return false;
+		return (numQuads < limit);
+	}
+	
+	override public function reset():Void 
+	{
+		super.reset();
+		numQuads = 0;
+	}
+	
+	public function set(tilesheet:TilesheetStage3D, blend:BlendMode):Void 
+	{
+		this.tilesheet = tilesheet;
+		this.blendMode = blend;
 	}
 	
 }
