@@ -1,7 +1,7 @@
 package com.asliceofcrazypie.flash.jobs;
 
 import com.asliceofcrazypie.flash.TilesheetStage3D;
-import com.asliceofcrazypie.flash.jobs.BaseRenderJob.RenderJobType;
+import com.asliceofcrazypie.flash.jobs.VeryBasicRenderJob.RenderJobType;
 import openfl.display.Sprite;
 import openfl.display.Tilesheet;
 
@@ -37,7 +37,7 @@ class QuadRenderJob extends BaseRenderJob
 	public static function init():Void
 	{
 		renderJobPool = [];
-		for (i in 0...BaseRenderJob.NUM_JOBS_TO_POOL)
+		for (i in 0...VeryBasicRenderJob.NUM_JOBS_TO_POOL)
 		{
 			renderJobPool.push(new QuadRenderJob());
 		}
@@ -49,12 +49,12 @@ class QuadRenderJob extends BaseRenderJob
 	
 	public function new() 
 	{
-		super(true);
+		super();
 		type = RenderJobType.QUAD;
 	}
 	
 	#if !flash11
-	override function initData(useBytes:Bool = false):Void 
+	override function initData():Void 
 	{
 		tileData = new Array<Float>();
 	}
@@ -63,8 +63,16 @@ class QuadRenderJob extends BaseRenderJob
 	#if flash11
 	override public function addQuad(rect:Rectangle, normalizedOrigin:Point, uv:Rectangle, matrix:Matrix, r:Float = 1, g:Float = 1, b:Float = 1, a:Float = 1):Void
 	{
+		var prevVerticesNumber:Int = Std.int(vertexPos / dataPerVertice);
+		
 		super.addQuad(rect, normalizedOrigin, uv, matrix, r, g, b, a);
-		indexPos += 6;
+		
+		indices[indexPos++] = prevVerticesNumber + 2;
+		indices[indexPos++] = prevVerticesNumber + 1;
+		indices[indexPos++] = prevVerticesNumber + 0;
+		indices[indexPos++] = prevVerticesNumber + 3;
+		indices[indexPos++] = prevVerticesNumber + 2;
+		indices[indexPos++] = prevVerticesNumber + 0;
 	}
 	
 	#else

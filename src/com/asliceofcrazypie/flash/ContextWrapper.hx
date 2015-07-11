@@ -92,7 +92,7 @@ class ContextWrapper extends EventDispatcher
 			return noImagePrograms.get(programName);
 		}
 		
-		var vertexString:String =	"m44 op, va0, vc0   \n" +		// 4x4 matrix transform to output clipspace
+		var vertexString:String =	"m44 op, va0, vc124   \n" +		// 4x4 matrix transform to output clipspace
 									"mov v0, va1 		\n";		// move color transform to fragment shader
 		
 		var fragmentString:String = null;
@@ -126,11 +126,11 @@ class ContextWrapper extends EventDispatcher
 		{
 			vertexString =	"mov v0, va1      \n" +		// move uv to fragment shader
 							"mov v1, va2      \n" +		// move color transform to fragment shader
-							"m44 op, va0, vc0 \n";		// multiply position by transform matrix
+							"m44 op, va0, vc124 \n";		// multiply position by transform matrix
 		}
 		else
 		{
-			vertexString =	"m44 op, va0, vc0 \n" + 	// 4x4 matrix transform to output clipspace
+			vertexString =	"m44 op, va0, vc124 \n" + 	// 4x4 matrix transform to output clipspace
 							"mov v0, va1      \n";  	// pass texture coordinates to fragment program
 		}
 		
@@ -364,7 +364,7 @@ class ContextWrapper extends EventDispatcher
 		return TextureUtil.uploadTexture(image, context3D, mipmap);
 	}
 	
-	private inline function doSetProgram(program:Program3D):Void
+	public inline function doSetProgram(program:Program3D):Void
 	{
 		if (context3D != null && program != currentProgram)
 		{
@@ -445,7 +445,7 @@ class ContextWrapper extends EventDispatcher
 	{
 		if (context3D != null)
 		{
-			context3D.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 0, matrix, true);
+			context3D.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 124, matrix, true);
 		}
 	}
 	

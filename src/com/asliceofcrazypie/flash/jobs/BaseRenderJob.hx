@@ -4,19 +4,12 @@ import flash.display.BlendMode;
 import flash.Vector;
 import openfl.display.Sprite;
 
-#if flash11
-import flash.utils.ByteArray;
-import flash.utils.Endian;
-#end
-
 /**
  * ...
  * @author Zaphod
  */
-class BaseRenderJob
+class BaseRenderJob extends VeryBasicRenderJob
 {
-	public static inline var NUM_JOBS_TO_POOL:Int = 25;
-	
 	public static inline var MAX_INDICES_PER_BUFFER:Int = 98298;
 	public static inline var MAX_VERTEX_PER_BUFFER:Int = 65532;		// (MAX_INDICES_PER_BUFFER * 4 / 6)
 	public static inline var MAX_QUADS_PER_BUFFER:Int = 16383;		// (MAX_VERTEX_PER_BUFFER / 4)
@@ -28,24 +21,13 @@ class BaseRenderJob
 	public static var trianglesPerBuffer(default, null):Int;
 	public static var indicesPerBuffer(default, null):Int;
 	
-	public var tilesheet:TilesheetStage3D;
-	
-	public var isRGB:Bool;
-	public var isAlpha:Bool;
-	public var isSmooth:Bool;
-	
-	public var blendMode:BlendMode;
-	
-	public var type(default, null):RenderJobType;
-	
 	public var dataPerVertice:Int = 0;
 	public var numVertices:Int = 0;
 	public var numIndices:Int = 0;
 	
 	#if flash11
 	public var vertices(default, null):Vector<Float>;
-	public var indicesVector(default, null):Vector<UInt>;
-	public var indicesBytes(default, null):ByteArray;
+	public var indices(default, null):Vector<UInt>;
 	#end
 	
 	public var vertexPos:Int = 0;
@@ -70,52 +52,20 @@ class BaseRenderJob
 		ColorRenderJob.init();
 	}
 	
-	// TODO: use `useBytes` not only in constructor...
-	private function new(useBytes:Bool = false) 
+	private function new() 
 	{
-		initData(useBytes);
+		super();
 	}
 	
-	private function initData(useBytes:Bool = false):Void
+	override private function initData():Void
 	{
 		#if flash11
 		this.vertices = new Vector<Float>(BaseRenderJob.vertexPerBuffer >> 2);
-		
-		if (useBytes)
-		{
-			indicesBytes = new ByteArray();
-			indicesBytes.endian = Endian.LITTLE_ENDIAN;
-			
-			for (i in 0...Std.int(BaseRenderJob.vertexPerBuffer / 4))
-			{
-				indicesBytes.writeShort((i * 4) + 2);
-				indicesBytes.writeShort((i * 4) + 1);
-				indicesBytes.writeShort((i * 4) + 0);
-				indicesBytes.writeShort((i * 4) + 3);
-				indicesBytes.writeShort((i * 4) + 2);
-				indicesBytes.writeShort((i * 4) + 0);
-			}
-		}
-		else
-		{
-			indicesVector = new Vector<UInt>();
-		}
+		this.indices = new Vector<UInt>();
 		#end
 	}
 	
-	#if flash11
-	public function render(context:ContextWrapper = null, colored:Bool = false):Void
-	{
-		
-	}
-	#else
-	public function render(context:Sprite = null, colored:Bool = false):Void
-	{
-		
-	}
-	#end
-	
-	public inline function canAddQuad():Bool
+	override public function canAddQuad():Bool
 	{
 		return (numVertices + 4) <= BaseRenderJob.vertexPerBuffer;
 	}
@@ -130,21 +80,14 @@ class BaseRenderJob
 		return numVertices <= BaseRenderJob.vertexPerBuffer;
 	}
 	
-	public function reset():Void
+	override public function reset():Void
 	{
-		blendMode = null;
-		tilesheet = null;
+		super.reset();
+		
 		vertexPos = 0;
 		indexPos = 0;
 		colorPos = 0;
 		numVertices = 0;
 		numIndices = 0;
 	}
-}
-
-enum RenderJobType
-{
-	QUAD;
-	TRIANGLE;
-	NO_IMAGE;
 }

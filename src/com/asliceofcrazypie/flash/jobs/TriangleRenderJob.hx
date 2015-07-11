@@ -7,7 +7,7 @@ import openfl.display.Tilesheet;
 #if flash11
 import flash.display3D.textures.Texture;
 #end
-import com.asliceofcrazypie.flash.jobs.BaseRenderJob.RenderJobType;
+import com.asliceofcrazypie.flash.jobs.VeryBasicRenderJob.RenderJobType;
 import flash.display.BlendMode;
 import flash.display.TriangleCulling;
 import flash.geom.Matrix;
@@ -42,7 +42,7 @@ class TriangleRenderJob extends BaseRenderJob
 	public static function init():Void
 	{
 		renderJobPool = [];
-		for (i in 0...BaseRenderJob.NUM_JOBS_TO_POOL)
+		for (i in 0...VeryBasicRenderJob.NUM_JOBS_TO_POOL)
 		{
 			renderJobPool.push(new TriangleRenderJob());
 		}
@@ -51,11 +51,11 @@ class TriangleRenderJob extends BaseRenderJob
 #if !flash11
 	#if flash
 	public var vertices(default, null):Vector<Float>;
-	public var indicesVector(default, null):Vector<UInt>;
+	public var indices(default, null):Vector<UInt>;
 	public var uvtData(default, null):Vector<Float>;
 	#else
 	public var vertices(default, null):Array<Float>;
-	public var indicesVector(default, null):Array<Int>;
+	public var indices(default, null):Array<Int>;
 	public var uvtData(default, null):Array<Float>;
 	public var colors(default, null):Array<Int>;
 	#end
@@ -65,7 +65,7 @@ class TriangleRenderJob extends BaseRenderJob
 	
 	public function new() 
 	{
-		super(false);
+		super();
 		type = RenderJobType.TRIANGLE;
 	}
 	
@@ -76,12 +76,12 @@ class TriangleRenderJob extends BaseRenderJob
 		
 		super.addQuad(rect, normalizedOrigin, uv, matrix, r, g, b, a);
 		
-		indicesVector[indexPos++] = prevVerticesNumber + 2;
-		indicesVector[indexPos++] = prevVerticesNumber + 1;
-		indicesVector[indexPos++] = prevVerticesNumber + 0;
-		indicesVector[indexPos++] = prevVerticesNumber + 3;
-		indicesVector[indexPos++] = prevVerticesNumber + 2;
-		indicesVector[indexPos++] = prevVerticesNumber + 0;
+		indices[indexPos++] = prevVerticesNumber + 2;
+		indices[indexPos++] = prevVerticesNumber + 1;
+		indices[indexPos++] = prevVerticesNumber + 0;
+		indices[indexPos++] = prevVerticesNumber + 3;
+		indices[indexPos++] = prevVerticesNumber + 2;
+		indices[indexPos++] = prevVerticesNumber + 0;
 	}
 	
 	public function addTriangles(vertices:Vector<Float>, indices:Vector<Int> = null, uvtData:Vector<Float> = null, colors:Vector<Int> = null, position:Point = null):Void
@@ -128,7 +128,7 @@ class TriangleRenderJob extends BaseRenderJob
 		
 		for (i in 0...numIndices)
 		{
-			this.indicesVector[indexPos++] = prevVerticesNumber + indices[i];
+			this.indices[indexPos++] = prevVerticesNumber + indices[i];
 		}
 		
 		this.numVertices += numVertices;
@@ -188,12 +188,12 @@ class TriangleRenderJob extends BaseRenderJob
 		this.uvtData[uvtPos++] = uv.x;
 		this.uvtData[uvtPos++] = uv.height;
 		
-		indicesVector[indexPos++] = prevVerticesNumber + 2;
-		indicesVector[indexPos++] = prevVerticesNumber + 1;
-		indicesVector[indexPos++] = prevVerticesNumber + 0;
-		indicesVector[indexPos++] = prevVerticesNumber + 3;
-		indicesVector[indexPos++] = prevVerticesNumber + 2;
-		indicesVector[indexPos++] = prevVerticesNumber + 0;
+		indices[indexPos++] = prevVerticesNumber + 2;
+		indices[indexPos++] = prevVerticesNumber + 1;
+		indices[indexPos++] = prevVerticesNumber + 0;
+		indices[indexPos++] = prevVerticesNumber + 3;
+		indices[indexPos++] = prevVerticesNumber + 2;
+		indices[indexPos++] = prevVerticesNumber + 0;
 		
 		#if !flash
 		if (isRGB || isAlpha)
@@ -249,7 +249,7 @@ class TriangleRenderJob extends BaseRenderJob
 		
 		for (i in 0...numIndices)
 		{
-			this.indicesVector[indexPos++] = prevVerticesNumber + indices[i];
+			this.indices[indexPos++] = prevVerticesNumber + indices[i];
 		}
 		
 		this.numVertices += numVertices;
@@ -260,7 +260,7 @@ class TriangleRenderJob extends BaseRenderJob
 	{
 		context.graphics.beginBitmapFill(tilesheet.bitmap, null, true, isSmooth);
 		#if flash
-		context.graphics.drawTriangles(vertices, indicesVector, uvtData, TriangleCulling.NONE);
+		context.graphics.drawTriangles(vertices, indices, uvtData, TriangleCulling.NONE);
 		#else
 		var blendInt:Int = 0;
 		
@@ -277,20 +277,20 @@ class TriangleRenderJob extends BaseRenderJob
 			blendInt = Tilesheet.TILE_BLEND_SCREEN;
 		}
 		
-		context.graphics.drawTriangles(vertices, indicesVector, uvtData, TriangleCulling.NONE, (colors.length > 0) ? colors : null, blendInt);
+		context.graphics.drawTriangles(vertices, indices, uvtData, TriangleCulling.NONE, (colors.length > 0) ? colors : null, blendInt);
 		#end
 		context.graphics.endFill();
 	}
 	
-	override function initData(useBytes:Bool = false):Void 
+	override function initData():Void 
 	{
 		#if flash
 		vertices = new Vector<Float>();
-		indicesVector = new Vector<Int>();
+		indices = new Vector<Int>();
 		uvtData = new Vector<Float>();
 		#else
 		vertices = new Array<Float>();
-		indicesVector = new Array<Int>();
+		indices = new Array<Int>();
 		uvtData = new Array<Float>();
 		colors = new Array<Int>();
 		#end
@@ -303,7 +303,7 @@ class TriangleRenderJob extends BaseRenderJob
 		uvtPos = 0;
 		
 		vertices.splice(0, vertices.length);
-		indicesVector.splice(0, indicesVector.length);
+		indices.splice(0, indices.length);
 		uvtData.splice(0, uvtData.length);
 		
 		#if !flash

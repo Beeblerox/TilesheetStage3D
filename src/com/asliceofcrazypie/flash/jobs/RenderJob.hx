@@ -27,9 +27,9 @@ import haxe.ds.StringMap;
  */
 class RenderJob extends BaseRenderJob
 {
-	private function new(useBytes:Bool)
+	private function new()
 	{
-		super(useBytes);
+		super();
 	}
 	
 	public function addQuad(rect:Rectangle, normalizedOrigin:Point, uv:Rectangle, matrix:Matrix, r:Float = 1, g:Float = 1, b:Float = 1, a:Float = 1):Void
@@ -133,17 +133,6 @@ class RenderJob extends BaseRenderJob
 		
 		numVertices += 4;
 		numIndices += 6;
-		
-		/*
-		indices.position = 12 * quadPos; // 12 = 6 * 2 (6 indices per quad and 2 bytes per index)
-		var startIndex:Int = quadPos * 4;
-		indices.writeShort(startIndex + 2);
-		indices.writeShort(startIndex + 1);
-		indices.writeShort(startIndex + 0);
-		indices.writeShort(startIndex + 3);
-		indices.writeShort(startIndex + 2);
-		indices.writeShort(startIndex + 0);
-		*/
 	}
 	
 	override public function render(context:ContextWrapper = null, colored:Bool = false):Void
@@ -174,14 +163,7 @@ class RenderJob extends BaseRenderJob
 			indexbuffer = context.context3D.createIndexBuffer(numIndices);
 			
 			// Upload IndexBuffer3D to GPU.
-			if (indicesBytes != null)
-			{
-				indexbuffer.uploadFromByteArray(indicesBytes, 0, 0, numIndices);
-			}
-			else
-			{
-				indexbuffer.uploadFromVector(indicesVector, 0, numIndices);
-			}
+			indexbuffer.uploadFromVector(indices, 0, numIndices);
 			
 			// vertex position to attribute register 0
 			context.context3D.setVertexBufferAt(0, vertexbuffer, 0, Context3DVertexBufferFormat.FLOAT_2);

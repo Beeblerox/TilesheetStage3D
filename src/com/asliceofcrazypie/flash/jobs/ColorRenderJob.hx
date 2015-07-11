@@ -1,6 +1,6 @@
 package com.asliceofcrazypie.flash.jobs;
 
-import com.asliceofcrazypie.flash.jobs.BaseRenderJob.RenderJobType;
+import com.asliceofcrazypie.flash.jobs.VeryBasicRenderJob.RenderJobType;
 import flash.display3D.VertexBuffer3D;
 import flash.display3D.IndexBuffer3D;
 import flash.display3D.Context3DVertexBufferFormat;
@@ -40,7 +40,7 @@ class ColorRenderJob extends BaseRenderJob
 	public static function init():Void
 	{
 		renderJobPool = [];
-		for (i in 0...BaseRenderJob.NUM_JOBS_TO_POOL)
+		for (i in 0...VeryBasicRenderJob.NUM_JOBS_TO_POOL)
 		{
 			renderJobPool.push(new ColorRenderJob());
 		}
@@ -52,17 +52,17 @@ class ColorRenderJob extends BaseRenderJob
 	
 	#if flash
 	public var vertices(default, null):Vector<Float>;
-	public var indicesVector(default, null):Vector<UInt>;
+	public var indices(default, null):Vector<UInt>;
 	#else
 	public var vertices(default, null):Array<Float>;
-	public var indicesVector(default, null):Array<Int>;
+	public var indices(default, null):Array<Int>;
 	public var colors(default, null):Array<Int>;
 	#end
 #end
 	
 	public function new() 
 	{
-		super(false);
+		super();
 		type = RenderJobType.NO_IMAGE;
 	}
 	
@@ -106,12 +106,12 @@ class ColorRenderJob extends BaseRenderJob
 		numVertices += 4;
 		numIndices += 6;
 		
-		indicesVector[indexPos++] = prevVerticesNumber + 2;
-		indicesVector[indexPos++] = prevVerticesNumber + 1;
-		indicesVector[indexPos++] = prevVerticesNumber + 0;
-		indicesVector[indexPos++] = prevVerticesNumber + 3;
-		indicesVector[indexPos++] = prevVerticesNumber + 2;
-		indicesVector[indexPos++] = prevVerticesNumber + 0;
+		indices[indexPos++] = prevVerticesNumber + 2;
+		indices[indexPos++] = prevVerticesNumber + 1;
+		indices[indexPos++] = prevVerticesNumber + 0;
+		indices[indexPos++] = prevVerticesNumber + 3;
+		indices[indexPos++] = prevVerticesNumber + 2;
+		indices[indexPos++] = prevVerticesNumber + 0;
 	}
 	
 	public function addQuad(rect:Rectangle, normalizedOrigin:Point, matrix:Matrix, r:Float = 1, g:Float = 1, b:Float = 1, a:Float = 1):Void
@@ -178,12 +178,12 @@ class ColorRenderJob extends BaseRenderJob
 		numVertices += 4;
 		numIndices += 6;
 		
-		indicesVector[indexPos++] = prevVerticesNumber + 2;
-		indicesVector[indexPos++] = prevVerticesNumber + 1;
-		indicesVector[indexPos++] = prevVerticesNumber + 0;
-		indicesVector[indexPos++] = prevVerticesNumber + 3;
-		indicesVector[indexPos++] = prevVerticesNumber + 2;
-		indicesVector[indexPos++] = prevVerticesNumber + 0;
+		indices[indexPos++] = prevVerticesNumber + 2;
+		indices[indexPos++] = prevVerticesNumber + 1;
+		indices[indexPos++] = prevVerticesNumber + 0;
+		indices[indexPos++] = prevVerticesNumber + 3;
+		indices[indexPos++] = prevVerticesNumber + 2;
+		indices[indexPos++] = prevVerticesNumber + 0;
 	}
 	
 	public function addTriangles(vertices:Vector<Float>, indices:Vector<Int> = null, colors:Vector<Int> = null, position:Point = null):Void
@@ -221,7 +221,7 @@ class ColorRenderJob extends BaseRenderJob
 		
 		for (i in 0...numIndices)
 		{
-			this.indicesVector[indexPos++] = prevVerticesNumber + indices[i];
+			this.indices[indexPos++] = prevVerticesNumber + indices[i];
 		}
 		
 		this.numVertices += numVertices;
@@ -256,7 +256,7 @@ class ColorRenderJob extends BaseRenderJob
 			indexbuffer = context.context3D.createIndexBuffer(numIndices);
 			
 			// Upload IndexBuffer3D to GPU.
-			indexbuffer.uploadFromVector(indicesVector, 0, numIndices);
+			indexbuffer.uploadFromVector(indices, 0, numIndices);
 			
 			// vertex position to attribute register 0
 			context.context3D.setVertexBufferAt(0, vertexbuffer, 0, Context3DVertexBufferFormat.FLOAT_2);
@@ -287,12 +287,12 @@ class ColorRenderJob extends BaseRenderJob
 		numVertices += 4;
 		numIndices += 6;
 		
-		indicesVector[indexPos++] = prevVerticesNumber + 2;
-		indicesVector[indexPos++] = prevVerticesNumber + 1;
-		indicesVector[indexPos++] = prevVerticesNumber + 0;
-		indicesVector[indexPos++] = prevVerticesNumber + 3;
-		indicesVector[indexPos++] = prevVerticesNumber + 2;
-		indicesVector[indexPos++] = prevVerticesNumber + 0;
+		indices[indexPos++] = prevVerticesNumber + 2;
+		indices[indexPos++] = prevVerticesNumber + 1;
+		indices[indexPos++] = prevVerticesNumber + 0;
+		indices[indexPos++] = prevVerticesNumber + 3;
+		indices[indexPos++] = prevVerticesNumber + 2;
+		indices[indexPos++] = prevVerticesNumber + 0;
 		
 		#if flash
 		color = ((Std.int(r * 255) << 16) | (Std.int(g * 255) << 8) | Std.int(b * 255));
@@ -350,12 +350,12 @@ class ColorRenderJob extends BaseRenderJob
 		numVertices += 4;
 		numIndices += 6;
 		
-		indicesVector[indexPos++] = prevVerticesNumber + 2;
-		indicesVector[indexPos++] = prevVerticesNumber + 1;
-		indicesVector[indexPos++] = prevVerticesNumber + 0;
-		indicesVector[indexPos++] = prevVerticesNumber + 3;
-		indicesVector[indexPos++] = prevVerticesNumber + 2;
-		indicesVector[indexPos++] = prevVerticesNumber + 0;
+		indices[indexPos++] = prevVerticesNumber + 2;
+		indices[indexPos++] = prevVerticesNumber + 1;
+		indices[indexPos++] = prevVerticesNumber + 0;
+		indices[indexPos++] = prevVerticesNumber + 3;
+		indices[indexPos++] = prevVerticesNumber + 2;
+		indices[indexPos++] = prevVerticesNumber + 0;
 		
 		#if flash
 		color = ((Std.int(r * 255) << 16) | (Std.int(g * 255) << 8) | Std.int(b * 255));
@@ -401,7 +401,7 @@ class ColorRenderJob extends BaseRenderJob
 		
 		for (i in 0...numIndices)
 		{
-			this.indicesVector[indexPos++] = prevVerticesNumber + indices[i];
+			this.indices[indexPos++] = prevVerticesNumber + indices[i];
 		}
 		
 		this.numVertices += numVertices;
@@ -412,7 +412,7 @@ class ColorRenderJob extends BaseRenderJob
 	{
 		#if flash
 		context.graphics.beginFill(color, alpha);
-		context.graphics.drawTriangles(vertices, indicesVector);
+		context.graphics.drawTriangles(vertices, indices);
 		#else
 		context.graphics.beginBitmapFill(Batcher.colorsheet.bitmap);
 		var blendInt:Int = 0;
@@ -430,7 +430,7 @@ class ColorRenderJob extends BaseRenderJob
 			blendInt = Tilesheet.TILE_BLEND_SCREEN;
 		}
 		
-		context.graphics.drawTriangles(vertices, indicesVector, null, TriangleCulling.NONE, colors, blendInt);
+		context.graphics.drawTriangles(vertices, indices, null, TriangleCulling.NONE, colors, blendInt);
 		#end
 		context.graphics.endFill();
 	}
@@ -440,24 +440,24 @@ class ColorRenderJob extends BaseRenderJob
 		super.reset();
 		
 		vertices.splice(0, vertices.length);
-		indicesVector.splice(0, indicesVector.length);
+		indices.splice(0, indices.length);
 		
 		#if !flash
 		colors.splice(0, colors.length);
 		#end
 	}
 	
-	override function initData(useBytes:Bool = false):Void 
+	override function initData():Void 
 	{
 		#if flash
 		vertices = new Vector<Float>();
-		indicesVector = new Vector<Int>();
+		indices = new Vector<Int>();
 		
 		color = 0xFFFFFF;
 		alpha = 1.0;
 		#else
 		vertices = new Array<Float>();
-		indicesVector = new Array<Int>();
+		indices = new Array<Int>();
 		colors = new Array<Int>();
 		#end
 	}
