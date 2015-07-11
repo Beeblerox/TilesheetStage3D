@@ -12,16 +12,19 @@
 	<window width="720" height="405" unless="mobile" />
 	<window orientation="landscape" vsync="true" antialiasing="0" if="cpp" />
 	
+	 <set name="blah" value="750" />
+	 
 	<!-- classpath, haxe libs -->
 	<source path="src" />
-	<source path="./../../src/" />
-	<source path="./../Shared/" />
+	
 	<haxelib name="openfl" />
 	<!--<haxelib name="starling" /> -->
 	<!--<haxelib name="format" /> -->
 	
 	<icon path="assets/nme.svg" />
 	<assets path="assets/img" rename="img" />
+	
+	<haxeflag name="-swf-lib" value="assets/AGAL.swc" if="flash" />
 	
 	<set name="SWF_VERSION" value="11.2" if="flash" ></set>
 </project>
