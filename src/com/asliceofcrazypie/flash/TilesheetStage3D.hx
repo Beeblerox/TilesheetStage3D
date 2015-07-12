@@ -9,7 +9,6 @@ import openfl.Lib;
 import openfl.text.TextField;
 
 #if flash11
-import com.asliceofcrazypie.flash.jobs.RenderJob;
 import com.asliceofcrazypie.flash.jobs.QuadRenderJob;
 import com.asliceofcrazypie.flash.jobs.TriangleRenderJob;
 
@@ -307,6 +306,7 @@ class TilesheetStage3D extends Tilesheet
 				throw new ArgumentError('tileData length must be a multiple of ' + tileDataPerItem);
 			}
 			
+			// TODO: use SAPImageRenderJob here...
 			var renderJob:QuadRenderJob;
 			
 			var tileDataPos:Int = 0;

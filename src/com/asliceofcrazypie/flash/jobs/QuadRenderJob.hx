@@ -14,11 +14,7 @@ import flash.geom.Rectangle;
  * ...
  * @author Zaphod
  */
-#if flash11
-class QuadRenderJob extends RenderJob
-#else
 class QuadRenderJob extends BaseRenderJob
-#end
 {
 	private static var renderJobPool:Array<QuadRenderJob>;
 	
@@ -61,11 +57,11 @@ class QuadRenderJob extends BaseRenderJob
 	#end
 	
 	#if flash11
-	override public function addQuad(rect:Rectangle, normalizedOrigin:Point, uv:Rectangle, matrix:Matrix, r:Float = 1, g:Float = 1, b:Float = 1, a:Float = 1):Void
+	public function addQuad(rect:Rectangle, normalizedOrigin:Point, uv:Rectangle, matrix:Matrix, r:Float = 1, g:Float = 1, b:Float = 1, a:Float = 1):Void
 	{
 		var prevVerticesNumber:Int = Std.int(vertexPos / dataPerVertice);
 		
-		super.addQuad(rect, normalizedOrigin, uv, matrix, r, g, b, a);
+	//	super.addQuad(rect, normalizedOrigin, uv, matrix, r, g, b, a);
 		
 		indices[indexPos++] = prevVerticesNumber + 2;
 		indices[indexPos++] = prevVerticesNumber + 1;

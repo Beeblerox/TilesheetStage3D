@@ -1,5 +1,6 @@
 package com.asliceofcrazypie.flash.jobs;
 
+import com.asliceofcrazypie.flash.newJobs.JobPool;
 import flash.display.BlendMode;
 import flash.Vector;
 import openfl.display.Sprite;
@@ -51,6 +52,9 @@ class BaseRenderJob extends VeryBasicRenderJob
 		TriangleRenderJob.init();
 		ColorRenderJob.init();
 		SAPImageRenderJob.init();
+		
+		var pool:JobPool<QuadRenderJob> = new JobPool<QuadRenderJob>(QuadRenderJob);
+		
 	}
 	
 	private function new() 

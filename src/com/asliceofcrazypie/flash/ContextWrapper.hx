@@ -3,14 +3,12 @@ import com.asliceofcrazypie.flash.jobs.BaseRenderJob;
 import com.asliceofcrazypie.flash.jobs.SAPImageRenderJob;
 import com.asliceofcrazypie.flash.jobs.VeryBasicRenderJob;
 import haxe.ds.IntMap;
-import com.adobe.utils.extended.AGALMiniAssembler;
 
 #if flash11
-import com.asliceofcrazypie.flash.jobs.RenderJob;
 import com.asliceofcrazypie.flash.jobs.QuadRenderJob;
 import com.asliceofcrazypie.flash.jobs.TriangleRenderJob;
 
-import openfl.display3D._shaders.AGLSLShaderUtils;
+import com.adobe.utils.extended.AGALMiniAssembler;
 
 import flash.display3D.Context3DRenderMode;
 import flash.display3D.Context3DBlendFactor;
@@ -60,7 +58,7 @@ class ContextWrapper extends EventDispatcher
 	
 	private var _initCallback:Void->Void;
 	
-	private var currentRenderJobs:Vector<RenderJob>;
+	private var currentRenderJobs:Vector<BaseRenderJob>;
 	private var quadRenderJobs:Vector<QuadRenderJob>;
 	private var triangleRenderJobs:Vector<TriangleRenderJob>;
 	
@@ -87,7 +85,7 @@ class ContextWrapper extends EventDispatcher
 		quadImagePrograms = new IntMap<Program3D>();
 		quadNoImagePrograms = new IntMap<Program3D>();
 		
-		currentRenderJobs = new Vector<RenderJob>();
+		currentRenderJobs = new Vector<BaseRenderJob>();
 		quadRenderJobs = new Vector<QuadRenderJob>();
 		triangleRenderJobs = new Vector<TriangleRenderJob>();
 	}

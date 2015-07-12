@@ -1,14 +1,13 @@
-package com.asliceofcrazypie.flash.jobs;
+package com.asliceofcrazypie.flash.newJobs;
 
-import com.asliceofcrazypie.flash.TilesheetStage3D;
 import flash.display.BlendMode;
-import openfl.display.Sprite;
+import flash.display.Sprite;
 
 /**
  * ...
  * @author Zaphod
  */
-class VeryBasicRenderJob
+class BaseRenderJob
 {
 	public static inline var NUM_JOBS_TO_POOL:Int = 25;
 	

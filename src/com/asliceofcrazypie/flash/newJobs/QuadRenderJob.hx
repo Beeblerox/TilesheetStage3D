@@ -1,38 +1,24 @@
-package com.asliceofcrazypie.flash.jobs;
+package com.asliceofcrazypie.flash.newJobs;
 
-import com.asliceofcrazypie.flash.ContextWrapper;
-import com.asliceofcrazypie.flash.jobs.VeryBasicRenderJob.RenderJobType;
-import com.asliceofcrazypie.flash.TilesheetStage3D;
-import openfl.display.BlendMode;
-import openfl.display.Sprite;
-import openfl.display.Tilesheet;
-import openfl.display3D.Context3D;
-import openfl.display3D.Context3DProgramType;
-import openfl.display3D.Context3DVertexBufferFormat;
-import openfl.display3D.IndexBuffer3D;
-import openfl.display3D.Program3D;
-import openfl.display3D.VertexBuffer3D;
-import openfl.geom.Matrix;
-import openfl.geom.Point;
-import openfl.geom.Rectangle;
-import openfl.Vector;
+import flash.Vector;
+import flash.display.BlendMode;
 
 /**
  * ...
  * @author Zaphod
  */
-class SAPImageRenderJob extends VeryBasicRenderJob
+class QuadRenderJob extends BaseRenderJob
 {
-	static private var renderJobPool:Array<SAPImageRenderJob>;
+	static private var renderJobPool:Array<QuadRenderJob>;
 	
-	public static inline function getJob(tilesheet:TilesheetStage3D, smooth:Bool, blend:BlendMode):SAPImageRenderJob
+	public static inline function getJob(tilesheet:TilesheetStage3D, smooth:Bool, blend:BlendMode):QuadRenderJob
 	{
-		var job:SAPImageRenderJob = (renderJobPool.length > 0) ? renderJobPool.pop() : new SAPImageRenderJob();
+		var job:QuadRenderJob = (renderJobPool.length > 0) ? renderJobPool.pop() : new QuadRenderJob();
 		job.set(tilesheet, smooth, blend);
 		return job;
 	}
 	
-	public static inline function returnJob(renderJob:SAPImageRenderJob):Void
+	public static inline function returnJob(renderJob:QuadRenderJob):Void
 	{
 		renderJobPool.push(renderJob);
 	}
@@ -191,5 +177,4 @@ class SAPImageRenderJob extends VeryBasicRenderJob
 	{
 		return (this.tilesheet != tilesheet || this.blendMode != blend);
 	}
-	
 }

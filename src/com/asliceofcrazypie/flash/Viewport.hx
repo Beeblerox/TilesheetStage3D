@@ -1,7 +1,6 @@
 package com.asliceofcrazypie.flash;
 
 import com.asliceofcrazypie.flash.jobs.QuadRenderJob;
-import com.asliceofcrazypie.flash.jobs.RenderJob;
 import com.asliceofcrazypie.flash.jobs.BaseRenderJob;
 import com.asliceofcrazypie.flash.jobs.ColorRenderJob;
 import com.asliceofcrazypie.flash.jobs.SAPImageRenderJob;
