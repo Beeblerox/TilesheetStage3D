@@ -398,6 +398,31 @@ class Viewport
 		return null;
 	}
 	
+	public function startColorQuadsBatch(blend:BlendMode = null):ColorQuadRenderJob
+	{
+		var lastRenderJob:BaseRenderJob = getLastRenderJob();
+		var lastColorRenderJob:ColorQuadRenderJob = getLastColorQuads();
+		
+		if (lastRenderJob != null && lastColorRenderJob != null
+			&& lastRenderJob == lastColorRenderJob 
+			&& blend == lastRenderJob.blendMode
+			&& lastColorRenderJob.canAddQuad())
+		{
+			return lastColorRenderJob;
+		}
+		
+		return startNewColorQuadsBatch(blend);
+	}
+	
+	public function startNewColorQuadsBatch(blend:BlendMode = null):ColorQuadRenderJob
+	{
+		var job:ColorQuadRenderJob = BaseRenderJob.colorQuads.getJob();
+		job.set(blend);
+		renderJobs[numJobs++] = job;
+		colorQuads[numColorQuads++] = job;
+		return job;
+	}
+	
 	/**
 	 * Drawing a transformed image region.
 	 * 
@@ -548,7 +573,7 @@ class Viewport
 	public inline function drawAAColorRect(rect:Rectangle, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null):Void
 	{
 		#if flash11
-		var job:ColorTriangleRenderJob = startColorTrianglesBatch(blend);
+		var job:ColorQuadRenderJob = startColorQuadsBatch(blend);
 		
 		if (job != null)
 			job.addAAQuad(rect, cr, cg, cb, ca);
@@ -562,7 +587,11 @@ class Viewport
 	
 	public inline function drawColorRect(sourceRect:Rectangle, origin:Point, matrix:Matrix, cr:Float = 1.0, cg:Float = 1.0, cb:Float = 1.0, ca:Float = 1.0, blend:BlendMode = null):Void
 	{
+		#if flash11
+		var job:ColorQuadRenderJob = startColorQuadsBatch(blend);
+		#else
 		var job:ColorTriangleRenderJob = startColorTrianglesBatch(blend);
+		#end
 		
 		if (job == null)
 			return;

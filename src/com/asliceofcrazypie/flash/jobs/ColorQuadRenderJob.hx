@@ -155,5 +155,10 @@ class ColorQuadRenderJob extends QuadRenderJob
 		super();
 		type = RenderJobType.COLOR_QUAD;
 	}
+	
+	public function set(blend:BlendMode):Void 
+	{
+		this.blendMode = blend;
+	}
 }
 #end

@@ -208,5 +208,10 @@ class TextureQuadRenderJob extends QuadRenderJob
 		this.isSmooth = isSmooth;
 		this.blendMode = blend;
 	}
+	
+	override public function stateChanged(tilesheet:TilesheetStage3D, tint:Bool, alpha:Bool, smooth:Bool, blend:BlendMode):Bool 
+	{
+		return (this.tilesheet != tilesheet || this.blendMode != blend || this.isRGB != tint || this.isAlpha != alpha || this.isSmooth != smooth);
+	}
 }
 #end
