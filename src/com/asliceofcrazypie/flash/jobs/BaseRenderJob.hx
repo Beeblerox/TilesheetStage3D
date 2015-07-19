@@ -62,9 +62,19 @@ class BaseRenderJob
 		return false;
 	}
 	
+	/**
+	 * This method should help to decide whether we need start another batch or not
+	 * To be overriden in subclasses.
+	 * 
+	 * @param	tilesheet	Tilesheet to use as a source of graphics for the next draw call.
+	 * @param	tint		Whether next draw call should be tinted or not.
+	 * @param	alpha		Whether next draw call should have alpha multiplier or not.
+	 * @param	smooth		Whether next draw call should have smoothing or not.
+	 * @param	blend		Blending mode for the next draw call.
+	 * @return	True if we need to start another batch, false in the other case and we can continue current one.
+	 */
 	public function stateChanged(tilesheet:TilesheetStage3D, tint:Bool, alpha:Bool, smooth:Bool, blend:BlendMode):Bool
 	{
-		// TODO: override in subclasses...
 		return false;
 	}
 	

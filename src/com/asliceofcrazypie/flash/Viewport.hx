@@ -58,7 +58,6 @@ class Viewport
 	/**
 	 * Draw order of the viewport. Don't change it manually.
 	 */
-	// TODO: convert it to property...
 	public var index(default, set):Int;
 	
 	/**
@@ -622,7 +621,6 @@ class Viewport
 		#else
 		index = value;
 		#end
-		
 		return value;
 	}
 	

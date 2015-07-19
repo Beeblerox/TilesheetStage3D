@@ -43,8 +43,6 @@ class ColorQuadRenderJob extends QuadRenderJob
 	override function initData():Void 
 	{
 		constants = new Vector<Float>();
-		
-		// TODO: init other data...
 	}
 	
 	public static function initContextData(context:ContextWrapper):Void

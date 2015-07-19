@@ -17,10 +17,22 @@ class TriangleRenderJob extends BaseRenderJob
 	public static inline var MAX_QUADS_PER_BUFFER:Int = 16383;		// (MAX_VERTEX_PER_BUFFER / 4)
 	public static inline var MAX_TRIANGLES_PER_BUFFER:Int = 21844;	// (MAX_VERTEX_PER_BUFFER / 3)
 	
-	// TODO: use these static vars (and document them)...
+	/**
+	 * The number of vertices per buffer. Used to decide whether to start new batch or not.
+	 * Its value couldn't be less than 0 and more than MAX_INDICES_PER_BUFFER (flash target limit).
+	 */
 	public static var vertexPerBuffer(default, null):Int;
+	/**
+	 * The number of quads per buffer. I'm actually not using it.
+	 */
 	public static var quadsPerBuffer(default, null):Int;
+	/**
+	 * The number of triangles per buffer. I'm actually not using it.
+	 */
 	public static var trianglesPerBuffer(default, null):Int;
+	/**
+	 * The number of indices per buffer. I'm actually not using it.
+	 */
 	public static var indicesPerBuffer(default, null):Int;
 	
 	@:allow(com.asliceofcrazypie.flash)
