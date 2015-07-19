@@ -306,7 +306,7 @@ class Viewport
 		if (lastRenderJob != null && lastQuadRenderJob != null
 			&& lastRenderJob == lastQuadRenderJob 
 			&& !lastQuadRenderJob.stateChanged(tilesheet, tinted, alpha, smooth, blend)
-			&& lastRenderJob.canAddQuad())
+			&& lastQuadRenderJob.canAddQuad())
 		{
 			return lastQuadRenderJob;
 		}

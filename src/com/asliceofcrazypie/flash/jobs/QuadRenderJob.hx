@@ -76,5 +76,10 @@ class QuadRenderJob extends BaseRenderJob
 		
 		dataPosition = 0;
 	}
+	
+	override public function canAddQuad():Bool
+	{
+		return true;
+	}
 }
 #end
