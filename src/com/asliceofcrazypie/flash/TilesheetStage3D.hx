@@ -449,8 +449,6 @@ class TilesheetStage3D extends Tilesheet
 		}
 	}
 	
-	// TODO: add methods to draw colored polygons and quads as well???
-	
 	public static var antiAliasing(default, set):Int;
 	
 	private static inline function set_antiAliasing(value:Int):Int

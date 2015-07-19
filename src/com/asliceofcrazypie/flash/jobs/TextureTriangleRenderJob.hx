@@ -160,6 +160,10 @@ class TextureTriangleRenderJob extends TriangleRenderJob
 			y = position.y;
 		}
 		
+		var numTextureCoordinatesPerVertice:Int = 2;
+		if ((uvtData.length / 3) == numVertices)	numTextureCoordinatesPerVertice = 3;
+		var uvPos:Int = 0;
+		
 		for (i in 0...numVertices)
 		{
 			vertexIndex = 2 * i;
@@ -167,8 +171,10 @@ class TextureTriangleRenderJob extends TriangleRenderJob
 			this.vertices[vertexPos++] = vertices[vertexIndex] + x;
 			this.vertices[vertexPos++] = vertices[vertexIndex + 1] + y;
 			
-			this.vertices[vertexPos++] = uvtData[vertexIndex];
-			this.vertices[vertexPos++] = uvtData[vertexIndex + 1];
+			uvPos = i * numTextureCoordinatesPerVertice;
+			
+			this.vertices[vertexPos++] = uvtData[uvPos];
+			this.vertices[vertexPos++] = uvtData[uvPos + 1];
 			
 			if (colored)
 			{
@@ -344,6 +350,9 @@ class TextureTriangleRenderJob extends TriangleRenderJob
 		var numIndices:Int = indices.length;
 		var numVertices:Int = Std.int(vertices.length / 2);
 		
+		var numTextureCoordinatesPerVertice:Int = 2;
+		if (uvtData != null && (uvtData.length / 3) == numVertices)	numTextureCoordinatesPerVertice = 3;
+		
 		var prevVerticesNumber:Int = Std.int(vertexPos / dataPerVertice);
 		
 		var vertexIndex:Int = 0;
@@ -370,11 +379,22 @@ class TextureTriangleRenderJob extends TriangleRenderJob
 			#end
 		}
 		
+		#if flash
 		var uvtDataLength:Int = uvtData.length;
 		for (i in 0...uvtDataLength)
 		{
 			this.uvtData[uvtPos++] = uvtData[i];
 		}
+		#else
+		var uvPos:Int = 0;
+		for (i in 0...numVertices)
+		{
+			uvPos = i * numTextureCoordinatesPerVertice;
+			
+			this.uvtData[uvtPos++] = uvtData[uvPos++];
+			this.uvtData[uvtPos++] = uvtData[uvPos++];
+		}
+		#end
 		
 		for (i in 0...numIndices)
 		{
