@@ -1,72 +1,31 @@
 package com.asliceofcrazypie.flash.jobs;
 
-import com.asliceofcrazypie.flash.jobs.VeryBasicRenderJob.RenderJobType;
-import flash.display3D.VertexBuffer3D;
-import flash.display3D.IndexBuffer3D;
-import flash.display3D.Context3DVertexBufferFormat;
+import com.asliceofcrazypie.flash.jobs.BaseRenderJob.RenderJobType;
+import openfl.display.BlendMode;
 import openfl.display.Sprite;
 import openfl.display.Tilesheet;
-
-import com.asliceofcrazypie.flash.ContextWrapper;
-import openfl.geom.Rectangle;
-import openfl.geom.Point;
-import openfl.geom.Matrix;
-import openfl.display.BlendMode;
-
 import openfl.display.TriangleCulling;
-
+import openfl.display3D.Context3DVertexBufferFormat;
+import openfl.display3D.IndexBuffer3D;
+import openfl.display3D.VertexBuffer3D;
+import openfl.geom.Matrix;
+import openfl.geom.Point;
+import openfl.geom.Rectangle;
 import openfl.Vector;
 
 /**
  * ...
  * @author Zaphod
  */
-class ColorRenderJob extends BaseRenderJob
+#if flash11
+class ColorTriangleRenderJob extends TriangleRenderJob
 {
-	private static var renderJobPool:Array<ColorRenderJob>;
-	
-	public static inline function getJob(blend:BlendMode = null):ColorRenderJob
-	{
-		var job:ColorRenderJob = (renderJobPool.length > 0) ? renderJobPool.pop() : new ColorRenderJob();
-		job.set(blend);
-		return job;
-	}
-	
-	public static inline function returnJob(renderJob:ColorRenderJob):Void
-	{
-		renderJobPool.push(renderJob);
-	}
-	
-	public static function init():Void
-	{
-		renderJobPool = [];
-		for (i in 0...VeryBasicRenderJob.NUM_JOBS_TO_POOL)
-		{
-			renderJobPool.push(new ColorRenderJob());
-		}
-	}
-	
-#if !flash11
-	private var color:Int = 0xFFFFFF;
-	private var alpha:Float = 1.0;
-	
-	#if flash
-	public var vertices(default, null):Vector<Float>;
-	public var indices(default, null):Vector<UInt>;
-	#else
-	public var vertices(default, null):Array<Float>;
-	public var indices(default, null):Array<Int>;
-	public var colors(default, null):Array<Int>;
-	#end
-#end
-	
 	public function new() 
 	{
 		super();
-		type = RenderJobType.NO_IMAGE;
+		type = RenderJobType.COLOR_TRIANGLE;
 	}
 	
-	#if flash11
 	public function addAAQuad(rect:Rectangle, r:Float = 1, g:Float = 1, b:Float = 1, a:Float = 1):Void
 	{
 		var prevVerticesNumber:Int = Std.int(vertexPos / dataPerVertice);
@@ -267,7 +226,25 @@ class ColorRenderJob extends BaseRenderJob
 			context.context3D.drawTriangles(indexbuffer);
 		}
 	}
-	#else
+	
+	public function set(blend:BlendMode):Void
+	{
+		this.blendMode = blend;
+		this.dataPerVertice = 6;
+	}
+}
+#else
+class ColorTriangleRenderJob extends TriangleRenderJob
+{
+	private var color:Int = 0xFFFFFF;
+	private var alpha:Float = 1.0;
+	
+	public function new() 
+	{
+		super();
+		type = RenderJobType.COLOR_TRIANGLE;
+	}
+	
 	public function addAAQuad(rect:Rectangle, r:Float = 1, g:Float = 1, b:Float = 1, a:Float = 1):Void
 	{
 		var prevVerticesNumber:Int = Std.int(vertexPos / dataPerVertice);
@@ -435,41 +412,10 @@ class ColorRenderJob extends BaseRenderJob
 		context.graphics.endFill();
 	}
 	
-	override public function reset():Void 
-	{
-		super.reset();
-		
-		vertices.splice(0, vertices.length);
-		indices.splice(0, indices.length);
-		
-		#if !flash
-		colors.splice(0, colors.length);
-		#end
-	}
-	
-	override function initData():Void 
-	{
-		#if flash
-		vertices = new Vector<Float>();
-		indices = new Vector<Int>();
-		
-		color = 0xFFFFFF;
-		alpha = 1.0;
-		#else
-		vertices = new Array<Float>();
-		indices = new Array<Int>();
-		colors = new Array<Int>();
-		#end
-	}
-	#end
-	
 	public function set(blend:BlendMode):Void
 	{
 		this.blendMode = blend;
-		#if flash11
-		this.dataPerVertice = 6;
-		#else
 		this.dataPerVertice = 2;
-		#end
 	}
 }
+#end

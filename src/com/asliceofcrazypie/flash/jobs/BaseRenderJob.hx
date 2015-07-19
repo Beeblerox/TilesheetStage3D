@@ -1,98 +1,84 @@
 package com.asliceofcrazypie.flash.jobs;
 
-import com.asliceofcrazypie.flash.newJobs.JobPool;
 import flash.display.BlendMode;
-import flash.Vector;
-import openfl.display.Sprite;
+import flash.display.Sprite;
 
 /**
  * ...
  * @author Zaphod
  */
-class BaseRenderJob extends VeryBasicRenderJob
+class BaseRenderJob
 {
-	public static inline var MAX_INDICES_PER_BUFFER:Int = 98298;
-	public static inline var MAX_VERTEX_PER_BUFFER:Int = 65532;		// (MAX_INDICES_PER_BUFFER * 4 / 6)
-	public static inline var MAX_QUADS_PER_BUFFER:Int = 16383;		// (MAX_VERTEX_PER_BUFFER / 4)
-	public static inline var MAX_TRIANGLES_PER_BUFFER:Int = 21844;	// (MAX_VERTEX_PER_BUFFER / 3)
-	
-	// TODO: use these static vars (and document them)...
-	public static var vertexPerBuffer(default, null):Int;
-	public static var quadsPerBuffer(default, null):Int;
-	public static var trianglesPerBuffer(default, null):Int;
-	public static var indicesPerBuffer(default, null):Int;
-	
-	public var dataPerVertice:Int = 0;
-	public var numVertices:Int = 0;
-	public var numIndices:Int = 0;
-	
-	#if flash11
-	public var vertices(default, null):Vector<Float>;
-	public var indices(default, null):Vector<UInt>;
-	#end
-	
-	public var vertexPos:Int = 0;
-	public var indexPos:Int = 0;
-	public var colorPos:Int = 0;
+	public static var textureQuads:JobPool<TextureQuadRenderJob>;
+	public static var textureTriangles:JobPool<TextureTriangleRenderJob>;
+	public static var colorQuads:JobPool<ColorQuadRenderJob>;
+	public static var colorTriangles:JobPool<ColorTriangleRenderJob>;
 	
 	@:allow(com.asliceofcrazypie.flash)
 	private static function init(batchSize:Int = 0):Void
 	{
-		if (batchSize <= 0 || batchSize > MAX_QUADS_PER_BUFFER)
-		{
-			batchSize = MAX_QUADS_PER_BUFFER;
-		}
+		TriangleRenderJob.init(batchSize);
 		
-		quadsPerBuffer = batchSize;
-		vertexPerBuffer = batchSize * 4;
-		trianglesPerBuffer = Std.int(vertexPerBuffer / 3);
-		indicesPerBuffer = Std.int(vertexPerBuffer * 6 / 4);
-		
-		QuadRenderJob.init();
-		TriangleRenderJob.init();
-		ColorRenderJob.init();
-		SAPImageRenderJob.init();
-		
-		var pool:JobPool<QuadRenderJob> = new JobPool<QuadRenderJob>(QuadRenderJob);
-		
+		textureQuads = new JobPool<TextureQuadRenderJob>(TextureQuadRenderJob);
+		textureTriangles = new JobPool<TextureTriangleRenderJob>(TextureTriangleRenderJob);
+		colorQuads = new JobPool<ColorQuadRenderJob>(ColorQuadRenderJob);
+		colorTriangles = new JobPool<ColorTriangleRenderJob>(ColorTriangleRenderJob);
 	}
+	
+	public var tilesheet:TilesheetStage3D;
+	
+	public var isRGB:Bool;
+	public var isAlpha:Bool;
+	public var isSmooth:Bool;
+	
+	public var blendMode:BlendMode;
+	
+	public var type(default, null):RenderJobType;
 	
 	private function new() 
 	{
-		super();
+		initData();
 	}
 	
-	override private function initData():Void
+	private function initData():Void
 	{
-		#if flash11
-		this.vertices = new Vector<Float>(BaseRenderJob.vertexPerBuffer >> 2);
-		this.indices = new Vector<UInt>();
-		#end
-	}
-	
-	override public function canAddQuad():Bool
-	{
-		return (numVertices + 4) <= BaseRenderJob.vertexPerBuffer;
-	}
-	
-	public inline function canAddTriangles(numVertices:Int):Bool
-	{
-		return (numVertices + this.numVertices) <= BaseRenderJob.vertexPerBuffer;
-	}
-	
-	public static inline function checkMaxTrianglesCapacity(numVertices:Int):Bool
-	{
-		return numVertices <= BaseRenderJob.vertexPerBuffer;
-	}
-	
-	override public function reset():Void
-	{
-		super.reset();
 		
-		vertexPos = 0;
-		indexPos = 0;
-		colorPos = 0;
-		numVertices = 0;
-		numIndices = 0;
 	}
+	
+	#if flash11
+	public function render(context:ContextWrapper = null, colored:Bool = false):Void
+	{
+		
+	}
+	#else
+	public function render(context:Sprite = null, colored:Bool = false):Void
+	{
+		
+	}
+	#end
+	
+	public function canAddQuad():Bool
+	{
+		return false;
+	}
+	
+	public function stateChanged(tilesheet:TilesheetStage3D, tint:Bool, alpha:Bool, smooth:Bool, blend:BlendMode):Bool
+	{
+		// TODO: override in subclasses...
+		return false;
+	}
+	
+	public function reset():Void
+	{
+		blendMode = null;
+		tilesheet = null;
+	}
+}
+
+enum RenderJobType
+{
+	COLOR_QUAD;
+	COLOR_TRIANGLE;
+	TEXTURE_TRIANGLE;
+	TEXTURE_QUAD;
 }

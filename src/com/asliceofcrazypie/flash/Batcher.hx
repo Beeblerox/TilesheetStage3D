@@ -5,9 +5,6 @@ import flash.display3D.Context3DRenderMode;
 #end
 
 import com.asliceofcrazypie.flash.jobs.BaseRenderJob;
-import com.asliceofcrazypie.flash.jobs.ColorRenderJob;
-import com.asliceofcrazypie.flash.jobs.QuadRenderJob;
-import com.asliceofcrazypie.flash.jobs.TriangleRenderJob;
 import flash.display.BlendMode;
 import flash.display.Stage;
 import flash.display.TriangleCulling;

@@ -1,6 +1,8 @@
 package com.asliceofcrazypie.flash;
 
 import com.asliceofcrazypie.flash.jobs.BaseRenderJob;
+import com.asliceofcrazypie.flash.jobs.TextureQuadRenderJob;
+import com.asliceofcrazypie.flash.jobs.TextureTriangleRenderJob;
 import openfl.display.BitmapData;
 import openfl.display.Tilesheet;
 import openfl.events.Event;
@@ -42,8 +44,14 @@ class TilesheetStage3D extends Tilesheet
 	public var bitmapWidth(default, null):Int;
 	public var bitmapHeight(default, null):Int;
 	
+	public var originalWidth(default, null):Int;
+	public var originalHeight(default, null):Int;
+	
 	public function new(inImage:BitmapData, premultipliedAlpha:Bool = false, mipmap:Bool = true) 
 	{
+		originalWidth = inImage.width;
+		originalHeight = inImage.height;
+		
 		#if flash11
 		inImage = TextureUtil.fixTextureSize(inImage);
 		#end
@@ -192,16 +200,17 @@ class TilesheetStage3D extends Tilesheet
 			var numIndices:Int = indices.length;
 			var numVertices:Int = Std.int(vertices.length / 2);
 			
-			var renderJob:TriangleRenderJob = TriangleRenderJob.getJob(this, isColored, isColored, smooth, blending);
+			var renderJob:TextureTriangleRenderJob = BaseRenderJob.textureTriangles.getJob();
+			renderJob.set(this, isColored, isColored, smooth, blending);
 			
-			if (numIndices + renderJob.numIndices > BaseRenderJob.MAX_INDICES_PER_BUFFER)
+			if (numIndices + renderJob.numIndices > TriangleRenderJob.MAX_INDICES_PER_BUFFER)
 			{
-				throw ("Number of indices shouldn't be more than " + BaseRenderJob.MAX_INDICES_PER_BUFFER);
+				throw ("Number of indices shouldn't be more than " + TriangleRenderJob.MAX_INDICES_PER_BUFFER);
 			}
 			
-			if (numVertices + renderJob.numIndices > BaseRenderJob.MAX_VERTEX_PER_BUFFER)
+			if (numVertices + renderJob.numIndices > TriangleRenderJob.MAX_VERTEX_PER_BUFFER)
 			{
-				throw ("Number of vertices shouldn't be more than " + BaseRenderJob.MAX_VERTEX_PER_BUFFER);
+				throw ("Number of vertices shouldn't be more than " + TriangleRenderJob.MAX_VERTEX_PER_BUFFER);
 			}
 			
 			renderJob.addTriangles(vertices, indices, uvtData, colors);
@@ -306,8 +315,7 @@ class TilesheetStage3D extends Tilesheet
 				throw new ArgumentError('tileData length must be a multiple of ' + tileDataPerItem);
 			}
 			
-			// TODO: use SAPImageRenderJob here...
-			var renderJob:QuadRenderJob;
+			var renderJob:TextureQuadRenderJob;
 			
 			var tileDataPos:Int = 0;
 			
@@ -316,7 +324,7 @@ class TilesheetStage3D extends Tilesheet
 			///////////////////
 			// for each item //
 			///////////////////
-			var maxNumItems:Int = BaseRenderJob.quadsPerBuffer;
+			var maxNumItems:Int = TextureQuadRenderJob.limit;
 			var startItemPos:Int = 0;
 			var numItemsThisLoop:Int = 0;
 			
@@ -339,7 +347,8 @@ class TilesheetStage3D extends Tilesheet
 				numItemsThisLoop = numItems > maxNumItems ? maxNumItems : numItems;
 				numItems -= numItemsThisLoop;
 				
-				renderJob = QuadRenderJob.getJob(this, isRGB, isAlpha, smooth, blend);
+				renderJob = BaseRenderJob.textureQuads.getJob();
+				renderJob.set(this, smooth, blend);
 				
 				for (i in 0...numItemsThisLoop)
 				{
@@ -432,7 +441,7 @@ class TilesheetStage3D extends Tilesheet
 				}
 				
 				//push vertices into jobs list
-				context.addQuadJob(renderJob);		
+				context.addQuadJob(renderJob);
 			}//end while
 		}
 		else if(!Type.enumEq(fallbackMode, FallbackMode.NO_FALLBACK))

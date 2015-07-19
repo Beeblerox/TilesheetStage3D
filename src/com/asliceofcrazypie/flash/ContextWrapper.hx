@@ -1,7 +1,5 @@
 package com.asliceofcrazypie.flash;
-import com.asliceofcrazypie.flash.jobs.BaseRenderJob;
-import com.asliceofcrazypie.flash.jobs.SAPImageRenderJob;
-import com.asliceofcrazypie.flash.jobs.VeryBasicRenderJob;
+import com.asliceofcrazypie.flash.jobs.*;
 import haxe.ds.IntMap;
 
 #if flash11
@@ -59,8 +57,8 @@ class ContextWrapper extends EventDispatcher
 	private var _initCallback:Void->Void;
 	
 	private var currentRenderJobs:Vector<BaseRenderJob>;
-	private var quadRenderJobs:Vector<QuadRenderJob>;
-	private var triangleRenderJobs:Vector<TriangleRenderJob>;
+	private var quadRenderJobs:Vector<TextureQuadRenderJob>;
+	private var triangleRenderJobs:Vector<TextureTriangleRenderJob>;
 	
 	private var numCurrentRenderJobs:Int = 0;
 	
@@ -86,8 +84,8 @@ class ContextWrapper extends EventDispatcher
 		quadNoImagePrograms = new IntMap<Program3D>();
 		
 		currentRenderJobs = new Vector<BaseRenderJob>();
-		quadRenderJobs = new Vector<QuadRenderJob>();
-		triangleRenderJobs = new Vector<TriangleRenderJob>();
+		quadRenderJobs = new Vector<TextureQuadRenderJob>();
+		triangleRenderJobs = new Vector<TextureTriangleRenderJob>();
 	}
 	
 	private function getTriangleNoImageProgram(globalColor:Bool = false):Program3D
@@ -217,7 +215,7 @@ class ContextWrapper extends EventDispatcher
 				"mul vt1.w, vt0.w, vt2.w\n" + // pos.y * d
 				"add vt0.y, vt1.z, vt1.w\n" + // Y			
 			// Translation
-				"mov vt2, vc[va0.z+2]" + // x, y, 0, 0
+				"mov vt2, vc[va0.z+2]\n" + // x, y, 0, 0
 				"add vt0.x, vt0.x, vt2.x\n" +
 				"add vt0.y, vt0.y, vt2.y\n" +
 				"mov vt0.zw, va0.ww\n" +
@@ -383,7 +381,7 @@ class ContextWrapper extends EventDispatcher
 		}
 	}
 	
-	public inline function renderJob(job:VeryBasicRenderJob, colored:Bool = false):Void
+	public inline function renderJob(job:BaseRenderJob, colored:Bool = false):Void
 	{
 		if (context3D != null && !presented)
 		{
@@ -416,7 +414,8 @@ class ContextWrapper extends EventDispatcher
 			
 			if (context3D != null)
 			{
-				SAPImageRenderJob.initContextData(this);
+				TextureQuadRenderJob.initContextData(this);
+				ColorQuadRenderJob.initContextData(this);
 				
 				context3D.setBlendFactors(Context3DBlendFactor.ONE, Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA);
 				
@@ -481,13 +480,13 @@ class ContextWrapper extends EventDispatcher
 		for (renderJob in quadRenderJobs)
 		{
 			renderJob.reset();
-			QuadRenderJob.returnJob(renderJob);
+			BaseRenderJob.textureQuads.returnJob(renderJob);
 		}
 		
 		for (renderJob in triangleRenderJobs)
 		{
 			renderJob.reset();
-			TriangleRenderJob.returnJob(renderJob);
+			BaseRenderJob.textureTriangles.returnJob(renderJob);
 		}
 		
 		var numJobs:Int = currentRenderJobs.length;
@@ -631,7 +630,7 @@ class ContextWrapper extends EventDispatcher
 		}
 	}
 	
-	public function addQuadJob(job:QuadRenderJob):Void
+	public function addQuadJob(job:TextureQuadRenderJob):Void
 	{
 		currentRenderJobs.push(job);
 		quadRenderJobs.push(job);
@@ -639,7 +638,7 @@ class ContextWrapper extends EventDispatcher
 		numCurrentRenderJobs++;
 	}
 	
-	public function addTriangleJob(job:TriangleRenderJob):Void
+	public function addTriangleJob(job:TextureTriangleRenderJob):Void
 	{
 		currentRenderJobs.push(job);
 		triangleRenderJobs.push(job);

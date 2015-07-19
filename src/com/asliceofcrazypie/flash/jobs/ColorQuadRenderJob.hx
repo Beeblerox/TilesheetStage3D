@@ -1,9 +1,11 @@
 package com.asliceofcrazypie.flash.jobs;
+
 import com.asliceofcrazypie.flash.ContextWrapper;
-import com.asliceofcrazypie.flash.jobs.VeryBasicRenderJob.RenderJobType;
+import com.asliceofcrazypie.flash.jobs.BaseRenderJob.RenderJobType;
 import com.asliceofcrazypie.flash.TilesheetStage3D;
 import openfl.display.BlendMode;
 import openfl.display.Sprite;
+import openfl.display.Tilesheet;
 import openfl.display3D.Context3D;
 import openfl.display3D.Context3DProgramType;
 import openfl.display3D.Context3DVertexBufferFormat;
@@ -19,22 +21,9 @@ import openfl.Vector;
  * ...
  * @author Zaphod
  */
-class SAPNoImageRenderJob extends VeryBasicRenderJob
+#if flash11
+class ColorQuadRenderJob extends QuadRenderJob
 {
-	static private var renderJobPool:Array<SAPNoImageRenderJob>;
-	
-	public static inline function getJob(tilesheet:TilesheetStage3D, blend:BlendMode):SAPNoImageRenderJob
-	{
-		var job:SAPNoImageRenderJob = (renderJobPool.length > 0) ? renderJobPool.pop() : new SAPNoImageRenderJob();
-		job.set(tilesheet, blend);
-		return job;
-	}
-	
-	public static inline function returnJob(renderJob:SAPNoImageRenderJob):Void
-	{
-		renderJobPool.push(renderJob);
-	}
-	
 	public static inline var numRegistersPerQuad:Int = 4;
 	
 	static private inline var limit:Int = 31;	// Std.int((128 - 4) / 4); where:
@@ -45,14 +34,10 @@ class SAPNoImageRenderJob extends VeryBasicRenderJob
 	static private var vertexBuffer:VertexBuffer3D;
 	static private var indexBuffer:IndexBuffer3D;
 	
-	private var constants:Vector<Float>;
-	private var numConstants:Int = 0;
-	private var numQuads:Int = 0;
-	
 	private function new() 
 	{
 		super();
-		type = RenderJobType.QUAD;
+		type = RenderJobType.COLOR_QUAD;
 	}
 	
 	override function initData():Void 
@@ -60,16 +45,6 @@ class SAPNoImageRenderJob extends VeryBasicRenderJob
 		constants = new Vector<Float>();
 		
 		// TODO: init other data...
-		
-	}
-	
-	public static function init(context:ContextWrapper):Void
-	{
-		renderJobPool = [];
-		for (i in 0...VeryBasicRenderJob.NUM_JOBS_TO_POOL)
-		{
-			renderJobPool.push(new SAPNoImageRenderJob());
-		}
 	}
 	
 	public static function initContextData(context:ContextWrapper):Void
@@ -104,19 +79,18 @@ class SAPNoImageRenderJob extends VeryBasicRenderJob
 			indices.push(i4 + 2);
 		}
 		
-		vertexBuffer = context.createVertexBuffer(limit * 4, 3);
+		vertexBuffer = context.context3D.createVertexBuffer(limit * 4, 3);
 		vertexBuffer.uploadFromVector(vertices, 0, limit * 4);
-		indexBuffer = context.createIndexBuffer(limit * 6);
+		indexBuffer = context.context3D.createIndexBuffer(limit * 6);
 		indexBuffer.uploadFromVector(indices, 0, limit * 6);
 	}
 	
-	#if flash11
 	override public function render(context:ContextWrapper = null, colored:Bool = false):Void
 	{
 		var context3D:Context3D = context.context3D;
 		
-		context.setBlendMode(blendMode, tilesheet.premultipliedAlpha);
-		context.setQuadImageProgram(isSmooth, tilesheet.mipmap, colored);
+		context.setBlendMode(blendMode, false);
+		context.setQuadNoImageProgram(colored);
 		
 		// Set streams
 		context3D.setVertexBufferAt(0, vertexBuffer, 0, Context3DVertexBufferFormat.FLOAT_3);
@@ -131,14 +105,8 @@ class SAPNoImageRenderJob extends VeryBasicRenderJob
 		context.setTexture(null);
 		context.context3D.drawTriangles(indexBuffer, 0, numQuads << 1); // numQuads * 2
 	}
-	#else
-	override public function render(context:Sprite = null, colored:Bool = false):Void
-	{
-		
-	}
-	#end
 	
-	public function addQuad(rect:Rectangle, normalizedOrigin:Point, uv:Rectangle, matrix:Matrix, r:Float = 1, g:Float = 1, b:Float = 1, a:Float = 1):Void
+	public function addQuad(rect:Rectangle, normalizedOrigin:Point, matrix:Matrix, r:Float = 1, g:Float = 1, b:Float = 1, a:Float = 1):Void
 	{
 		setVertexConstantsFromNumbers(numConstants++, normalizedOrigin.x, normalizedOrigin.y, rect.width, rect.height);
 		setVertexConstantsFromNumbers(numConstants++, matrix.a, matrix.b, matrix.c, matrix.d);
@@ -147,13 +115,13 @@ class SAPNoImageRenderJob extends VeryBasicRenderJob
 		numQuads++;
 	}
 	
-	private function setVertexConstantsFromNumbers(firstRegister:Int, x:Float, y:Float, z:Float = 0, w:Float = 0):Void 
+	public function addAAQuad(rect:Rectangle, r:Float = 1, g:Float = 1, b:Float = 1, a:Float = 1):Void
 	{
-		var offset:Int = firstRegister << 2; // firstRegister * 4
-		constants[offset++] = x;
-		constants[offset++] = y;
-		constants[offset++] = z;
-		constants[offset++] = w;
+		setVertexConstantsFromNumbers(numConstants++, 0, 0, rect.width, rect.height);
+		setVertexConstantsFromNumbers(numConstants++, 1, 0, 0, 1);
+		setVertexConstantsFromNumbers(numConstants++, rect.x, rect.y, 0, 0);
+		setVertexConstantsFromNumbers(numConstants++, r, g, b, a);
+		numQuads++;
 	}
 	
 	override public function canAddQuad():Bool
@@ -168,10 +136,26 @@ class SAPNoImageRenderJob extends VeryBasicRenderJob
 		numConstants = 0;
 	}
 	
-	public function set(tilesheet:TilesheetStage3D, blend:BlendMode):Void 
+	public function set(blend:BlendMode):Void 
 	{
-		this.tilesheet = tilesheet;
 		this.blendMode = blend;
 	}
 	
+	override public function stateChanged(tilesheet:TilesheetStage3D, tint:Bool, alpha:Bool, smooth:Bool, blend:BlendMode):Bool 
+	{
+		return (this.blendMode != blend);
+	}
 }
+#else
+/**
+ * Just a stub class...
+ */
+class ColorQuadRenderJob extends QuadRenderJob
+{
+	private function new() 
+	{
+		super();
+		type = RenderJobType.COLOR_QUAD;
+	}
+}
+#end
