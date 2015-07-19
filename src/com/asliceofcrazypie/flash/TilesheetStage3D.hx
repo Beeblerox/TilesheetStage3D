@@ -348,7 +348,7 @@ class TilesheetStage3D extends Tilesheet
 				numItems -= numItemsThisLoop;
 				
 				renderJob = BaseRenderJob.textureQuads.getJob();
-				renderJob.set(this, smooth, blend);
+				renderJob.set(this, isRGB, isAlpha, smooth, blend);
 				
 				for (i in 0...numItemsThisLoop)
 				{
