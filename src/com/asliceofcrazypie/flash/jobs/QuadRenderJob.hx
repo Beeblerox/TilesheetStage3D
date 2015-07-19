@@ -32,9 +32,6 @@ class QuadRenderJob extends BaseRenderJob
 	override function initData():Void 
 	{
 		constants = new Vector<Float>();
-		
-		// TODO: init other data...
-		
 	}
 	
 	private function setVertexConstantsFromNumbers(firstRegister:Int, x:Float, y:Float, z:Float = 0, w:Float = 0):Void 

@@ -227,9 +227,10 @@ class ColorTriangleRenderJob extends TriangleRenderJob
 		}
 	}
 	
-	public function set(blend:BlendMode):Void
+	public function set(blend:BlendMode, culling:TriangleCulling = null):Void
 	{
 		this.blendMode = blend;
+		this.culling = culling;
 		this.dataPerVertice = 6;
 	}
 }
@@ -407,14 +408,17 @@ class ColorTriangleRenderJob extends TriangleRenderJob
 			blendInt = Tilesheet.TILE_BLEND_SCREEN;
 		}
 		
-		context.graphics.drawTriangles(vertices, indices, null, TriangleCulling.NONE, colors, blendInt);
+		culling = (culling == null) ? TriangleCulling.NONE : culling;
+		
+		context.graphics.drawTriangles(vertices, indices, null, culling, colors, blendInt);
 		#end
 		context.graphics.endFill();
 	}
 	
-	public function set(blend:BlendMode):Void
+	public function set(blend:BlendMode, culling:TriangleCulling = null):Void
 	{
 		this.blendMode = blend;
+		this.culling = culling;
 		this.dataPerVertice = 2;
 	}
 }

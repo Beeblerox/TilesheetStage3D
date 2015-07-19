@@ -1,5 +1,6 @@
 package com.asliceofcrazypie.flash.jobs;
 
+import openfl.display.TriangleCulling;
 import openfl.display3D.Context3DVertexBufferFormat;
 import openfl.display3D.IndexBuffer3D;
 import openfl.display3D.VertexBuffer3D;
@@ -58,6 +59,8 @@ class TriangleRenderJob extends BaseRenderJob
 	
 	public var vertexPos:Int = 0;
 	public var indexPos:Int = 0;
+	
+	public var culling:TriangleCulling;
 	
 	public function new() 
 	{
@@ -147,6 +150,8 @@ class TriangleRenderJob extends BaseRenderJob
 	{
 		super.reset();
 		
+		culling = null;
+		
 		vertexPos = 0;
 		indexPos = 0;
 		numVertices = 0;
@@ -196,6 +201,8 @@ class TriangleRenderJob extends BaseRenderJob
 	public var colorPos:Int = 0;
 	#end
 	
+	public var culling:TriangleCulling;
+	
 	public function new()
 	{
 		super();
@@ -204,6 +211,8 @@ class TriangleRenderJob extends BaseRenderJob
 	override public function reset():Void 
 	{
 		super.reset();
+		
+		culling = null;
 		
 		vertices.splice(0, vertices.length);
 		indices.splice(0, indices.length);

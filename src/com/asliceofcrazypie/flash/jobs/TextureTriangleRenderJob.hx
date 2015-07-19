@@ -190,13 +190,15 @@ class TextureTriangleRenderJob extends TriangleRenderJob
 		this.numIndices += numIndices;
 	}
 	
-	public function set(tilesheet:TilesheetStage3D, isRGB:Bool, isAlpha:Bool, isSmooth:Bool, blend:BlendMode):Void
+	public function set(tilesheet:TilesheetStage3D, isRGB:Bool, isAlpha:Bool, isSmooth:Bool, blend:BlendMode, culling:TriangleCulling = null):Void
 	{
 		this.tilesheet = tilesheet;
 		this.isRGB = isRGB;
 		this.isAlpha = isAlpha;
 		this.isSmooth = isSmooth;
 		this.blendMode = blend;
+		
+		this.culling = culling;
 		
 		var dataPerVertice:Int = 4;
 		if (isRGB)
@@ -251,13 +253,14 @@ class TextureTriangleRenderJob extends TriangleRenderJob
 		uvtPos = 0;
 	}
 	
-	public function set(tilesheet:TilesheetStage3D, isRGB:Bool, isAlpha:Bool, isSmooth:Bool, blend:BlendMode):Void
+	public function set(tilesheet:TilesheetStage3D, isRGB:Bool, isAlpha:Bool, isSmooth:Bool, blend:BlendMode, culling:TriangleCulling = null):Void
 	{
 		this.tilesheet = tilesheet;
 		this.isRGB = isRGB;
 		this.isAlpha = isAlpha;
 		this.isSmooth = isSmooth;
 		this.blendMode = blend;
+		this.culling = culling;
 		this.dataPerVertice = 2;
 	}
 	
@@ -403,7 +406,8 @@ class TextureTriangleRenderJob extends TriangleRenderJob
 			blendInt = Tilesheet.TILE_BLEND_SCREEN;
 		}
 		
-		context.graphics.drawTriangles(vertices, indices, uvtData, TriangleCulling.NONE, (colors.length > 0) ? colors : null, blendInt);
+		culling = (culling == null) ? TriangleCulling.NONE : culling;
+		context.graphics.drawTriangles(vertices, indices, uvtData, culling, (colors.length > 0) ? colors : null, blendInt);
 		#end
 		context.graphics.endFill();
 	}

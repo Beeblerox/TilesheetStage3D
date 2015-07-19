@@ -117,16 +117,15 @@ class TilesheetStage3D extends Tilesheet
 	
 	private static var matrix:Matrix = new Matrix();
 	
-	// TODO: document it...
 	/**
+	 * Initialization of all the inner stuff for the rendering (getting stage3d context, creating pools of render jobs, etc.)
 	 * 
-	 * 
-	 * @param	stage
-	 * @param	stage3DLevel
-	 * @param	antiAliasLevel
-	 * @param	initCallback
-	 * @param	renderMode
-	 * @param	batchSize
+	 * @param	stage				flash Stage instance.
+	 * @param	stage3DLevel		the level of stage3d to use for rendering (on flash11).
+	 * @param	antiAliasLevel		Antialising level to use for rendering (on flash11).
+	 * @param	initCallback		The method which will be called after initialization of inner stuff.
+	 * @param	renderMode			Rendering mode.
+	 * @param	batchSize			The max size of batches, used for drawTriangles calls. Should be more than 0 and no more than TriangleRenderJob.MAX_QUADS_PER_BUFFER
 	 */
 	public static function init(stage:Stage, stage3DLevel:Int = 0, antiAliasLevel:Int = 5, initCallback:String->Void = null, renderMode:Dynamic = null, batchSize:Int = 0):Void
 	{
@@ -177,17 +176,17 @@ class TilesheetStage3D extends Tilesheet
 		}
 	}
 	
-	// TODO: document it...
 	// TODO: support culling...
 	/**
+	 * Renders a set of triangles, typically to distort bitmaps and give them a three-dimensional appearance.
+	 * Works like graphics.drawTriangles().
 	 * 
-	 * 
-	 * @param	vertices
-	 * @param	indices
-	 * @param	uvtData
-	 * @param	culling
-	 * @param	colors
-	 * @param	blending
+	 * @param	vertices	A Vector of Numbers where each pair of numbers is treated as a coordinate location (an x, y pair). The vertices parameter is required.
+	 * @param	indices		A Vector of integers or indexes, where every three indexes define a triangle. 
+	 * @param	uvtData		A Vector of normalized coordinates used to apply texture mapping.
+	 * @param	culling		Specifies whether to render triangles that face in a specified direction. 
+	 * @param	colors		A Vector of integers where each value is used for vertex color tinting.
+	 * @param	blending	Blend mode used for the draw call.
 	 */
 	public function drawTriangles(graphics:Graphics, vertices:Vector<Float>, indices:Vector<Int> = null, uvtData:Vector<Float> = null, culling:TriangleCulling = null, colors:Vector<Int> = null, smooth:Bool = false, blending:BlendMode = null):Void
 	{
