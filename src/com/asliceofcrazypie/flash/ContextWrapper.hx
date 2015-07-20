@@ -307,9 +307,6 @@ class ContextWrapper extends EventDispatcher
 		
 		fragmentString = StringTools.replace(fragmentString, "<???>", getTextureLookupFlags(mipmap, smooth));
 		
-		trace(vertexString);
-		trace(fragmentString);
-		
 		var program:Program3D = assembleAgal(vertexString, fragmentString);
 		quadImagePrograms.set(programName, program);
 		return program;
