@@ -65,7 +65,7 @@ class TextureUtil
 	
 	public static inline function isTextureOk(texture:BitmapData):Bool
 	{
-		return (roundUpToPow2(texture.width) == texture.width && roundUpToPow2(texture.height) == texture.height);
+		return (roundUpToPow2(texture.width) == texture.width && roundUpToPow2(texture.height) == texture.height && texture.width == texture.height);
 	}
 	
 	public static inline function fixTextureSize(texture:BitmapData):BitmapData
@@ -76,7 +76,10 @@ class TextureUtil
 		}
 		else
 		{
-			var newTexture:BitmapData = new BitmapData(roundUpToPow2(texture.width), roundUpToPow2(texture.height), true, 0);
+			var newWidth = roundUpToPow2(texture.width);
+			var newHeight = roundUpToPow2(texture.height);
+			var newSize = (newWidth > newHeight) ? newWidth : newHeight;
+			var newTexture:BitmapData = new BitmapData(newSize, newSize, true, 0);
 			newTexture.copyPixels(texture, texture.rect, new Point(), null, null, true);
 			newTexture;
 		}
