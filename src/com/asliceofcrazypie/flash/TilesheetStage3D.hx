@@ -53,7 +53,7 @@ class TilesheetStage3D extends Tilesheet
 		originalHeight = inImage.height;
 		
 		#if flash11
-		inImage = TextureUtil.fixTextureSize(inImage);
+		inImage = TextureUtil.fixTextureSize(inImage, _squareTexture);
 		#end
 		
 		super(inImage);
@@ -114,6 +114,7 @@ class TilesheetStage3D extends Tilesheet
 	private static var _stage:Stage;
 	private static var _stage3DLevel:Int;
 	private static var _initCallback:String->Void;
+	static private var _squareTexture:Bool = true;
 	
 	private static var matrix:Matrix = new Matrix();
 	
@@ -125,9 +126,10 @@ class TilesheetStage3D extends Tilesheet
 	 * @param	antiAliasLevel		Antialising level to use for rendering (on flash11).
 	 * @param	initCallback		The method which will be called after initialization of inner stuff.
 	 * @param	renderMode			Rendering mode.
+	 * @param	square				Whether textures should have the same dimensions or not (flash player supports only square textures, but AIR support rectangular also).
 	 * @param	batchSize			The max size of batches, used for drawTriangles calls. Should be more than 0 and no more than TriangleRenderJob.MAX_QUADS_PER_BUFFER
 	 */
-	public static function init(stage:Stage, stage3DLevel:Int = 0, antiAliasLevel:Int = 5, initCallback:String->Void = null, renderMode:Dynamic = null, batchSize:Int = 0):Void
+	public static function init(stage:Stage, stage3DLevel:Int = 0, antiAliasLevel:Int = 5, initCallback:String->Void = null, renderMode:Dynamic = null, square:Bool = true, batchSize:Int = 0):Void
 	{
 		if (!_isInited)
 		{
@@ -136,6 +138,7 @@ class TilesheetStage3D extends Tilesheet
 			_stage = stage;
 			_stage3DLevel = stage3DLevel;
 			_initCallback = initCallback;
+			_squareTexture = square;
 			
 			BaseRenderJob.init(batchSize);
 			

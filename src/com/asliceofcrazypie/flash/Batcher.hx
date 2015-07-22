@@ -201,9 +201,17 @@ class Batcher
 	}
 	
 	/**
-	 * Batcher initialization method. It also calls TilesheetStage3D.init() method.
+	 * Initialization of all the inner stuff for the rendering (getting stage3d context, creating pools of render jobs, etc.)
+	 * 
+	 * @param	stage				flash Stage instance.
+	 * @param	stage3DLevel		the level of stage3d to use for rendering (on flash11).
+	 * @param	antiAliasLevel		Antialising level to use for rendering (on flash11).
+	 * @param	initCallback		The method which will be called after initialization of inner stuff.
+	 * @param	renderMode			Rendering mode.
+	 * @param	square				Whether textures should have the same dimensions or not (flash player supports only square textures, but AIR support rectangular also).
+	 * @param	batchSize			The max size of batches, used for drawTriangles calls. Should be more than 0 and no more than TriangleRenderJob.MAX_QUADS_PER_BUFFER
 	 */
-	public static function init(stage:Stage, stage3DLevel:Int = 0, antiAliasLevel:Int = 5, initCallback:String->Void = null, renderMode:Dynamic = null, batchSize:Int = 0):Void
+	public static function init(stage:Stage, stage3DLevel:Int = 0, antiAliasLevel:Int = 5, initCallback:String->Void = null, renderMode:Dynamic = null, square:Bool = true, batchSize:Int = 0):Void
 	{
 		if (!_isInited)
 		{
@@ -213,7 +221,7 @@ class Batcher
 			stage.addChild(game);
 			
 			#if flash11
-			TilesheetStage3D.init(stage, stage3DLevel, antiAliasLevel, initCallback, renderMode, batchSize);
+			TilesheetStage3D.init(stage, stage3DLevel, antiAliasLevel, initCallback, renderMode, square, batchSize);
 			TilesheetStage3D.context.renderCallback = render;
 			#else
 			BaseRenderJob.init(batchSize);
