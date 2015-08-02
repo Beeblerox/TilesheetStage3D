@@ -129,7 +129,9 @@ class Viewport
 		bgRenderJob = BaseRenderJob.colorQuads.getJob();
 		#else
 		colorTransform = new ColorTransform();
+		#end
 		
+		#if !flash11
 		view = new Sprite();
 		canvas = new Sprite();
 		view.addChild(canvas);
@@ -166,7 +168,9 @@ class Viewport
 		matrix = null;
 		#else
 		colorTransform = null;
+		#end
 		
+		#if !flash11
 		view.removeChild(canvas);
 		view = null;
 		canvas = null;
@@ -267,9 +271,9 @@ class Viewport
 		if (useBgColor)
 		{
 			helperRect.setTo(	-0.5 * width * (initialScaleX - scaleX) / scaleX - 1, 
-								-0.5 * height * (initialScaleY - scaleY) / scaleY - 1, 
-								width / scaleX + 2, 
-								height / scaleY + 2);
+							-0.5 * height * (initialScaleY - scaleY) / scaleY - 1, 
+							width * initialScaleX / scaleX + 2, 
+							height * initialScaleY / scaleY + 2);
 			bgRenderJob.addAAQuad(helperRect, bgRed, bgGreen, bgBlue, bgAlpha);
 			context.renderJob(bgRenderJob, isColored);
 		}
@@ -289,8 +293,8 @@ class Viewport
 			canvas.graphics.beginFill((Std.int(bgRed * 255) << 16) | (Std.int(bgGreen * 255) << 8) | Std.int(bgBlue * 255), bgAlpha);
 			canvas.graphics.drawRect( 	-0.5 * width * (initialScaleX - scaleX) / scaleX - 1, 
 										-0.5 * height * (initialScaleY - scaleY) / scaleY - 1, 
-										width / scaleX + 2, 
-										height / scaleY + 2);
+										width * initialScaleX / scaleX + 2, 
+										height * initialScaleY / scaleY + 2);
 			canvas.graphics.endFill();
 		}
 		
@@ -758,7 +762,9 @@ class Viewport
 		
 		matrix.appendScale(2 / stage.stageWidth, -2 / stage.stageHeight, 1);
 		matrix.appendScale(totalScaleX, totalScaleY, 1); // total viewport scale
-		#else
+		#end
+		
+		#if !flash11
 		canvas.scaleX = scaleX;
 		canvas.scaleY = scaleY;
 		
@@ -774,10 +780,10 @@ class Viewport
 		
 		scissor.setTo(	Batcher.gameX + x * Batcher.gameScaleX, 
 						Batcher.gameY + y * Batcher.gameScaleY, 
-						width * Batcher.gameScaleX, 
-						height * Batcher.gameScaleY);
+						width * Batcher.gameScaleX * initialScaleX,
+						height * Batcher.gameScaleY * initialScaleY);
 		#else
-		scissor.setTo(0, 0, width * Batcher.gameScaleX, height * Batcher.gameScaleY);
+		scissor.setTo(0, 0, width * /*Batcher.gameScaleX **/ initialScaleX, height /** Batcher.gameScaleY*/ * initialScaleY);
 		view.scrollRect = scissor;
 		#end
 	}

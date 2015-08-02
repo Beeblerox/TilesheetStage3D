@@ -1,5 +1,6 @@
 package com.asliceofcrazypie.flash.jobs;
 
+import com.asliceofcrazypie.flash.ContextWrapper;
 import com.asliceofcrazypie.flash.jobs.BaseRenderJob.RenderJobType;
 import openfl.display.Sprite;
 import openfl.display.Tilesheet;
@@ -196,6 +197,63 @@ class TextureTriangleRenderJob extends TriangleRenderJob
 		this.numIndices += numIndices;
 	}
 	
+	override public function render(context:ContextWrapper = null, colored:Bool = false):Void 
+	{
+		if (context != null)
+		{
+			//blend mode
+			context.setBlendMode(blendMode, tilesheet.premultipliedAlpha);
+			
+			context.setTriangleImageProgram(isRGB, isAlpha, isSmooth, tilesheet.mipmap, colored); //assign appropriate shader
+			
+			context.setTexture(tilesheet.texture);
+			
+			// TODO: culling support...
+			// context.context3D.setCulling();
+			
+			//actually create the buffers
+			var vertexbuffer:VertexBuffer3D = null;
+			var indexbuffer:IndexBuffer3D = null;
+			
+			// Create VertexBuffer3D. numVertices vertices, of dataPerVertice Numbers each
+			vertexbuffer = context.context3D.createVertexBuffer(numVertices, dataPerVertice);
+			
+			// Upload VertexBuffer3D to GPU. Offset 0, numVertices vertices
+			vertexbuffer.uploadFromVector(vertices, 0, numVertices);
+			
+			// Create IndexBuffer3D.
+			indexbuffer = context.context3D.createIndexBuffer(numIndices);
+			
+			// Upload IndexBuffer3D to GPU.
+			indexbuffer.uploadFromVector(indices, 0, numIndices);
+			
+			// vertex position to attribute register 0
+			context.context3D.setVertexBufferAt(0, vertexbuffer, 0, Context3DVertexBufferFormat.FLOAT_2);
+			
+			// UV to attribute register 1
+			context.context3D.setVertexBufferAt(1, vertexbuffer, 2, Context3DVertexBufferFormat.FLOAT_2);
+			
+			if (isRGB && isAlpha)
+			{
+				context.context3D.setVertexBufferAt(2, vertexbuffer, 4, Context3DVertexBufferFormat.FLOAT_4); //rgba data
+			}
+			else if (isRGB)
+			{
+				context.context3D.setVertexBufferAt(2, vertexbuffer, 4, Context3DVertexBufferFormat.FLOAT_3); //rgb data
+			}
+			else if (isAlpha)
+			{
+				context.context3D.setVertexBufferAt(2, vertexbuffer, 4, Context3DVertexBufferFormat.FLOAT_1); //a data
+			}
+			else
+			{
+				context.context3D.setVertexBufferAt(2, null, 4);
+			}
+			
+			context.context3D.drawTriangles(indexbuffer);
+		}
+	}
+	
 	public function set(tilesheet:TilesheetStage3D, isRGB:Bool, isAlpha:Bool, isSmooth:Bool, blend:BlendMode, culling:TriangleCulling = null):Void
 	{
 		this.tilesheet = tilesheet;
@@ -366,6 +424,8 @@ class TextureTriangleRenderJob extends TriangleRenderJob
 			y = position.y;
 		}
 		
+		var addColors:Bool = (colors != null && colors.length > 0);
+		
 		for (i in 0...numVertices)
 		{
 			vertexIndex = 2 * i;
@@ -374,7 +434,7 @@ class TextureTriangleRenderJob extends TriangleRenderJob
 			this.vertices[vertexPos++] = vertices[vertexIndex + 1] + y;
 			
 			#if !flash
-			if (colors != null)
+			if (addColors)
 				this.colors[colorPos++] = colors[i];
 			#end
 		}
@@ -427,7 +487,7 @@ class TextureTriangleRenderJob extends TriangleRenderJob
 		}
 		
 		culling = (culling == null) ? TriangleCulling.NONE : culling;
-		context.graphics.drawTriangles(vertices, indices, uvtData, culling, (colors.length > 0) ? colors : null, blendInt);
+		context.graphics.drawTriangles(vertices, indices, uvtData, culling, (colorPos > 0) ? colors : null, blendInt);
 		#end
 		context.graphics.endFill();
 	}
